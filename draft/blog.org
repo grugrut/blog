@@ -1,0 +1,25 @@
+#+hugo_base_dir: ../
+#+hugo_selection: ./
+#+hugo_auto_set_lastmod: t
+#+author: grugrut
+
+* 2019
+** blogのお引越し                                                      :hugo:
+:PROPERTIES:
+:EXPORT_FILE_NAME: 201910030745
+:EXPORT_DATE: 2019-10-03
+:END:
+
+これまでメインブログをはてなブログ、日々のメモをorgmodeからhugoとかやってたけど、
+そもそもの更新頻度が低いのにバラバラになってるとさらに頻度が低くなってしまう。
+
+どっちかに統一しようかと考え、最近の動向から長年連れそってきたはてなブログのほうをやめて、
+こちらに持ってくるようにします。
+昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
+
+
+* Footnotes
+* COMMENT Local Variables                                           :ARCHIVE:
+# Local Variables:
+# eval: (org-hugo-auto-export-mode)
+# End:

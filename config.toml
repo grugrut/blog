@@ -1,0 +1,9 @@
+baseURL = "https://blog.grugrut.net"
+languageCode = "en-us"
+title = "ぐるっとぐりっど"
+theme = "beautifulhugo"
+
+pygmentsCodeFences = true
+pygmentsUseClasses = true
+
+
