@@ -2,8 +2,12 @@ baseURL = "https://blog.grugrut.net"
 languageCode = "en-us"
 title = "ぐるっとぐりっど"
 theme = "beautifulhugo"
+disqusShortName = "grugrut"
+googleAnalytics = "UA-41607666-9"
+enableGitInfo = true
 
 pygmentsCodeFences = true
 pygmentsUseClasses = true
 
-
+[Params]
+  commit = "https://github.com/grugrut/blog/tree/"
