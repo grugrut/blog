@@ -11,3 +11,8 @@ pygmentsUseClasses = true
 
 [Params]
   commit = "https://github.com/grugrut/blog/tree/"
+
+[Author]
+  name = "grugrut"
+  github = "grugrut"
+  twitter = "grugrut"
