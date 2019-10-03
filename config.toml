@@ -2,7 +2,7 @@ baseURL = "https://blog.grugrut.net"
 languageCode = "en-us"
 title = "ぐるっとぐりっど"
 theme = "beautifulhugo"
-disqusShortName = "grugrut"
+disqusShortname = "grugrut"
 googleAnalytics = "UA-41607666-9"
 enableGitInfo = true
 
@@ -11,8 +11,20 @@ pygmentsUseClasses = true
 
 [Params]
   commit = "https://github.com/grugrut/blog/tree/"
+  dateFormat = "2006-01-02"
+  rss = true
+  readingTime = true
+  socialShare = true
+  delayDisqus = true
+  showRelatedPosts = true
+  comments = true
 
 [Author]
   name = "grugrut"
   github = "grugrut"
   twitter = "grugrut"
+
+[[menu.main]]
+  name = "Tags"
+  url = "tags"
+  weight = 3
