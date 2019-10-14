@@ -6,6 +6,7 @@
 * 2019
 ** blogのお引越し                                                      :hugo:
 :PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2019 2019/10)
 :EXPORT_FILE_NAME: 201910030745
 :EXPORT_DATE: 2019-10-03
 :END:
@@ -18,6 +19,7 @@
 昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
 ** emacs on WSLでSuper/Hyperキーを使う                            :Emacs:WSL:
 :PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2019 2019/10)
 :EXPORT_FILE_NAME: 201910040445
 :EXPORT_DATE: 2019-10-04
 :END:
@@ -152,6 +154,19 @@ X410は、ストアアプリとして購入でき、しょっちゅう割引き�
 
 [fn:modifier] たぶん =w32-lwindow-modifier= とかが使えるはず
 [fn:emacs-on-wsl] https://speakerdeck.com/grugrut/emacs-on-wsldefalsekun-rigoto
+** TODO skk-azikで「っ」が誤爆しやすい問題
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2019 2019/10)
+:EXPORT_FILE_NAME: 20191006221359
+:END:
+
+skk48に名乗りを上げたとおり、普段はskkを使っているのだけれども、
+ddskkで
+** TODO leaf-expandでleafのデバッグをする         :Emacs:smartparens:leaf:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2019 2019/10)
+:EXPORT_FILE_NAME: 20191014102840
+:END:
 
 * Footnotes
 * COMMENT Local Variables                                           :ARCHIVE:
