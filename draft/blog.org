@@ -162,11 +162,79 @@ X410は、ストアアプリとして購入でき、しょっちゅう割引き�
 
 skk48に名乗りを上げたとおり、普段はskkを使っているのだけれども、
 ddskkで
-** TODO leaf-expandでleafのデバッグをする         :Emacs:smartparens:leaf:
+** DONE leaf-expandでleafのデバッグをする            :Emacs:smartparens:leaf:
+   CLOSED: [2019-10-14 Mon 22:18]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
 :EXPORT_FILE_NAME: 201910141028
 :END:
+
+設定しているsmartparensが期待通りに動かずに困っていた。
+具体的には、lispを編集するモード(emacs-lisp-modeとか)のときに、「'(シングルクオート)」がダブルクオートとかと同じく「''」となってしまいかえって面倒なことに。
+
+beforeの設定がこんな感じ。
+
+#+begin_src lisp
+(leaf smartparens
+  :straight t
+  :require t
+  :diminish smartparens-mode
+  :config
+  (leaf smartparens-config
+    :require t
+    :after smartparens
+    :hook
+    (prog-mode-hook . smartparens-mode)))
+#+end_src
+
+最近は、 =use-package= のかわりに =leaf= を使っているのだけど、smartparensの設定は、 =(require 'smartparens-config)= が楽だし確実、というのを見て、たしかにそのように設定してるんだけどなあ。。。って感じだった。
+
+いろいろ見た結果、期待通りにrequireできてないんじゃないの？って結論に至るのだけど、そういったときのデバッグって大変ですよね。
+
+そんな時に便利なのが、 =M-x leaf-expand= で、これはleafマクロで書かれた箇所を展開するとどうなるかがその場でわかる。
+それにより、この展開後が
+
+#+begin_src lisp
+(prog1 'smartparens-config
+  (autoload #'smartparens-mode "smartparens-config" nil t)
+  (eval-after-load 'smartparens
+    '(progn
+       (add-hook 'prog-mode-hook #'smartparens-mode)
+       (eval-after-load 'smartparens-config
+         '(progn
+            (require 'smartparens-config))))))
+#+end_src
+
+であることがわかり、これってちゃんとrequireされないよね、ということがわかった。
+
+ちなみに解決後の設定は以下な感じ。
+
+#+begin_src lisp
+(leaf smartparens
+  :straight t
+  :require smartparens-config
+  :diminish smartparens-mode
+  :hook
+  (prog-mode-hook . turn-on-smartparens-mode)
+  :config
+  (show-smartparens-global-mode t))
+#+end_src
+
+これだと展開後の姿も、以下のようになり、とても綺麗(なのか？)。
+
+#+begin_src lisp
+(prog1 'smartparens
+  (autoload #'turn-on-smartparens-mode "smartparens" nil t)
+  (straight-use-package 'smartparens)
+  (add-hook 'prog-mode-hook #'turn-on-smartparens-mode)
+  (eval-after-load 'smartparens
+    '(progn
+       (require 'smartparens-config)
+       (show-smartparens-global-mode t)
+       (diminish 'smartparens-mode))))
+#+end_src
+
+これは便利なので、今後も積極的に使っていきたい。
 
 * Footnotes
 * COMMENT Local Variables                                           :ARCHIVE:
