@@ -30,3 +30,12 @@ pygmentsUseClasses = true
   name = "Tags"
   url = "tags"
   weight = 3
+
+[[menu.main]]
+  name = "Archives"
+  url = "archives"
+  weight = 3
+
+[taxonomies]
+tag = "tags"
+archive = "archives"
