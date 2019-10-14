@@ -1,5 +1,5 @@
 baseURL = "https://blog.grugrut.net"
-languageCode = "en-us"
+DefaultContentLanguage = "ja"
 title = "ぐるっとぐりっど"
 theme = "beautifulhugo"
 disqusShortname = "grugrut"
@@ -14,6 +14,7 @@ pygmentsUseClasses = true
   dateFormat = "2006-01-02"
   rss = true
   readingTime = true
+  wordCount = true
   socialShare = true
   delayDisqus = true
   showRelatedPosts = true
