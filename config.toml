@@ -1,10 +1,11 @@
 baseURL = "https://blog.grugrut.net"
-DefaultContentLanguage = "ja"
+DefaultContentLanguage = "en"
 title = "ぐるっとぐりっど"
 theme = "beautifulhugo"
 disqusShortname = "grugrut"
 googleAnalytics = "UA-41607666-9"
 enableGitInfo = true
+hasCJKLanguage = true
 
 pygmentsCodeFences = true
 pygmentsUseClasses = true
