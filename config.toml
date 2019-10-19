@@ -21,6 +21,9 @@ pygmentsUseClasses = true
   showRelatedPosts = true
   comments = true
 
+[blackfriday]
+  hrefTargetBlank = true
+
 [Author]
   name = "grugrut"
   github = "grugrut"
