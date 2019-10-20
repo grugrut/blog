@@ -1,4 +1,4 @@
-baseURL = "https://blog.grugrut.net"
+baseURL = "https://www.grugrut.net"
 DefaultContentLanguage = "en"
 title = "ぐるっとぐりっど"
 theme = "beautifulhugo"
