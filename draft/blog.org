@@ -33,12 +33,12 @@ Control/Meta以外に、Superキー/Hyperキーを割りあててる人もそこ
 - WSL上で動くEmacs
 - X410(Xサーバ)
 
-上記前提なので、Emacs for windowsとか、mingw上のemacsの話ではない。
+上記前提なので、 =Emacs for windows= とか、 =mingw= 上のemacsの話ではない。
 これであれば、他の手段[fn:modifier]が使えるはず。
  
-なお、Xサーバはやはり無償で利用できるxmingとかvcxsrvとかが利用者多いと思うが、
+なお、Xサーバはやはり無償で利用できる =xming= とか =vcxsrv= とかが利用者多いと思うが、
 emacsとの相性がよくない[fn:emacs-on-wsl]ので、有償のものを使っている。
-X410は、ストアアプリとして購入でき、しょっちゅう割引きセールしているので、そのタイミングで買うのが吉。
+=X410= は、ストアアプリとして購入でき、しょっちゅう割引きセールしているので、そのタイミングで買うのが吉。
 
 
 *** 目指したゴール
@@ -61,69 +61,70 @@ X410は、ストアアプリとして購入でき、しょっちゅう割引き�
      (CapsとCtrlの入れかえで、結局レジストリいじらないとうまくいかなかったりというのに以前ぶつかったりしたので)
 
 **** 手段その2 xmodmapを使う
-     xmodmapはlinuxというか、Xの世界でキーマップ変更するためのもの。調べてみると最近は別のがあるっぽいけど、xmodmapでうまく動いたので気にしない。
+=xmodmap= はlinuxというか、Xの世界でキーマップ変更するためのもの。
+調べてみると最近は別のがあるっぽいけど、xmodmapでうまく動いたので気にしない。
      
      そうそうキーコードなんて変わらないと思うので、同じ設定で同じように動くはず。
      
 ***** 手順1. キーコードを特定する
        =xev= というコマンドを使うと、Xのアプリが起動して、そこでもろもろのイベントを標準出力に出して確認することができる。
-       これを使うと、変換と無変換のキーコードは以下のとおり、変換が129、無変換が131であることがわかる。
+       これを使うと、変換と無変換のキーコードは以下のとおり、変換が =129= 、無変換が =131= であることがわかる。
 
-#+begin_src
-       KeyRelease event, serial 33, synthetic NO, window 0x800001,
-           root 0xf4, subw 0x0, time 426541921, (67,97), root:(179,232),
-           state 0x0, keycode 131 (keysym 0xff22, Muhenkan), same_screen YES,
-           XLookupString gives 0 bytes:
-           XFilterEvent returns: False
-           
-       KeyPress event, serial 33, synthetic NO, window 0x800001,
-           root 0xf4, subw 0x0, time 426596187, (843,330), root:(955,465),
-           state 0x0, keycode 129 (keysym 0xff23, Henkan_Mode), same_screen YES,
-           XLookupString gives 0 bytes:
-           XmbLookupString gives 0 bytes:
-           XFilterEvent returns: False
-#+end_src
+#+begin_verse
+KeyRelease event, serial 33, synthetic NO, window 0x800001,
+    root 0xf4, subw 0x0, time 426541921, (67,97), root:(179,232),
+    state 0x0, keycode 131 (keysym 0xff22, Muhenkan), same_screen YES,
+    XLookupString gives 0 bytes:
+    XFilterEvent returns: False
+    
+KeyPress event, serial 33, synthetic NO, window 0x800001,
+    root 0xf4, subw 0x0, time 426596187, (843,330), root:(955,465),
+    state 0x0, keycode 129 (keysym 0xff23, Henkan_Mode), same_screen YES,
+    XLookupString gives 0 bytes:
+    XmbLookupString gives 0 bytes:
+    XFilterEvent returns: False
+#+end_verse
 
 ***** 手順2. xmodmapの動作確認する
       キーコードがわかったら、=xmodmap= コマンドで一時的にキーシムを書きかえて動作確認してみる。
       
-#+begin_src
+#+begin_example
 # xmodmap -e "keycode 131 = Super_L Super_L"
 # xmodmap -e "keycode 129 = Hyper_L Hyper_L"
-#+end_src
+#+end_example
 
 実行後、再度xevを使って期待通り変わっていることを確認する。
 
-#+begin_src
-       KeyPress event, serial 33, synthetic NO, window 0x800001,
-           root 0xf4, subw 0x0, time 426819890, (125,123), root:(263,284),
-           state 0x0, keycode 131 (keysym 0xffeb, Super_L), same_screen YES,
-           XKeysymToKeycode returns keycode: 115
-           XLookupString gives 0 bytes:
-           XmbLookupString gives 0 bytes:
-           XFilterEvent returns: False
-#+end_src
+#+begin_verse
+KeyPress event, serial 33, synthetic NO, window 0x800001,
+    root 0xf4, subw 0x0, time 426819890, (125,123), root:(263,284),
+    state 0x0, keycode 131 (keysym 0xffeb, Super_L), same_screen YES,
+    XKeysymToKeycode returns keycode: 115
+    XLookupString gives 0 bytes:
+    XmbLookupString gives 0 bytes:
+    XFilterEvent returns: False
+#+end_verse
 
 先程はキーコード131が無変換だったのが、Superに変わっていることがわかる。
 
 
 ***** 手順3. xmodmapの設定を作成する
-       調べると、=xmodmap -pke= を実行して、必要なところだけ書きかえましょう。というのが出てくるのだが、実際のところ必要な設定だけ書けばよかったので、いきなり =.Xmodmap= ファイルを作成する。
-       WSLで手持ちのXサーバ使う分には別にファイル名は何でもいいと思うのだが、ここは慣例に従っておく。(startxコマンドでx起動するときは、雛形で.Xmodmapを詠み込むのでファイル名重要)
+       調べると、 ~xmodmap -pke~ を実行して、必要なところだけ書きかえましょう。というのが出てくるのだが、実際のところ必要な設定だけ書けばよかったので、いきなり =.Xmodmap= ファイルを作成する。
+       WSLで手持ちのXサーバ使う分には別にファイル名は何でもいいと思うのだが、ここは慣例に従っておく。(なお、 =startx= コマンドでx起動するときは、雛形で =.Xmodmap=を読み込むのでファイル名重要)
 
        自分の設定は、こんなかんじ。
 
-       [https://github.com/grugrut/dotfiles/blob/master/.Xmodmap]
+       https://github.com/grugrut/dotfiles/blob/master/.Xmodmap
 
 #+begin_src
-       clear  mod3
-       clear  mod4
-       !<muhenkan>
-       keycode 129 = Hyper_L Hyper_L Hyper_L Hyper_L
-       !<henkan>
-       keycode 131 = Super_L Super_L Super_L Super_L
-       add    mod3 = Hyper_L
-       add    mod4 = Super_L Super_R
+clear  mod3
+clear  mod4
+!<muhenkan>
+keycode 129 = Hyper_L Hyper_L Hyper_L Hyper_L
+!<henkan>
+keycode 131 = Super_L Super_L Super_L Super_L
+add    mod3 = Hyper_L
+add    mod4 = Super_L Super_R
 #+end_src
        デフォルトの状態だと、SuperキーとHyperキーが同じ修飾キーとしてあつかわれていて、Hyperキー単体でうまくうけとれないので使われていないmod3にHyperキーを割当ておいた。
 
@@ -134,16 +135,16 @@ X410は、ストアアプリとして購入でき、しょっちゅう割引き�
        LinuxやBSD使ってるときにもxmodmap使ってたけど、当時は常にxorg-serverが起動してたので今回はじめてそのこと知った。
 
        ついでなので、OSログイン時にXサーバを起動すべく適当なbatを作成した。
-       [https://github.com/grugrut/dotfiles/blob/master/_windows/startx.bat]
+       https://github.com/grugrut/dotfiles/blob/master/_windows/startx.bat
 
-       #+begin_src bat
-       start /b x410.exe
+#+begin_src bat
+start /b x410.exe
 
-       ubuntu.exe run "DISPLAY=127.0.0.1:0.0 xmodmap ~/.Xmodmap"
-       #+end_src
+ubuntu.exe run "DISPLAY=127.0.0.1:0.0 xmodmap ~/.Xmodmap"
+#+end_src
 
-       x410.exeが使っているXサーバ。バックグラウンド実行させたいので、=/b= オプションをつけてる。
-       そして、=ubuntu.exe run= をすることでwslでコマンド実行できる。
+       x410.exeが使っているXサーバ。バックグラウンド実行させたいので、 =/b= オプションをつけてる。
+       そして、 ~ubuntu.exe run~  をすることでwslでコマンド実行できる。
 
 これを Windowsの =shell:startup= に配置することでスタートアップ時に自動実行することができる。
        ただし、直接おくよりもショートカットを配置することをおすすめする。直接配置すると、実行時にコマンドプロンプトが一瞬表示されてうっとうしいが、ショートカットであれば最小化して実行することができるので気にならないからだ。
