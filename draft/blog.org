@@ -185,7 +185,7 @@ azikは簡単に言うと、日本語ローマ字入力(qwertyを想定)に特�
 いろいろ試して以下の設定で改善することが確認できた。
 私も長年、そもそも何がおきているかわからずに困っていたのだけれど、もし同様に困っている人いたら参考になれば幸いである。
 
-#+begin_src emacs-lisp
+#+begin_src lisp
 (leaf ddskk
   :straight t
   :bind
@@ -534,6 +534,39 @@ Cで書かれた組み込みの行番号表示である、 =display-line-numbers
 今のところ、この設定で困ったことはなく、強いて言えば、
 見比べてみるとわかるが、はじめから行番号のスペースが広めにとられてしまっている。
 そのため、少し画面サイズは小さくなっているものの、これで快適な行番号生活をおくることができる。
+** TODO Chroma用のスタイルシートを作成した                             :hugo:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910262251
+:END:
+
+といっても、Chromaの解釈とEmacsの解釈でちがう(Emacsだと ~default~ faceあつかいになるところが、
+Chromaだとキーワードとして解釈される、とか)ところがあるので、
+完全に同じではないが、そこはご愛嬌ということで。
+
+あとは、いくつかサンプルをば。
+
+#+begin_src java
+import java.io.*;
+
+class HelloWorld {
+  public static void main(String args[]) {
+    try {
+      File file = new File("namelist.txt");
+
+      BufferedReader br = new BufferedReader(new FileReader(file));
+      String name;
+      while ((name = br.readLine()) != null) {
+        System.out.println("Hello, " + str);
+      }
+
+      br.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}
+#+end_src
 
 * Footnotes
 * COMMENT Local Variables                                           :ARCHIVE:
