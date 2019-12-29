@@ -546,6 +546,121 @@ Chromaだとキーワードとして解釈される、とか)ところがある�
 
 あとは、いくつかサンプルをば。
 
+#+begin_src go
+package main
+
+import (
+	"context"
+	"log"
+	"net"
+	"time"
+
+	pb "github.com/grugrut/microservice-fibonacci/fib"
+	"google.golang.org/grpc"
+)
+
+const (
+	fib0 = "fib0:50050"
+	fib1 = "fib1:50050"
+	fibn = "fibn:50050"
+	port = ":50050"
+)
+
+type server struct{}
+
+func (s *server) Calc(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+	log.Printf("Received: %v", req.In)
+	var address string
+
+	if req.In == 1 || req.In == 0 {
+		if req.In == 1 {
+			address = fib1
+		} else {
+			address = fib0
+		}
+		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := pb.NewFibClient(conn)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		r, err := c.Calc(ctx, &pb.Request{In: req.In})
+		if err != nil {
+			log.Fatalf("could not connect %v", err)
+		}
+		return &pb.Response{Out: r.Out}, nil
+	}
+
+	n1 := req.In - 1
+	n2 := req.In - 2
+
+	switch n1 {
+	case 0:
+		address = fib0
+	case 1:
+		address = fib1
+	default:
+		address = fibn
+	}
+
+	conn1, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn1.Close()
+	c1 := pb.NewFibClient(conn1)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r1, err := c1.Calc(ctx, &pb.Request{In: n1})
+	if err != nil {
+		log.Fatalf("could not connect %v", err)
+	}
+	cal1 := r1.Out
+
+	switch n2 {
+	case 0:
+		address = fib0
+	case 1:
+		address = fib1
+	default:
+		address = fibn
+	}
+
+	conn2, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn2.Close()
+	c2 := pb.NewFibClient(conn1)
+
+	ctx, cancel2 := context.WithTimeout(context.Background(), time.Second)
+	defer cancel2()
+	r2, err := c2.Calc(ctx, &pb.Request{In: n2})
+	if err != nil {
+		log.Fatalf("could not connect %v", err)
+	}
+	cal2 := r2.Out
+
+	return &pb.Response{Out: (cal1 + cal2)}, nil
+}
+
+func main() {
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterFibServer(s, &server{})
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
+#+end_src
+
 #+begin_src java
 import java.io.*;
 
@@ -567,6 +682,26 @@ class HelloWorld {
   }
 }
 #+end_src
+** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:
+   CLOSED: [2019-12-29 Sun 10:11]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/12\")
+:EXPORT_FILE_NAME: 201912290846
+:END:
+タイトルの通りですが、12月の中旬ぐらいにGCPのProfessional Cloud Architectの試験を受け、無事に一発で合格しました。
+
+パブリッククラウドは業務で若干使うぐらいで、どちらかというと試験を通じてクラウドについて学ぼうというのがモチベーションでした。
+AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは単にGCPの使い方がわかればよいというより、
+デプロイ戦略とかkubernetesの使い方とか、そういう一般的知識も求められる(後述のcouseraでGCPの人もそう言ってた)。
+そちらについてはけっこうケイパビリティあるつもりなので、本当にGCPのサービスについてきちんとおさえてから挑みました。
+
+勉強期間としては2週間ぐらい。
+基本的には、courseraの公式の教材で学習しました。
+
+[[https://www.coursera.org/learn/preparing-cloud-professional-cloud-architect-exam-jp][Preparing for the Google Cloud Professional Cloud Architect Exam 日本語版]]
+
+試験勉強を通じて、これまで使ってなかったパブクラの機能もいろいろとわかってきたので、
+今後も公私ともにもっと活用していきたいですね。
 
 * Footnotes
 * COMMENT Local Variables                                           :ARCHIVE:
