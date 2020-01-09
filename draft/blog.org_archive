@@ -1,0 +1,711 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/grugrut/src/github.com/grugrut/blog/draft/blog.org
+
+
+* 2019
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2020-01-10 Fri 08:57
+  :ARCHIVE_FILE: ~/src/github.com/grugrut/blog/draft/blog.org
+  :ARCHIVE_CATEGORY: blog
+  :END:
+** blogのお引越し                                                      :hugo:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910030745
+:EXPORT_DATE: 2019-10-03
+:END:
+
+これまでメインブログをはてなブログ、日々のメモをorgmodeからhugoとかやってたけど、
+そもそもの更新頻度が低いのにバラバラになってるとさらに頻度が低くなってしまう。
+
+どっちかに統一しようかと考え、最近の動向から長年連れそってきたはてなブログのほうをやめて、
+こちらに持ってくるようにします。
+昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
+** emacs on WSLでSuper/Hyperキーを使う                            :Emacs:WSL:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910040445
+:EXPORT_DATE: 2019-10-04
+:END:
+*** はじめに
+Emacs勉強会(に限った話ではないが)だとMacユーザが多いので、私が普段使っている
+Control/Meta以外に、Superキー/Hyperキーを割りあててる人もそこそこいる。
+以前、Windowsの場合はwinキーがsuperキーになると聞いた覚えもあったのだけど、
+うまくいかなかったのでWSLで使ってないキーにSuper/Hyperを割りあててデビューしようと調べてみた。
+*** 環境
+- WSL
+- WSL上で動くEmacs
+- X410(Xサーバ)
+
+上記前提なので、 =Emacs for windows= とか、 =mingw= 上のemacsの話ではない。
+これであれば、他の手段[fn:modifier]が使えるはず。
+ 
+なお、Xサーバはやはり無償で利用できる =xming= とか =vcxsrv= とかが利用者多いと思うが、
+emacsとの相性がよくない[fn:emacs-on-wsl]ので、有償のものを使っている。
+=X410= は、ストアアプリとして購入でき、しょっちゅう割引きセールしているので、そのタイミングで買うのが吉。
+
+
+*** 目指したゴール
+無変換キーをSuperキー、変換キーをHyperキーとして使えるようにする。
+
+本来は冒頭の通り、WindowsキーがSuperキーなのが普通だと思うのだけど、
+なんかトラップされてうまくうごかなかったのと、Win+○のキーバインドも
+結構使うので、それを潰してしまうのも惜しかったので、そのようにした。
+
+前置きおわり。
+
+*** Superキー/Hyperキーを設定する
+
+**** 手段その1 AutoHotKeyを使う
+
+     多分これが一番早いと思います。
+     サンプルも多いはず。
+
+     自分は、なんとなくWindowsのユーザランドでキーいじるやつが嫌だったので採用しなかった。
+     (CapsとCtrlの入れかえで、結局レジストリいじらないとうまくいかなかったりというのに以前ぶつかったりしたので)
+
+**** 手段その2 xmodmapを使う
+=xmodmap= はlinuxというか、Xの世界でキーマップ変更するためのもの。
+調べてみると最近は別のがあるっぽいけど、xmodmapでうまく動いたので気にしない。
+     
+     そうそうキーコードなんて変わらないと思うので、同じ設定で同じように動くはず。
+     
+***** 手順1. キーコードを特定する
+       =xev= というコマンドを使うと、Xのアプリが起動して、そこでもろもろのイベントを標準出力に出して確認することができる。
+       これを使うと、変換と無変換のキーコードは以下のとおり、変換が =129= 、無変換が =131= であることがわかる。
+
+#+begin_verse
+KeyRelease event, serial 33, synthetic NO, window 0x800001,
+    root 0xf4, subw 0x0, time 426541921, (67,97), root:(179,232),
+    state 0x0, keycode 131 (keysym 0xff22, Muhenkan), same_screen YES,
+    XLookupString gives 0 bytes:
+    XFilterEvent returns: False
+    
+KeyPress event, serial 33, synthetic NO, window 0x800001,
+    root 0xf4, subw 0x0, time 426596187, (843,330), root:(955,465),
+    state 0x0, keycode 129 (keysym 0xff23, Henkan_Mode), same_screen YES,
+    XLookupString gives 0 bytes:
+    XmbLookupString gives 0 bytes:
+    XFilterEvent returns: False
+#+end_verse
+
+***** 手順2. xmodmapの動作確認する
+      キーコードがわかったら、=xmodmap= コマンドで一時的にキーシムを書きかえて動作確認してみる。
+      
+#+begin_example
+# xmodmap -e "keycode 131 = Super_L Super_L"
+# xmodmap -e "keycode 129 = Hyper_L Hyper_L"
+#+end_example
+
+実行後、再度xevを使って期待通り変わっていることを確認する。
+
+#+begin_verse
+KeyPress event, serial 33, synthetic NO, window 0x800001,
+    root 0xf4, subw 0x0, time 426819890, (125,123), root:(263,284),
+    state 0x0, keycode 131 (keysym 0xffeb, Super_L), same_screen YES,
+    XKeysymToKeycode returns keycode: 115
+    XLookupString gives 0 bytes:
+    XmbLookupString gives 0 bytes:
+    XFilterEvent returns: False
+#+end_verse
+
+先程はキーコード131が無変換だったのが、Superに変わっていることがわかる。
+
+
+***** 手順3. xmodmapの設定を作成する
+       調べると、 ~xmodmap -pke~ を実行して、必要なところだけ書きかえましょう。というのが出てくるのだが、実際のところ必要な設定だけ書けばよかったので、いきなり =.Xmodmap= ファイルを作成する。
+       WSLで手持ちのXサーバ使う分には別にファイル名は何でもいいと思うのだが、ここは慣例に従っておく。(なお、 =startx= コマンドでx起動するときは、雛形で =.Xmodmap=を読み込むのでファイル名重要)
+
+       自分の設定は、こんなかんじ。
+
+       https://github.com/grugrut/dotfiles/blob/master/.Xmodmap
+
+#+begin_src
+clear  mod3
+clear  mod4
+!<muhenkan>
+keycode 129 = Hyper_L Hyper_L Hyper_L Hyper_L
+!<henkan>
+keycode 131 = Super_L Super_L Super_L Super_L
+add    mod3 = Hyper_L
+add    mod4 = Super_L Super_R
+#+end_src
+       デフォルトの状態だと、SuperキーとHyperキーが同じ修飾キーとしてあつかわれていて、Hyperキー単体でうまくうけとれないので使われていないmod3にHyperキーを割当ておいた。
+
+       
+***** 手順4. 自動で適用されるようにする
+       =xmodmap ~/.Xmodmap= とコマンド実行すればよいのだけど、注意点が一つ。
+       xmodmapはXサーバに対して設定をおこなうコマンドなので、Xサーバが起動していない状態ではうまく動かない。
+       LinuxやBSD使ってるときにもxmodmap使ってたけど、当時は常にxorg-serverが起動してたので今回はじめてそのこと知った。
+
+       ついでなので、OSログイン時にXサーバを起動すべく適当なbatを作成した。
+       https://github.com/grugrut/dotfiles/blob/master/_windows/startx.bat
+
+#+begin_src bat
+start /b x410.exe
+
+ubuntu.exe run "DISPLAY=127.0.0.1:0.0 xmodmap ~/.Xmodmap"
+#+end_src
+
+       x410.exeが使っているXサーバ。バックグラウンド実行させたいので、 =/b= オプションをつけてる。
+       そして、 ~ubuntu.exe run~  をすることでwslでコマンド実行できる。
+
+これを Windowsの =shell:startup= に配置することでスタートアップ時に自動実行することができる。
+       ただし、直接おくよりもショートカットを配置することをおすすめする。直接配置すると、実行時にコマンドプロンプトが一瞬表示されてうっとうしいが、ショートカットであれば最小化して実行することができるので気にならないからだ。
+
+       
+****  まとめ
+     xmodmapを使うことで、他のアプリには影響なくwslのX使うアプリだけにいろいろ手をいれられることが確認できた。他にもその手の機能で便利なのありそう。
+
+[fn:modifier] たぶん =w32-lwindow-modifier= とかが使えるはず
+[fn:emacs-on-wsl] https://speakerdeck.com/grugrut/emacs-on-wsldefalsekun-rigoto
+** DONE skk-azikで「っ」が誤爆しやすい問題                        :Emacs:skk:
+   CLOSED: [2019-10-22 Tue 22:05]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910222100
+:END:
+
+skk48に名乗りを上げたとおり、普段は =skk= を使っているのだけれども、
+私は単なるskkではなく、 =azik= を使っている。
+
+azikは簡単に言うと、日本語ローマ字入力(qwertyを想定)に特化したskkの拡張で、
+以下のような便利なマッピングになっている。
+- 長音(ー)は小指が遠いので「:」で入力できる
+- 促音も二回重ねるのが面倒なので「;」で入力できる
+- 日本語は「子音+an(晩餐はb + an, s + anとか)」、「子音+in(新品はs + in, p + in)」のように =子音 + 母音 + n= からなる語が多く含まれるので、「子音 + zで子音+az」「子音 + kで子音+in」といった感じに、少ないキータイプで入力することが可能になる。(なので、 =az= =ik= で =azik= )
+- さらに拡張で「 =ds= で =です= 」「 =ms= で =ます= 」のように、さらに簡易にするマッピングもされている(自分はあまりこれは使ってない)
+
+詳細については、公式サイトを見てほしい。
+[[http://hp.vector.co.jp/authors/VA002116/azik/azikinfo.html]]
+
+ところで、われらがemacsの =ddskk= にもazik用の設定が搭載されているのだが、
+なぜかそのマッピングの中に =tU= が、 =っ= にわりあてられているせいで、
+よく入力中に、意図せず =っ= が入力されてしまう問題が発生していた。
+
+もし、私と同じように、 ddskk + azikを利用していて、例えば「疲れた」や「積む」のような、「つ」から始まる感じを入力しようとして、「▽っかれた」のように、頭が =つ= ではなく =っ= になってしまう人がいたら、同じ症状だと思う。
+おそらく意識せず =Tu= と打とうとして、 =TU= とか =tU= と入力しているはず。
+
+いろいろ試して以下の設定で改善することが確認できた。
+私も長年、そもそも何がおきているかわからずに困っていたのだけれど、もし同様に困っている人いたら参考になれば幸いである。
+
+#+begin_src lisp
+(leaf ddskk
+  :straight t
+  :bind
+  (("C-x C-j" . skk-mode)
+   ("C-x j"   . skk-mode))
+  :init
+  (defvar dired-bind-jump nil)  ; dired-xがC-xC-jを奪うので対処しておく
+  :custom
+  (skk-use-azik . t)                     ; AZIKを使用する
+  (skk-azik-keyboard-type . 'jp106)      ;
+  :hook
+  (skk-azik-load-hook . my/skk-azik-disable-tU)
+  :preface
+  (defun my/skk-azik-disable-tU ()
+    "ddskkのazikモードが`tU'を`つ'として扱うのを抑制する."
+    (setq skk-rule-tree (skk-compile-rule-list
+                         skk-rom-kana-base-rule-list
+                         (skk-del-alist "tU" skk-rom-kana-rule-list)))))
+#+end_src
+*** 内容の解説
+
+基本的にドキュメントを読む限り、 =skk-rom-kana-rule-list= にユーザ独自の設定は入れるので、
+そこから消せばよいはずなのだが、再コンパイルしないとだめだったのでそのようにしている。
+ちなみに、 =skk-del-alist= は =skk-rom-kana-rule-list= から不要なのを削除するための便利な関数である。追加したい場合は普通に =append= すればよい。
+
+参考: [[http://mail.ring.gr.jp/skk/200106/msg00009.html]]
+
+また、普通なら =leaf= なり、 =use-package= なりの、 =:config= ブロックに設定すればよいのだけど、
+ロード後の処理の影響からか、 azikの設定に上書きされてしまっているように見えたので、
+skk-azikの中で最後に呼ばれる =skk-azik-load-hook= を使って、自前のルール修正関数を呼ぶようにしている。
+
+printデバッグしてみたら、 =:config= がそもそも呼ばれてなかったようにも見えたので
+もうすこし上手いやりかたがあるのかもしれない。
+
+** DONE leaf-expandでleafのデバッグをする            :Emacs:smartparens:leaf:
+   CLOSED: [2019-10-14 Mon 22:18]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910141028
+:END:
+
+設定しているsmartparensが期待通りに動かずに困っていた。
+具体的には、lispを編集するモード(emacs-lisp-modeとか)のときに、「'(シングルクオート)」がダブルクオートとかと同じく「''」となってしまいかえって面倒なことに。
+
+beforeの設定がこんな感じ。
+
+#+begin_src lisp
+(leaf smartparens
+  :straight t
+  :require t
+  :diminish smartparens-mode
+  :config
+  (leaf smartparens-config
+    :require t
+    :after smartparens
+    :hook
+    (prog-mode-hook . smartparens-mode)))
+#+end_src
+
+最近は、 =use-package= のかわりに =leaf= を使っているのだけど、smartparensの設定は、 =(require 'smartparens-config)= が楽だし確実、というのを見て、たしかにそのように設定してるんだけどなあ。。。って感じだった。
+
+いろいろ見た結果、期待通りにrequireできてないんじゃないの？って結論に至るのだけど、そういったときのデバッグって大変ですよね。
+
+そんな時に便利なのが、 =M-x leaf-expand= で、これはleafマクロで書かれた箇所を展開するとどうなるかがその場でわかる。
+それにより、この展開後が
+
+#+begin_src lisp
+(prog1 'smartparens-config
+  (autoload #'smartparens-mode "smartparens-config" nil t)
+  (eval-after-load 'smartparens
+    '(progn
+       (add-hook 'prog-mode-hook #'smartparens-mode)
+       (eval-after-load 'smartparens-config
+         '(progn
+            (require 'smartparens-config))))))
+#+end_src
+
+であることがわかり、これってちゃんとrequireされないよね、ということがわかった。
+
+ちなみに解決後の設定は以下な感じ。
+
+#+begin_src lisp
+(leaf smartparens
+  :straight t
+  :require smartparens-config
+  :diminish smartparens-mode
+  :hook
+  (prog-mode-hook . turn-on-smartparens-mode)
+  :config
+  (show-smartparens-global-mode t))
+#+end_src
+
+これだと展開後の姿も、以下のようになり、とても綺麗(なのか？)。
+
+#+begin_src lisp
+(prog1 'smartparens
+  (autoload #'turn-on-smartparens-mode "smartparens" nil t)
+  (straight-use-package 'smartparens)
+  (add-hook 'prog-mode-hook #'turn-on-smartparens-mode)
+  (eval-after-load 'smartparens
+    '(progn
+       (require 'smartparens-config)
+       (show-smartparens-global-mode t)
+       (diminish 'smartparens-mode))))
+#+end_src
+
+これは便利なので、今後も積極的に使っていきたい。
+** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :OpenShift:kubernetes:crc:
+   CLOSED: [2019-10-19 Sat 14:03]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910191042
+:END:
+OpenShift4.2がリリースされたので、家で使ってみようと、 =CodeReady Containers(crc)= をインストールしてみた。
+CodeReady Containersは、これまで =minishift= という名前のプロダクトだったものが、OpenShift 4.xになって名前が変わったもので、
+テストとか開発とかに使えるものである。
+
+10/17に、github上では、1.0.0のタグが切られていたが、まだpre-releaseということで、Red Hat Developers Programに登録していれば、
+Developer Preview版が利用できるようだ。
+*** 導入した環境
+- Windows 10 Professional
+- メモリ 64 GB (メモリはわりと食うので少ないとつらいと思う)
+
+*** ダウンロード
+ここからリンクを辿っていくとダウンロードできる。
+
+https://developers.redhat.com/products/codeready-containers
+
+OSごとのバイナリと、インストール時に入力が必要なpull secretをダウンロードしておく。
+2GBぐらいあり、わりと重たい。
+*** 起動
+
+基本ドキュメント通りにやればよいはず。
+
+1. ダウンロードしたファイルを展開し、 =crc= バイナリをパスの通った場所に配置する
+2. 仮想マシンを作成する
+
+   たぶん場合によってはHyper-Vのネットワークが作成されたりするはず。
+   #+begin_src bat
+λ crc setup
+INFO Checking if running as normal user
+INFO Caching oc binary
+INFO Unpacking bundle from the CRC binary
+INFO Check Windows 10 release
+INFO Hyper-V installed
+INFO Is user a member of the Hyper-V Administrators group
+INFO Does the Hyper-V virtual switch exist
+Setup is complete, you can now run 'crc start' to start a CodeReady Containers instance
+#+end_src
+3. 起動する
+
+   起動時にデフォルトではメモリを8GBで起動するが、何かやるには到底足りないので、16GBぐらいは指定しておきたい。
+   また、DNSサーバを指定しておかないと、他の仮想マシンを動かしてたり仮想ネットワークが複数あったりした場合に、
+   うまく名前解決できないケースがあったので指定しておくのが吉。
+   #+begin_src bat
+λ crc start -m 16384 -n 8.8.8.8
+INFO Checking if running as normal user
+INFO Checking if oc binary is cached
+INFO Check Windows 10 release
+INFO Hyper-V installed and operational
+INFO Is user a member of the Hyper-V Administrators group
+INFO Does the Hyper-V virtual switch exist
+#+end_src
+4. pull secretを入力する
+
+   初回起動時には、pull secretの入力を求められるのでバイナリと一緒にダウンロードしておいたjsonから情報を貼り付ける。
+   #+begin_src bat
+? Image pull secret [? for help] **********************************
+INFO Loading bundle: crc_hyperv_4.2.0-0.nightly-2019-09-26-192831.crcbundle ...
+INFO Creating CodeReady Containers VM for OpenShift 4.2.0-0.nightly-2019-09-26-192831...
+INFO Verifying validity of the cluster certificates ...
+INFO Adding 8.8.8.8 as nameserver to Instance ...
+INFO Will run as admin: add dns server address to interface vEthernet (Default Switch)
+INFO Check internal and public dns query ...
+INFO Copying kubeconfig file to instance dir ...
+INFO Adding user's pull secret and cluster ID ...
+INFO Starting OpenShift cluster ... [waiting 3m]
+INFO
+INFO To access the cluster, first set up your environment by following 'crc oc-env' instructions
+INFO Then you can access it by running 'oc login -u developer -p developer https://api.crc.testing:6443'
+INFO To login as an admin, username is 'kubeadmin' and password is XXXXX-XXXXX-XXXXX-XXXXX
+INFO
+INFO You can now run 'crc console' and use these credentials to access the OpenShift web console
+CodeReady Containers instance is running
+#+end_src
+
+   インストール直後は、一般ユーザである =developer= ユーザ(パスワードはdeveloper)と、
+   管理者ユーザである =kubeadmin= ユーザの2種類のユーザが存在する。kubeadminユーザのパスワードは起動時に表示されるのでそれを見ておく。
+*** ログイン
+ログインは、CLIとWebコンソールのふたつがある。
+**** CLI ログイン
+OpenShiftでは、kubernetesでいうところの =kubectl= に相当する、 =oc= コマンドが存在する。
+crcにもocコマンドは同梱されているので、以下のコマンドでパスの通しかたがわかる。
+
+#+begin_src bat
+λ crc oc-env
+SET PATH=C:\Users\grugrut\.crc\bin;%PATH%
+REM Run this command to configure your shell:
+REM     @FOR /f "tokens=*" %i IN ('crc oc-env') DO @call %i %i
+#+end_src
+
+ocコマンドの場所にパスを通したら、あとはログインするだけである。
+
+#+begin_src ba
+λ oc login
+Authentication required for https://api.crc.testing:6443 (openshift)
+Username: kubeadmin
+Password:
+Login successful.
+
+You have access to 51 projects, the list has been suppressed. You can list all projects with 'oc projects'
+
+Using project "default".
+#+end_src
+**** Webコンソールログイン
+OpenShiftには、はじめからブラウザ経由でアクセスできるWebコンソールが用意されているので、
+そちらを使うことも多いだろう。
+=crc console= コマンドを実行することで、ブラウザが起動し、Webコンソールにアクセスできる。
+
+オレオレ証明書なので、そこは目をつぶってそのまま接続するとログイン画面が出てくる。
+
+[[file:images/20191019-crc-login.png]]
+
+kubeadminユーザでログインするときは、 =kube:admin= を、developerユーザでログインするときは、 =htpasswd_provider= を選択する。
+
+ログインに成功すると、ダッシュボードが表示されるはずだ。
+
+[[file:images/20191019-crc-dashboard.png]]
+*** 初期設定
+
+ここまでですぐにOpenShiftが使える状態ではあるが、ベータ版でさわってみてた感じ、以下の設定はやっておいたほうがよさそう。
+- 監視機能の有効化
+- ユーザの作成
+**** 監視機能の有効化
+ダッシュボードでクラスタのリソース状況が見れたり、Podの状況が見れる枠はあるものの、
+デフォルトでは監視機能が無効化されているため、まったく意味をなしていない。
+
+そこで、監視を有効化して、情報を収集できるようにしておく。
+
+方法はドキュメントに書いてあるとおりで、以下のコマンドを順にCLIで実行すればよい。
+ドキュメントだと、セミコロン区切りでまとめて書いてあるが、windowsの場合はセミコロンで複数コマンドを順番に実行する
+ことができないので、ひとつずつ分割して実行する。
+
+#+begin_src bat
+λ oc scale --replicas=1 statefulset --all -n openshift-monitoring
+statefulset.apps/alertmanager-main scaled
+statefulset.apps/prometheus-k8s scaled
+
+λ oc scale --replicas=1 deployment --all -n openshift-monitoring
+deployment.extensions/cluster-monitoring-operator scaled
+deployment.extensions/grafana scaled
+deployment.extensions/kube-state-metrics scaled
+deployment.extensions/openshift-state-metrics scaled
+deployment.extensions/prometheus-adapter scaled
+deployment.extensions/prometheus-operator scaled
+deployment.extensions/telemeter-client scaled
+#+end_src
+
+しばらくすると、ダッシュボードに収集した値が表示されるようになるだろう。
+ちなみに結構監視機能はメモリを消費するので、デフォルトの8GBだとメモリが足りなくて必要なPodを起動できず動かない問題が確認できている。
+**** ユーザの追加
+kubeadminユーザでWebコンソールにログインすると上の方で警告画面がでているところからもわかるとおり、
+kubeadminユーザは一時的なユーザらしく、あまりこれを使うのは好ましくないらしい。
+まあパスワードも覚えにくいし、適当に自分で作ったほうがよいだろう。
+
+ログイン手段の作成方法もいくつかあるが、デフォルトで用意されているdeveloperユーザ用の
+htpasswdに自分用のユーザを作成するのが楽だろう。
+
+https://console-openshift-console.apps-crc.testing/k8s/ns/openshift-config/secrets/htpass-secret
+
+にアクセスすると(もしくは左のメニューの =Workloads= の中の =Secrets= から、 =htpass-secret= を探すのもよい)、
+ログイン用のhtpasswdが書かれたsecretの設定を見ることができる。
+ここから、右上の =Actions= から =Edit Secret= を選択する。
+
+htpasswdの設定を作成する方法はいくつかあるが、たとえば =WSL= 等のLinux環境がある場合は、
+htpasswdコマンドを使えば簡単に作成できる。
+今回は、私用に、grugrutユーザを作っている。
+#+begin_src bash
+$ sudo apt install apache2-utils
+$ htpasswd -n grugrut
+New password:
+Re-type new password:
+grugrut:XXXXXXXXXXXXXXXXXXXXXXXXXX
+#+end_src
+
+これで =oc login= してみると、作成したユーザでログインできるはず。
+だが、これだけだと何もできないただログインできるだけのユーザなので、
+クラスタ管理者の権限である =cluster-admin= ロールをバインドする。
+
+kubeadminユーザで
+https://console-openshift-console.apps-crc.testing/k8s/all-namespaces/rolebindings
+にアクセスし、 =Create Binding= ボタンをクリック。
+
+- =Binding Type= は、 =Cluster-wide Role Binding= を選択
+- =Name= は、名前がかぶると怒られるので、 =cluster-admin-(作成するユーザ名)= とでもすればよい
+- =Role Name= は、 =cluster-admin= を選択
+- =Subject= は、 =User= を選び、先程作成したユーザ名を入れる
+
+これで作成すれば、晴れてクラスタ管理者となれる。
+ちなみにコマンドだと、
+=oc adm policy add-cluster-role-to-user cluster-admin (ユーザ名)=
+であり、もしかしたらこっちのほうが楽かもしれない。
+***** kubeadminユーザの削除
+自分自身をクラスタ管理者にしたら、もはやkubeadminユーザは不要なので消してしまってもよいはず。
+ドキュメントにも消しかた書いてあるし。
+
+https://docs.openshift.com/container-platform/4.2/authentication/remove-kubeadmin.html
+
+kubeadminユーザを削除することによって、Webコンソールへのログイン時に、「kube:admin」か「htpasswd」なのか
+選ばなくてよくなるので、ユーザを作ったあとは消してしまってよいかもしれない。
+*** まとめ
+これで家の環境でOpenShiftが使えるようになったので、今後コンテナ動かすところなども見ていきたい。
+*** 注意点
+今のところバグで、30日で証明書が期限切れになり、起動できなくなってしまうらしい。
+解決策はなく、一度削除して(当然作成したものも消える)、作りなおす必要があるとか。
+おそろしい話である。
+** DONE emacs26からの行番号表示がddskk入力時にガタつくのを防ぐ    :Emacs:skk:
+   CLOSED: [2019-10-20 Sun 23:51]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910202227
+:END:
+Emacs26までは、行番号の表示をemacs lispで頑張るというアプローチがために、
+重たくてなかなか使いどころに困る問題があったが、Emacs26では、待望の
+Cで書かれた組み込みの行番号表示である、 =display-line-numbers-mode= が導入された。
+これは軽くてたいへん便利なのであるが、使っていて、ひとつめちゃくちゃ気になる問題があった。
+
+それはごらんの通り、ddskkで日本語を入力するときに行番号の表示がずれて、がたがたとなり見辛いのである。
+
+
+[[file:images/display-line-numbers-mode-gatagata.gif]]
+
+これには困っていたのだけど、言語化しづらいところもあり解決策が見付けられなかったが、
+ソースコード見てパラメータいじってたら以下のパラメータを有効化することで
+がたつかなくなることがわかった。
+
+#+begin_src lisp
+(global-display-line-numbers-mode t)
+(custom-set-variables '(display-line-numbers-width-start t))
+#+end_src
+
+先程のgifと見比べてみると今度はまったくがたつきがないのがわかる。
+
+[[file:images/display-line-numbers-mode-not-gatagata.gif]]
+
+今のところ、この設定で困ったことはなく、強いて言えば、
+見比べてみるとわかるが、はじめから行番号のスペースが広めにとられてしまっている。
+そのため、少し画面サイズは小さくなっているものの、これで快適な行番号生活をおくることができる。
+** TODO Chroma用のスタイルシートを作成した                             :hugo:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_FILE_NAME: 201910262251
+:END:
+
+といっても、Chromaの解釈とEmacsの解釈でちがう(Emacsだと ~default~ faceあつかいになるところが、
+Chromaだとキーワードとして解釈される、とか)ところがあるので、
+完全に同じではないが、そこはご愛嬌ということで。
+
+あとは、いくつかサンプルをば。
+
+#+begin_src go
+package main
+
+import (
+	"context"
+	"log"
+	"net"
+	"time"
+
+	pb "github.com/grugrut/microservice-fibonacci/fib"
+	"google.golang.org/grpc"
+)
+
+const (
+	fib0 = "fib0:50050"
+	fib1 = "fib1:50050"
+	fibn = "fibn:50050"
+	port = ":50050"
+)
+
+type server struct{}
+
+func (s *server) Calc(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+	log.Printf("Received: %v", req.In)
+	var address string
+
+	if req.In == 1 || req.In == 0 {
+		if req.In == 1 {
+			address = fib1
+		} else {
+			address = fib0
+		}
+		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := pb.NewFibClient(conn)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		r, err := c.Calc(ctx, &pb.Request{In: req.In})
+		if err != nil {
+			log.Fatalf("could not connect %v", err)
+		}
+		return &pb.Response{Out: r.Out}, nil
+	}
+
+	n1 := req.In - 1
+	n2 := req.In - 2
+
+	switch n1 {
+	case 0:
+		address = fib0
+	case 1:
+		address = fib1
+	default:
+		address = fibn
+	}
+
+	conn1, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn1.Close()
+	c1 := pb.NewFibClient(conn1)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r1, err := c1.Calc(ctx, &pb.Request{In: n1})
+	if err != nil {
+		log.Fatalf("could not connect %v", err)
+	}
+	cal1 := r1.Out
+
+	switch n2 {
+	case 0:
+		address = fib0
+	case 1:
+		address = fib1
+	default:
+		address = fibn
+	}
+
+	conn2, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn2.Close()
+	c2 := pb.NewFibClient(conn1)
+
+	ctx, cancel2 := context.WithTimeout(context.Background(), time.Second)
+	defer cancel2()
+	r2, err := c2.Calc(ctx, &pb.Request{In: n2})
+	if err != nil {
+		log.Fatalf("could not connect %v", err)
+	}
+	cal2 := r2.Out
+
+	return &pb.Response{Out: (cal1 + cal2)}, nil
+}
+
+func main() {
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterFibServer(s, &server{})
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
+#+end_src
+
+#+begin_src java
+import java.io.*;
+
+class HelloWorld {
+  public static void main(String args[]) {
+    try {
+      File file = new File("namelist.txt");
+
+      BufferedReader br = new BufferedReader(new FileReader(file));
+      String name;
+      while ((name = br.readLine()) != null) {
+        System.out.println("Hello, " + str);
+      }
+
+      br.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}
+#+end_src
+** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:
+   CLOSED: [2019-12-29 Sun 10:11]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/12\")
+:EXPORT_FILE_NAME: 201912290846
+:END:
+タイトルの通りですが、12月の中旬ぐらいにGCPのProfessional Cloud Architectの試験を受け、無事に一発で合格しました。
+
+パブリッククラウドは業務で若干使うぐらいで、どちらかというと試験を通じてクラウドについて学ぼうというのがモチベーションでした。
+AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは単にGCPの使い方がわかればよいというより、
+デプロイ戦略とかkubernetesの使い方とか、そういう一般的知識も求められる(後述のcouseraでGCPの人もそう言ってた)。
+そちらについてはけっこうケイパビリティあるつもりなので、本当にGCPのサービスについてきちんとおさえてから挑みました。
+
+勉強期間としては2週間ぐらい。
+基本的には、courseraの公式の教材で学習しました。
+
+[[https://www.coursera.org/learn/preparing-cloud-professional-cloud-architect-exam-jp][Preparing for the Google Cloud Professional Cloud Architect Exam 日本語版]]
+
+試験勉強を通じて、これまで使ってなかったパブクラの機能もいろいろとわかってきたので、
+今後も公私ともにもっと活用していきたいですね。
+
