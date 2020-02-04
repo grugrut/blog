@@ -12,7 +12,7 @@ Archived entries from file /home/grugrut/src/github.com/grugrut/blog/draft/blog.
   :END:
 ** blogのお引越し                                                      :hugo:
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910030745
 :EXPORT_DATE: 2019-10-03
 :END:
@@ -25,7 +25,7 @@ Archived entries from file /home/grugrut/src/github.com/grugrut/blog/draft/blog.
 昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
 ** emacs on WSLでSuper/Hyperキーを使う                            :Emacs:WSL:
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910040445
 :EXPORT_DATE: 2019-10-04
 :END:
@@ -164,7 +164,7 @@ ubuntu.exe run "DISPLAY=127.0.0.1:0.0 xmodmap ~/.Xmodmap"
 ** DONE skk-azikで「っ」が誤爆しやすい問題                        :Emacs:skk:
    CLOSED: [2019-10-22 Tue 22:05]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910222100
 :END:
 
@@ -229,7 +229,7 @@ printデバッグしてみたら、 =:config= がそもそも呼ばれてなか�
 ** DONE leaf-expandでleafのデバッグをする            :Emacs:smartparens:leaf:
    CLOSED: [2019-10-14 Mon 22:18]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910141028
 :END:
 
@@ -302,7 +302,7 @@ beforeの設定がこんな感じ。
 ** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :OpenShift:kubernetes:crc:
    CLOSED: [2019-10-19 Sat 14:03]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910191042
 :END:
 OpenShift4.2がリリースされたので、家で使ってみようと、 =CodeReady Containers(crc)= をインストールしてみた。
@@ -511,7 +511,7 @@ kubeadminユーザを削除することによって、Webコンソールへの�
 ** DONE emacs26からの行番号表示がddskk入力時にガタつくのを防ぐ    :Emacs:skk:
    CLOSED: [2019-10-20 Sun 23:51]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910202227
 :END:
 Emacs26までは、行番号の表示をemacs lispで頑張るというアプローチがために、
@@ -691,7 +691,7 @@ class HelloWorld {
 ** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:
    CLOSED: [2019-12-29 Sun 10:11]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019/12\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-12\")
 :EXPORT_FILE_NAME: 201912290846
 :END:
 タイトルの通りですが、12月の中旬ぐらいにGCPのProfessional Cloud Architectの試験を受け、無事に一発で合格しました。

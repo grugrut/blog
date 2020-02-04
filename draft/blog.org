@@ -6,7 +6,7 @@
 ** DONE org modeのファイルをパースする                            :Emacs:org:
    CLOSED: [2020-01-10 Fri 08:56]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020/01\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-01\")
 :EXPORT_FILE_NAME: 202001100849
 :END:
 
