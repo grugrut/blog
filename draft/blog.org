@@ -77,10 +77,224 @@ qmk toolboxだとリセット後のデバイスを認識できずにビビるな
   - 自分、そんなに手も小さいほうじゃないので、いけると思ってたら、意外とつらかった
 
 まあ、これは触りながら、適宜キー配列を変えていって慣らすしかなさそうですね。
+** TODO AKSでkubenet + Application Gateway Ingress Controllerを利用する :azure:kubernetes:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-06\")
+:EXPORT_FILE_NAME: 202006082322
+:END:
 
+AKSを使っていて、Azure CNI + AGICはドキュメントにも例がいろいろあったが、
+kubenet + AGICは例が見当たらなかったのでメモ
 
+#+begin_src bash
+# リソースグループを作成する
+az group create --name myResourceGroup --location japaneast
 
-* Footnotes
+#aksを作成する
+az aks create --resource-group myResourceGroup --name myAKSCluster --node-count 1 --enable-addons monitoring --enable-rbac --network-plugin kubenet --enable-managed-identity --generate-ssh-keys
+
+#aksの認証情報を取得
+az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+
+#sampleアプリ
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-vote-back
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-vote-back
+  template:
+    metadata:
+      labels:
+        app: azure-vote-back
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: azure-vote-back
+        image: redis
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 6379
+          name: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: azure-vote-back
+spec:
+  ports:
+  - port: 6379
+  selector:
+    app: azure-vote-back
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-vote-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-vote-front
+  template:
+    metadata:
+      labels:
+        app: azure-vote-front
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: azure-vote-front
+        image: microsoft/azure-vote-front:v1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+        env:
+        - name: REDIS
+          value: "azure-vote-back"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: azure-vote-front
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: azure-vote-front
+EOF
+
+#AKSのノードプール用のサブネットにApplication Gateway用のサブネットを作る
+az network vnet list --resource-group MC_myResourceGroup_myAKSCluster_japaneast -o table
+az network vnet subnet list --resource-group MC_myResourceGroup_myAKSCluster_japaneast --vnet-name aks-vnet-xxxxxxxx -o table
+az network vnet subnet create --name myAGSubnet --resource-group MC_myResourceGroup_myAKSCluster_japaneast --vnet-name aks-vnet-xxxxxxxx --address-prefix 10.0.0.0/24
+az network public-ip create --resource-group myResourceGroup --name myAGPublicIPAddress --allocation-method Static --sku Standard
+az network application-gateway create \
+  --name myAppGateway \
+  --location japaneast \
+  --resource-group myResourceGroup \
+  --capacity 2 \
+  --sku Standard_v2 \
+  --http-settings-cookie-based-affinity Enabled \
+  --public-ip-address myAGPublicIPAddress \
+  --vnet-name aks-vnet-xxxxxxxx \
+  --subnet myAGSubnet
+
+# AAD Pod Identityの追加
+kubectl apply -f https://raw.githubusercontent.com/Azure/aad-pod-identity/v1.5.5/deploy/infra/deployment-rbac.yaml
+
+IDENTITY_RESOURCE_ID=$(az identity show --resource-group MC_myResourceGroup_myAKSCluster_japaneast --name myAKSCluster-agentpool --query id -o tsv)
+IDENTITY_CLIENT_ID=$(az identity show --resource-group MC_myResourceGroup_myAKSCluster_japaneast --name myAKSCluster-agentpool --query clientId -o tsv)
+
+az identity show --resource-group MC_myResourceGroup_myAKSCluster_japaneast --name myAKSCluster-agentpool --query principalId
+az network application-gateway list --query '[].id'
+
+az role assignment create \
+    --role Contributor \
+    --assignee <principalId> \
+    --scope <App-Gateway-ID>
+
+# AGICチャートの追加
+helm repo add application-gateway-kubernetes-ingress https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/
+helm repo update
+
+wget https://raw.githubusercontent.com/Azure/application-gateway-kubernetes-ingress/master/docs/examples/sample-helm-config.yaml -O helm-config.yaml
+
+vi helm-config.yaml
+
+helm install -f helm-config.yaml application-gateway-kubernetes-ingress/ingress-azure --generate-name
+
+cat <<EOF| kubectl apply -f -
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: azure-vote-front
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: azure-vote-front
+          servicePort: 80
+EOF
+
+az network route-table list --query "[].name"
+
+az network vnet subnet update --resource-group MC_myResourceGroup_myAKSCluster_japaneast --vnet-name aks-vnet-XXXXXXXX --name myAGSubnet --route-table aks-agentpool-XXXXXXXX-routetable
+#+end_src
+** DONE CKA(Certified kubernetes Administrator)に合格した        :kubernetes:
+   CLOSED: [2020-07-07 Tue 09:40]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_FILE_NAME: 202007070839
+:END:
+
+Kubernetesの管理者向け資格であるCertified Kubernets Administratorを受験して
+無事に合格したので、合格体験記はすでに巷にいくらでもあるが、せっかくなのでメモ。
+*** バックグラウンド
+kubernetes歴は15ヶ月ぐらい。うち、ほとんどはOpenShiftだったので、
+純粋にkubernetesを触っているのは、半年ぐらいか。
+自宅で、kubeadmを使って仮想マシンだったりラズパイおうちクラスタだったり作ってたので、
+k8sのインストールは慣れてた。
+*** 試験に役立ったもの
+**** Udemyのコース
+ 他の人の結果を見て、以下のUdemyのコースがよさそうだったので、こちらでやった。
+ これ書いてる今もそうだけど、しょっちゅうセールしてて、元の価格はなんなんだ。。。ってなりがち。
+
+ [[https://px.a8.net/svt/ejp?a8mat=3BHUM0+C673K2+3L4M+BW8O2&a8ejpredirect=https%3A%2F%2Fwww.udemy.com%2Fcourse%2Fcertified-kubernetes-administrator-with-practice-tests%2F][Certified Kubernetes Administrator (CKA) with Practice Tests]]
+
+ 動画と演習がセットになってて、最初はマジメに動画を見てたけど、途中で飽きてしまったので演習だけやったようなもん。
+
+**** Ergodox EZ
+試験問題では、 abcってPodを作ってください、みたいな問題が出てくる。当然、確実に作成するためにコピペしたいのだけど、
+試験はブラウザ上のアプリ(katacodaとかCloudShell的な)でおこなう。
+ブラウザなので、コピペは =Ctrl-C/Ctrl-V= ではできない。Windowsの場合は、 =Ctrl-Insert/Shift-Insert= でおこなう。
+正直、Insertキーなんて普通のキーボードでは使い勝手の良いところにないと思う。
+自分は、 [[ergodox ezを購入した]] の通り、Ergodox EZを使っていたので、Insertキーを =Lower-I= にバインドしていたので
+手をホームポジションから移すことなく、スムーズにペーストすることができて、自作キーボード万歳!って思った。
+
+そうは言っても、そもそもペーストが、 =Shift-Insert= ってことに慣れてないので一週間ぐらいは、普段から意識して
+ペーストをこちらのキーバインドでおこなうようにしていた。
+今回初めて知ったのだけど、これ、別に特殊なキーバインドじゃなくて、他のWindowsアプリでもこれでペーストできるのね。
+
+*** 試験
+体験記を見ると、貸し会議室で受験した人が多かったけど
+- 貸し会議室のWifiの品質やポートブロックが心配だった
+- ノートPCの小さいディスプレイで頑張れる自信がなかった
+- そもそも、最近ノートPCの調子が悪くトラブルが怖かった
+などの理由により、自宅で受けることにした。
+
+机の横に本棚があるので心配だったが、受験サイトでチャットができ、問題ないか聞いてみたところ
+「大丈夫だけど、もしかしたら布でかくせって言われるかもね〜」とのことだったので、
+事前に布をかけておいた。当日はなにも言われなかったので多分それでよいのでしょう。
+
+ちなみに、数々の合格体験記ではGoogle翻訳プラグインはOKだったって書かれてたけど
+自分の場合はダメって言われてしまった。
+
+*** 結果
+93%だった。一応全問問いたものの、7%の問題だけ挙動が怪しかったので、たぶんそれのやりかたが間違ってたのだと思う。
+部屋の綺麗さを保ててるうちに、CKADも取ってしまいたいので、さっそく今日から勉強再開だ。
+
+* footnotes
 * COMMENT Local Variables                                           :ARCHIVE:
 # Local Variables:
 # eval: (org-hugo-auto-export-mode)
