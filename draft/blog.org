@@ -356,7 +356,7 @@ OSはUbuntuを適当に入れた
 *** Kataのインストール
 https://github.com/kata-containers/documentation/blob/master/install/ubuntu-installation-guide.md
 
-#+begin_src sh
+#+begin_src bash
 ARCH=$(arch)
 BRANCH="${BRANCH:-master}"
 sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/katacontainers:/releases:/${ARCH}:/${BRANCH}/xUbuntu_$(lsb_release -rs)/ /' > /etc/apt/sources.list.d/kata-containers.list"
@@ -368,7 +368,7 @@ sudo -E apt-get -y install kata-runtime kata-proxy kata-shim
 *** CRI-Oのインストール
 https://github.com/cri-o/cri-o#installing-cri-o
 
-#+begin_src sh
+#+begin_src bash
 . /etc/os-release
 sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${NAME}_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
 wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${NAME}_${VERSION_ID}/Release.key -O- | sudo apt-key add -
@@ -440,7 +440,9 @@ kubeadm token create --print-join-command
 
 とりあえず、WeaveNetをいれておく。
 
+#+begin_src bash
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+#+end_src
 
 *** クラスタのテスト
 OCIとして、runcを使うPodとkataを使うPodをデプロイしてみる
@@ -477,20 +479,20 @@ spec:
 
 これを流したんたけどPodが起動しない。eventを見てみると以下のようなログが。
 
-#+begin_verse
+#+begin_src
 Failed to create pod sandbox: rpc error: code = Unknown desc = container create failed: failed to launch qemu: exit status 1, error messages from qemu log: Could not access KVM kernel module: No such file or directory
 qemu-vanilla-system-x86_64: failed to initialize kvm: No such file or directory
-#+end_verse
+#+end_src
 
 今回ESXi上の仮想マシンでやったのだけど、CPUの仮想化を有効にするの忘れてた。仮想マシンの設定変更から、
 「CPU仮想化 ハードウェア アシストによる仮想化をゲストOSに公開」を有効にしたところ解決。
 
-#+start_verse
+#+begin_src
 kubectl get pod -o wide
 NAME         READY   STATUS    RESTARTS   AGE   IP          NODE    NOMINATED NODE   READINESS GATES
 hello-kata   1/1     Running   0          9h    10.32.0.2   node1   <none>           <none>
 hello-runc   1/1     Running   0          9h    10.38.0.3   node2   <none>           <none>
-#+end_verse
+#+end_src
 
 無事に起動したっぽい。
 
@@ -501,26 +503,26 @@ hello-runc   1/1     Running   0          9h    10.38.0.3   node2   <none>      
 kataで動いているコンテナのリストは、 =kata-runtime list= で確認することができる。
 
 - Node1 (kata利用)
-#+begin_verse
+#+begin_src
 $ sudo kata-runtime list
 ID                                                                 PID         STATUS      BU
 NDLE                                                                                                                 CREATED                          OWNER
 fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f   2850        running     /run/containers/storage/overlay-containers/fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f/userdata   2020-07-11T23:51:20.244499159Z   #0
 4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c   3115        running     /run/containers/storage/overlay-containers/4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c/userdata   2020-07-11T23:51:26.190503017Z   #0
-#+end_verse
+#+end_src
 
 - Node2 (runc利用)
-#+begin_verse
+#+begin_src
 $ sudo kata-runtime list
 ID          PID         STATUS      BUNDLE      CREATED     OWNER
-#+end_verse
+#+end_src
 
 たしかに、Node1では動いているプロセスがいて、Node2にはいないことがわかる。
 でも、なんで2つ？ Podはひとつしか起動してないのに。
 
 もう少しNode1側を詳しく見てみる。
 
-#+begin_verse
+#+begin_src
 $ sudo kata-runtime state fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f
 {
   "ociVersion": "1.0.1-dev",
@@ -545,28 +547,28 @@ $ sudo kata-runtime state 4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff100
     "io.katacontainers.pkg.oci.container_type": "pod_container"
   }
 }
-#+end_verse
+#+end_src
 
 コンテナタイプが違うのがわかる。公式のドキュメントのアーキテクチャのところを見ると、
 pod_sandboxの中に、pod_containerがあるようだ。
 
 https://github.com/kata-containers/documentation/blob/master/design/architecture.md
 
-#+begin_verse
+#+begin_src
 $ sudo kata-runtime exec 4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c ps
 PID   USER     TIME   COMMAND
     1 root       0:00 ./hello-app
    28 root       0:00 ps
 $ sudo kata-runtime exec fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f ps
 rpc error: code = Internal desc = Could not run process: container_linux.go:349: starting container process caused "exec: \"ps\": executable file not found in $PATH"
-#+end_verse
+#+end_src
 pod_contaierの方で、期待するアプリが動いていることが確認できた。sandboxのほうは、shすら起動できなかったので、何が動いているんだろうか。
 
 ***** psの結果
 プロセスツリーも見比べてみた。適当にプロセスは実際のものから削っている。
 
 - Node1 (kata利用)
-#+begin_verse
+#+begin_src
 systemd-+-2*[conmon-+-pause]
         |           `-{conmon}]
         |-conmon-+-kube-proxy---7*[{kube-proxy}]
@@ -586,10 +588,10 @@ systemd-+-2*[conmon-+-pause]
         |-crio---14*[{crio}]
         |-kubelet---16*[{kubelet}]
         `-lxcfs---2*[{lxcfs}]
-#+end_verse
+#+end_src
 
 - Node2 (runc利用)
-#+begin_verse
+#+begin_src
 systemd-+-3*[conmon-+-pause]
         |           `-{conmon}]
         |-conmon-+-kube-proxy---8*[{kube-proxy}]
@@ -605,7 +607,7 @@ systemd-+-3*[conmon-+-pause]
         |-crio---14*[{crio}]
         |-kubelet---16*[{kubelet}]
         `-lxcfs---2*[{lxcfs}]
-#+end_verse
+#+end_src
 
 見比べてみると、たしかにruncだと目的のhello-appが直接動いているのに対して、
 kataの場合は、hello-appは直接ホストから見えず、kata-shimで隠蔽されていて、
