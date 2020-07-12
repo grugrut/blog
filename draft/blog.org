@@ -5,88 +5,88 @@
 * 2020
 ** DONE org modeのファイルをパースする                            :Emacs:org:
    CLOSED: [2020-01-10 Fri 08:56]
-:PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-01\")
-:EXPORT_FILE_NAME: 202001100849
-:END:
+   :PROPERTIES:
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-01\")
+   :EXPORT_FILE_NAME: 202001100849
+   :END:
 
-やりたいことがあって、inbox.orgをパースして、個々のノードの情報を得たかった。
-ざっと以下のコマンドでいけることがわかった。
-とりあえず動作確認は、 =M-:= でさくっと確認しただけだけど。
+   やりたいことがあって、inbox.orgをパースして、個々のノードの情報を得たかった。
+   ざっと以下のコマンドでいけることがわかった。
+   とりあえず動作確認は、 =M-:= でさくっと確認しただけだけど。
 
-#+begin_src 
+   #+begin_src 
 (org-map-entries (lambda() (princ (org-entry-properties))))
-#+end_src
+   #+end_src
 
-=org-map-entries= が、条件にあうノードに対してmap関数を適用するための関数。
-=org-entry-properties= が、個々のノードのプロパティの連想リストを取得する関数。てっきりプロパティドロワーにあるものだけ抽出するのかと思ってたらアイテム名とか、TODO状態とか全部取れてるっぽいので、これベースにごにょごにょすればいい感じにいけそう。
+   =org-map-entries= が、条件にあうノードに対してmap関数を適用するための関数。
+   =org-entry-properties= が、個々のノードのプロパティの連想リストを取得する関数。てっきりプロパティドロワーにあるものだけ抽出するのかと思ってたらアイテム名とか、TODO状態とか全部取れてるっぽいので、これベースにごにょごにょすればいい感じにいけそう。
 ** DONE ergodox ezを購入した                                        :ergodox:
    CLOSED: [2020-05-18 Mon 23:11]
-:PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-05\")
-:EXPORT_FILE_NAME: 202005182209
-:END:
-今さらながら、分割キーボード界ではおなじみの、ergodox ezを購入してみた。
-動機としては、自分も昨今の事情でテレワークしていて、
-家ではHappy Hacking Proを使ってたのだけど、背中がつらくなってきたのと、
-もろもろオフとか出て自作キーボードに興味があったから。
+   :PROPERTIES:
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-05\")
+   :EXPORT_FILE_NAME: 202005182209
+   :END:
+   今さらながら、分割キーボード界ではおなじみの、ergodox ezを購入してみた。
+   動機としては、自分も昨今の事情でテレワークしていて、
+   家ではHappy Hacking Proを使ってたのだけど、背中がつらくなってきたのと、
+   もろもろオフとか出て自作キーボードに興味があったから。
 *** Ergodox ezにした理由
-自分が望んでいるものは何か考えたところ、以下だったので、レデイーメイドなErgodox EZにまずはチャレンジすることにした。
+    自分が望んでいるものは何か考えたところ、以下だったので、レデイーメイドなErgodox EZにまずはチャレンジすることにした。
 
-- JIS配列を愛用してるので、ある程度キー数が多いこと
-- emacsでハイパーキー、super キーを使ってるので親指でmodifier keyをいろいろ使えること
-- 分割キーボードであること
-- 一旦は、はんだ付けなしで沼への第一歩をふみだせること
+    - JIS配列を愛用してるので、ある程度キー数が多いこと
+    - emacsでハイパーキー、super キーを使ってるので親指でmodifier keyをいろいろ使えること
+    - 分割キーボードであること
+    - 一旦は、はんだ付けなしで沼への第一歩をふみだせること
 
-ちなみに、職場では、今は亡き、Barrocoの日本語配列を使っている。
-[[https://www.archisite.co.jp/products/mistel/barocco-jp/]]
+    ちなみに、職場では、今は亡き、Barrocoの日本語配列を使っている。
+    [[https://www.archisite.co.jp/products/mistel/barocco-jp/]]
 
-この子もいいこだし、マクロでいろいろできるのは判ってるけど、やっぱりかゆいところに手が届かないのがつらかった。
+    この子もいいこだし、マクロでいろいろできるのは判ってるけど、やっぱりかゆいところに手が届かないのがつらかった。
 
-正直、今回のは、自分が今後沼れるのかどうか、試金石的な要素がつよいかも。
+    正直、今回のは、自分が今後沼れるのかどうか、試金石的な要素がつよいかも。
 
 *** 購入方法
-特に既存のググった結果と変わらないので割愛。
-5/3に注文して、5/18に受け取ったので、賞味2週間でうけとってる。思った以上に早いね。
-ちなみに、注文したモデルは白色・無刻印。軸は赤軸にしてみました。
-そのうち、キーキャップを別途購入して、よりオシャンティーにしていきたいですね。
+    特に既存のググった結果と変わらないので割愛。
+    5/3に注文して、5/18に受け取ったので、賞味2週間でうけとってる。思った以上に早いね。
+    ちなみに、注文したモデルは白色・無刻印。軸は赤軸にしてみました。
+    そのうち、キーキャップを別途購入して、よりオシャンティーにしていきたいですね。
 
-[[file:images/20200518_ergodox_0.jpg]]
+    [[file:images/20200518_ergodox_0.jpg]]
 
-ポインティングデバイスは、人差し指トラックボールを使ってるので、配置はこんな感じにしてみました。
+    ポインティングデバイスは、人差し指トラックボールを使ってるので、配置はこんな感じにしてみました。
 
-[[file:images/20200518_ergodox_1.jpg]]
+    [[file:images/20200518_ergodox_1.jpg]]
 
 *** キー配列
 
-先述のとおり、普段からJIS配列を愛用していて、記号の位置など、できるだけ踏襲したかったので、
-それ用にキーマップを書いた。
+    先述のとおり、普段からJIS配列を愛用していて、記号の位置など、できるだけ踏襲したかったので、
+    それ用にキーマップを書いた。
 
-https://github.com/grugrut/qmk_firmware/blob/b639d036d4c76b0d9b71a431dd92a8a69a0fd234/keyboards/ergodox_ez/keymaps/grugrut/keymap.c
+    https://github.com/grugrut/qmk_firmware/blob/b639d036d4c76b0d9b71a431dd92a8a69a0fd234/keyboards/ergodox_ez/keymaps/grugrut/keymap.c
 
-基本的には、まずは、kinesisキーボードの日本語配列をベースとしている。
+    基本的には、まずは、kinesisキーボードの日本語配列をベースとしている。
 
-届いて真っ先に、この自分でビルドしたHexファイルを焼き込もうとしたのだけど、
-qmk toolboxだとリセット後のデバイスを認識できずにビビるなどした。
-その後、teensyに切り替えたら、普通に焼き込めて一安心。
+    届いて真っ先に、この自分でビルドしたHexファイルを焼き込もうとしたのだけど、
+    qmk toolboxだとリセット後のデバイスを認識できずにビビるなどした。
+    その後、teensyに切り替えたら、普通に焼き込めて一安心。
 
 *** 一時間程度さわってみての所感
-- Colomn Stuggered配列に慣れない。特に一段目のキーのタイポが多い
+    - Colomn Stuggered配列に慣れない。特に一段目のキーのタイポが多い
 
-- 親指の修飾キーの奥の方が意外と押しにくい
-  - 自分、そんなに手も小さいほうじゃないので、いけると思ってたら、意外とつらかった
+    - 親指の修飾キーの奥の方が意外と押しにくい
+      - 自分、そんなに手も小さいほうじゃないので、いけると思ってたら、意外とつらかった
 
-まあ、これは触りながら、適宜キー配列を変えていって慣らすしかなさそうですね。
+    まあ、これは触りながら、適宜キー配列を変えていって慣らすしかなさそうですね。
 ** TODO AKSでkubenet + Application Gateway Ingress Controllerを利用する :azure:kubernetes:
-:PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-06\")
-:EXPORT_FILE_NAME: 202006082322
-:END:
+   :PROPERTIES:
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-06\")
+   :EXPORT_FILE_NAME: 202006082322
+   :END:
 
-AKSを使っていて、Azure CNI + AGICはドキュメントにも例がいろいろあったが、
-kubenet + AGICは例が見当たらなかったのでメモ
+   AKSを使っていて、Azure CNI + AGICはドキュメントにも例がいろいろあったが、
+   kubenet + AGICは例が見当たらなかったのでメモ
 
-#+begin_src bash
+   #+begin_src bash
 # リソースグループを作成する
 az group create --name myResourceGroup --location japaneast
 
@@ -240,109 +240,383 @@ EOF
 az network route-table list --query "[].name"
 
 az network vnet subnet update --resource-group MC_myResourceGroup_myAKSCluster_japaneast --vnet-name aks-vnet-XXXXXXXX --name myAGSubnet --route-table aks-agentpool-XXXXXXXX-routetable
-#+end_src
+   #+end_src
 ** DONE CKA(Certified kubernetes Administrator)に合格した        :kubernetes:
    CLOSED: [2020-07-07 Tue 09:40]
-:PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
-:EXPORT_FILE_NAME: 202007070839
+   :PROPERTIES:
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+   :EXPORT_FILE_NAME: 202007070839
 
-:END:
-Kubernetesの管理者向け資格であるCertified Kubernets Administratorを受験して
-無事に合格したので、合格体験記はすでに巷にいくらでもあるが、せっかくなのでメモ。
+   :END:
+   Kubernetesの管理者向け資格であるCertified Kubernets Administratorを受験して
+   無事に合格したので、合格体験記はすでに巷にいくらでもあるが、せっかくなのでメモ。
 *** CKAとは
-Linux Foundationが管理している、kubernetesの認定試験。
-Kubernetesの操作やkubernetes自体の管理について問われる。
-よくある4択問題のようなテストではなく、実際にkubernetesクラスタを操作する実技試験。
+    Linux Foundationが管理している、kubernetesの認定試験。
+    Kubernetesの操作やkubernetes自体の管理について問われる。
+    よくある4択問題のようなテストではなく、実際にkubernetesクラスタを操作する実技試験。
 
-試験時間は3時間で、24問。問題によって得点は異なり、74%以上で合格。
+    試験時間は3時間で、24問。問題によって得点は異なり、74%以上で合格。
 
 *** バックグラウンド
-kubernetes歴は15ヶ月ぐらい。うち、ほとんどはOpenShiftだったので、
-純粋にkubernetesを触っているのは、半年ぐらいか。
-自宅で、kubeadmを使って仮想マシンだったりラズパイおうちクラスタだったり作ってたので、
-k8sのインストールは慣れてた。
+    kubernetes歴は15ヶ月ぐらい。うち、ほとんどはOpenShiftだったので、
+    純粋にkubernetesを触っているのは、半年ぐらいか。
+    自宅で、kubeadmを使って仮想マシンだったりラズパイおうちクラスタだったり作ってたので、
+    k8sのインストールは慣れてた。
 *** 試験に役立ったもの
 **** Udemyのコース
- 他の人の結果を見て、以下のUdemyのコースがよさそうだったので、こちらでやった。
- これ書いてる今もそうだけど、しょっちゅうセールしてて、元の価格はなんなんだ。。。ってなりがち。
+     他の人の結果を見て、以下のUdemyのコースがよさそうだったので、こちらでやった。
+     これ書いてる今もそうだけど、しょっちゅうセールしてて、元の価格はなんなんだ。。。ってなりがち。
 
- [[https://px.a8.net/svt/ejp?a8mat=3BHUM0+C673K2+3L4M+BW8O2&a8ejpredirect=https%3A%2F%2Fwww.udemy.com%2Fcourse%2Fcertified-kubernetes-administrator-with-practice-tests%2F][Certified Kubernetes Administrator (CKA) with Practice Tests]]
+     [[https://px.a8.net/svt/ejp?a8mat=3BHUM0+C673K2+3L4M+BW8O2&a8ejpredirect=https%3A%2F%2Fwww.udemy.com%2Fcourse%2Fcertified-kubernetes-administrator-with-practice-tests%2F][Certified Kubernetes Administrator (CKA) with Practice Tests]]
 
- 動画と演習がセットになってて、最初はマジメに動画を見てたけど、途中で飽きてしまったので演習だけやったようなもん。
+     動画と演習がセットになってて、最初はマジメに動画を見てたけど、途中で飽きてしまったので演習だけやったようなもん。
 
 **** Ergodox EZ
-試験問題では、 abcってPodを作ってください、みたいな問題が出てくる。当然、確実に作成するためにコピペしたいのだけど、
-試験はブラウザ上のアプリ(katacodaとかCloudShell的な)でおこなう。
-ブラウザなので、コピペは =Ctrl-C/Ctrl-V= ではできない。Windowsの場合は、 =Ctrl-Insert/Shift-Insert= でおこなう。
-正直、Insertキーなんて普通のキーボードでは使い勝手の良いところにないと思う。
-自分は、 [[ergodox ezを購入した]] の通り、Ergodox EZを使っていたので、Insertキーを =Lower-I= にバインドしていたので
-手をホームポジションから移すことなく、スムーズにペーストすることができて、自作キーボード万歳!って思った。
+     試験問題では、 abcってPodを作ってください、みたいな問題が出てくる。当然、確実に作成するためにコピペしたいのだけど、
+     試験はブラウザ上のアプリ(katacodaとかCloudShell的な)でおこなう。
+     ブラウザなので、コピペは =Ctrl-C/Ctrl-V= ではできない。Windowsの場合は、 =Ctrl-Insert/Shift-Insert= でおこなう。
+     正直、Insertキーなんて普通のキーボードでは使い勝手の良いところにないと思う。
+     自分は、 [[ergodox ezを購入した]] の通り、Ergodox EZを使っていたので、Insertキーを =Lower-I= にバインドしていたので
+     手をホームポジションから移すことなく、スムーズにペーストすることができて、自作キーボード万歳!って思った。
 
-そうは言っても、そもそもペーストが、 =Shift-Insert= ってことに慣れてないので一週間ぐらいは、普段から意識して
-ペーストをこちらのキーバインドでおこなうようにしていた。
-今回初めて知ったのだけど、これ、別に特殊なキーバインドじゃなくて、他のWindowsアプリでもこれでペーストできるのね。
+     そうは言っても、そもそもペーストが、 =Shift-Insert= ってことに慣れてないので一週間ぐらいは、普段から意識して
+     ペーストをこちらのキーバインドでおこなうようにしていた。
+     今回初めて知ったのだけど、これ、別に特殊なキーバインドじゃなくて、他のWindowsアプリでもこれでペーストできるのね。
 
 *** 試験
-体験記を見ると、貸し会議室で受験した人が多かったけど
-- 貸し会議室のWifiの品質やポートブロックが心配だった
-- ノートPCの小さいディスプレイで頑張れる自信がなかった
-- そもそも、最近ノートPCの調子が悪くトラブルが怖かった
-などの理由により、自宅で受けることにした。
+    体験記を見ると、貸し会議室で受験した人が多かったけど
+    - 貸し会議室のWifiの品質やポートブロックが心配だった
+    - ノートPCの小さいディスプレイで頑張れる自信がなかった
+    - そもそも、最近ノートPCの調子が悪くトラブルが怖かった
+    などの理由により、自宅で受けることにした。
 
-机の横に本棚があるので心配だったが、受験サイトでチャットができ、問題ないか聞いてみたところ
-「大丈夫だけど、もしかしたら布でかくせって言われるかもね〜」とのことだったので、
-事前に布をかけておいた。当日はなにも言われなかったので多分それでよいのでしょう。
+    机の横に本棚があるので心配だったが、受験サイトでチャットができ、問題ないか聞いてみたところ
+    「大丈夫だけど、もしかしたら布でかくせって言われるかもね〜」とのことだったので、
+    事前に布をかけておいた。当日はなにも言われなかったので多分それでよいのでしょう。
 
-ちなみに、数々の合格体験記ではGoogle翻訳プラグインはOKだったって書かれてたけど
-自分の場合はダメって言われてしまった。
+    ちなみに、数々の合格体験記ではGoogle翻訳プラグインはOKだったって書かれてたけど
+    自分の場合はダメって言われてしまった。
 
 *** 結果
-93%だった。一応全問問いたものの、7%の問題だけ挙動が怪しかったので、たぶんそれのやりかたが間違ってたのだと思う。
-部屋の綺麗さを保ててるうちに、CKADも取ってしまいたいので、さっそく今日から勉強再開だ。
+    93%だった。一応全問問いたものの、7%の問題だけ挙動が怪しかったので、たぶんそれのやりかたが間違ってたのだと思う。
+    部屋の綺麗さを保ててるうちに、CKADも取ってしまいたいので、さっそく今日から勉強再開だ。
 ** DONE CKAD(Certified Kubernetes Application Developer)に合格した :kubernetes:
    CLOSED: [2020-07-11 Sat 10:56]
-:PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
-:EXPORT_FILE_NAME: 202007111027
-:END:
+   :PROPERTIES:
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+   :EXPORT_FILE_NAME: 202007111027
+   :END:
 
-[[CKA(Certified kubernetes Administrator)に合格した]] の勢いで、4日後にCKADも受験し、
-無事に合格したのでメモ
+   [[CKA(Certified kubernetes Administrator)に合格した]] の勢いで、4日後にCKADも受験し、
+   無事に合格したのでメモ
 
 *** CKADとは
-Linux Foundationが管理している、kubernetesの認定試験。
-CKAと異なり、kubernetesの操作のみでkubernetesの管理については問われない。
-よくある4択問題のようなテストではなく、実際にkubernetesクラスタを操作する実技試験。
+    Linux Foundationが管理している、kubernetesの認定試験。
+    CKAと異なり、kubernetesの操作のみでkubernetesの管理については問われない。
+    よくある4択問題のようなテストではなく、実際にkubernetesクラスタを操作する実技試験。
 
-試験時間は2時間で、19問。問題によって得点は異なり、66%以上で合格。
+    試験時間は2時間で、19問。問題によって得点は異なり、66%以上で合格。
 
 *** 試験準備
-CKAの試験対策でUdemyの講座がよかったので、Udemyのコースで勉強した。
+    CKAの試験対策でUdemyの講座がよかったので、Udemyのコースで勉強した。
 
-[[https://px.a8.net/svt/ejp?a8mat=3BHUM0+C6720I+3L4M+BW8O2&a8ejpredirect=https%3A%2F%2Fwww.udemy.com%2Fcourse%2Fcertified-kubernetes-application-developer%2F][Kubernetes Certified Application Developer (CKAD) with Tests]]
+    [[https://px.a8.net/svt/ejp?a8mat=3BHUM0+C6720I+3L4M+BW8O2&a8ejpredirect=https%3A%2F%2Fwww.udemy.com%2Fcourse%2Fcertified-kubernetes-application-developer%2F][Kubernetes Certified Application Developer (CKAD) with Tests]]
 
-CKAの勉強をしていれば、CKAD用の準備はいらないと聞いていたので、最後のLightning TestとMock Examをメインでやった。
-Lightningの方の問題が時間がかかるものが多く、1問5分で解くって無理っしょ、、、と思ったあとにMock Examは簡単だったのでほっとした。
+    CKAの勉強をしていれば、CKAD用の準備はいらないと聞いていたので、最後のLightning TestとMock Examをメインでやった。
+    Lightningの方の問題が時間がかかるものが多く、1問5分で解くって無理っしょ、、、と思ったあとにMock Examは簡単だったのでほっとした。
 
-CKAから中3日での登板なので、できたことといえばこんなもん。
+    CKAから中3日での登板なので、できたことといえばこんなもん。
 
-あとは、試験に耐えれる室内環境を維持するため、エントロピーの低い暮らしをこころがけた(笑)
+    あとは、試験に耐えれる室内環境を維持するため、エントロピーの低い暮らしをこころがけた(笑)
 
 *** 試験受けてみて  
-CKADのほうが難しいと感じた。試験に合格するという観点で言ったらCKADの方が求められる点数が低いので合格しやすいと思うが、
-問題の最大難易度はCKADの方が難しい。試験準備のとおり、結構余裕かまして受験に臨んだので、1問目がMAX難しい問題で結構あせった。
-より正確には、難しいというか制限時間の割に必要な設定数が多い問題が多かった。
+    CKADのほうが難しいと感じた。試験に合格するという観点で言ったらCKADの方が求められる点数が低いので合格しやすいと思うが、
+    問題の最大難易度はCKADの方が難しい。試験準備のとおり、結構余裕かまして受験に臨んだので、1問目がMAX難しい問題で結構あせった。
+    より正確には、難しいというか制限時間の割に必要な設定数が多い問題が多かった。
 
-また、CKAに比べて日本語がこなれてない(というか破綻してる)ものがいくつかあり、
-英語と見比べながら問われてることを理解する必要もあり、そこでも時間がとられてしまった。
+    また、CKAに比べて日本語がこなれてない(というか破綻してる)ものがいくつかあり、
+    英語と見比べながら問われてることを理解する必要もあり、そこでも時間がとられてしまった。
 
-結局ひととおり解くのに90分ぐらいかかってしまい、30分しか見直しの時間がとれず、見直し途中でタイムオーバーに。
+    結局ひととおり解くのに90分ぐらいかかってしまい、30分しか見直しの時間がとれず、見直し途中でタイムオーバーに。
 
 *** 結果
-96%だった。おそらく何聞かれてるんだか明確でない問題が1問あり、ま、こんなもんだろで回答したものが1つあったので、それだと思う。
-CKA、CKAD両方受けてみて、これまでの知識の棚卸しができてよかったと思う。
-これ取ったから何というわけではないので、これをステップにより知識を高めていきましょう。
+    96%だった。おそらく何聞かれてるんだか明確でない問題が1問あり、ま、こんなもんだろで回答したものが1つあったので、それだと思う。
+    CKA、CKAD両方受けてみて、これまでの知識の棚卸しができてよかったと思う。
+    これ取ったから何というわけではないので、これをステップにより知識を高めていきましょう。
+** DONE CRI-O + kata-container + Weavenetでkubernetesをインストールする :kubernetes:
+   CLOSED: [2020-07-12 Sun 09:33]
+   :PROPERTIES:
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+   :EXPORT_FILE_NAME: 202007111344
+   :END:
+普段はCRIはDocker、OCIはrunc、CNIはcalicoで構成することが多いのだけど、たまには違う構成でもとってみようと思いインストールしてみる。
+特にこれまでkata-containerはさわったことなかったので。
+OSはUbuntuを適当に入れた
+
+*** kata-containerのインストール
+https://github.com/kata-containers/documentation/blob/master/install/ubuntu-installation-guide.md
+
+#+begin_src sh
+ARCH=$(arch)
+BRANCH="${BRANCH:-master}"
+sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/katacontainers:/releases:/${ARCH}:/${BRANCH}/xUbuntu_$(lsb_release -rs)/ /' > /etc/apt/sources.list.d/kata-containers.list"
+curl -sL  http://download.opensuse.org/repositories/home:/katacontainers:/releases:/${ARCH}:/${BRANCH}/xUbuntu_$(lsb_release -rs)/Release.key | sudo apt-key add -
+sudo -E apt-get update
+sudo -E apt-get -y install kata-runtime kata-proxy kata-shim
+#+end_src
+
+*** CRI-Oのインストール
+https://github.com/cri-o/cri-o#installing-cri-o
+
+#+begin_src sh
+. /etc/os-release
+sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${NAME}_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${NAME}_${VERSION_ID}/Release.key -O- | sudo apt-key add -
+
+sudo apt-get update -qq
+apt-get install -y cri-o-1.17
+sudo systemctl enable crio
+#+end_src
+
+Ubuntuのパッケージは、1.18がまだ無いようなので1.17を利用した。
+
+*** CRI-Oのランタイムの設定
+https://github.com/kata-containers/documentation/blob/master/how-to/run-kata-with-k8s.md#cri-o
+
+/etc/crio/crio.conf に書かれている設定を入れた。
+デフォルトはruncのままにしてある。
+
+#+begin_src 
+[crio.runtime.runtimes.kata-runtime]
+  runtime_path = "/usr/bin/kata-runtime"
+  runtime_type = "oci"
+#+end_src
+
+*** kubernetesのインストール
+
+kubeadmでインストール。
+
+全ノードで
+#+begin_src bash
+sudo modprobe overlay
+sudo modprobe br_netfilter
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+sudo sysctl --system
+
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+sudo apt-get update
+sudo apt-get install -y kubelet=1.17.0-00 kubeadm=1.17.0-00 kubectl=1.17.0-00
+sudo apt-mark hold kubelet kubeadm kubectl
+
+cat <<EOF | sudo tee /etc/systemd/system/kubelet.service.d/0-crio.conf
+[Service]
+Environment="KUBELET_EXTRA_ARGS=--container-runtime=remote --cgroup-driver=systemd --runtime-request-timeout=15m --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+#+end_src
+
+コントロールプレーンで以下を実行。
+#+begin_src bash
+sudo kubeadm init --skip-preflight-checks --cri-socket /var/run/crio/crio.sock --pod-network-cidr=10.244.0.0/16
+#+end_src
+
+実行後には、joinコマンドが表示されるので、今度はそれを各ノードで実行する。もし、見逃してしまった場合は、以下のコマンドで再表示できる。
+
+#+begin_src bash
+kubeadm token create --print-join-command
+#+end_src
+
+前に入れたときは、CNIプラグイン入れないとNodeの状態がREADYにならなかったはずなのに、
+今回試したらNodeが参加した時点でREADYになってた。ランタイムが違うから？そんなことある？
+
+とりあえず、WeaveNetをいれておく。
+
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+*** クラスタのテスト
+OCIとして、runcを使うPodとkata containerを使うPodをデプロイしてみる
+
+#+begin_src bash
+kubectl run hello-runc --image=gcr.io/google-samples/hello-app:1.0 --restart Never
+cat <<EOF | kubectl apply -f -
+apiVersion: node.k8s.io/v1beta1
+kind: RuntimeClass
+metadata:
+  name: kata
+handler: kata-runtime
+EOF
+kubectl get pod hello-runc -o yaml > hello-kata.yaml
+#+end_src
+
+hello-kata.yamlを以下の通り編集
+#+begin_src yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: hello-kata
+  name: hello-kata
+spec:
+  containers:
+  - image: gcr.io/google-samples/hello-app:1.0
+    imagePullPolicy: IfNotPresent
+    name: hello-kata
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  runtimeClassName: kata
+#+end_src
+
+これを流したんたけどPodが起動しない。eventを見てみると以下のようなログが。
+
+#+begin_verse
+Failed to create pod sandbox: rpc error: code = Unknown desc = container create failed: failed to launch qemu: exit status 1, error messages from qemu log: Could not access KVM kernel module: No such file or directory
+qemu-vanilla-system-x86_64: failed to initialize kvm: No such file or directory
+#+end_verse
+
+今回ESXi上の仮想マシンでやったのだけど、CPUの仮想化を有効にするの忘れてた。仮想マシンの設定変更から、
+「CPU仮想化 ハードウェア アシストによる仮想化をゲストOSに公開」を有効にしたところ解決。
+
+#+start_verse
+kubectl get pod -o wide
+NAME         READY   STATUS    RESTARTS   AGE   IP          NODE    NOMINATED NODE   READINESS GATES
+hello-kata   1/1     Running   0          9h    10.32.0.2   node1   <none>           <none>
+hello-runc   1/1     Running   0          9h    10.38.0.3   node2   <none>           <none>
+#+end_verse
+
+無事に起動したっぽい。
+
+**** 動作を見比べる
+うまいことnode1とnode2に分散してPodを動かしたので、通常のruncで動くパターンとkata containerで動くパターンのプロセス構成などを見てみる。
+
+***** kata-runtime list
+kata containerで動いているコンテナのリストは、 =kata-runtime list= で確認することができる。
+
+- Node1 (kata利用)
+#+begin_verse
+$ sudo kata-runtime list
+ID                                                                 PID         STATUS      BU
+NDLE                                                                                                                 CREATED                          OWNER
+fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f   2850        running     /run/containers/storage/overlay-containers/fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f/userdata   2020-07-11T23:51:20.244499159Z   #0
+4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c   3115        running     /run/containers/storage/overlay-containers/4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c/userdata   2020-07-11T23:51:26.190503017Z   #0
+#+end_verse
+
+- Node2 (runc利用)
+#+begin_verse
+$ sudo kata-runtime list
+ID          PID         STATUS      BUNDLE      CREATED     OWNER
+#+end_verse
+
+たしかに、Node1では動いているプロセスがいて、Node2にはいないことがわかる。
+でも、なんで2つ？ Podはひとつしか起動してないのに。
+
+もう少しNode1側を詳しく見てみる。
+
+#+begin_verse
+$ sudo kata-runtime state fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f
+{
+  "ociVersion": "1.0.1-dev",
+  "id": "fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f",
+  "status": "running",
+  "pid": 2850,
+  "bundle": "/run/containers/storage/overlay-containers/fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f/userdata",
+  "annotations": {
+    "io.katacontainers.pkg.oci.bundle_path": "/run/containers/storage/overlay-containers/fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f/userdata",
+    "io.katacontainers.pkg.oci.container_type": "pod_sandbox"
+  }
+}
+$ sudo kata-runtime state 4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c
+{
+  "ociVersion": "1.0.1-dev",
+  "id": "4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c",
+  "status": "running",
+  "pid": 3115,
+  "bundle": "/run/containers/storage/overlay-containers/4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c/userdata",
+  "annotations": {
+    "io.katacontainers.pkg.oci.bundle_path": "/run/containers/storage/overlay-containers/4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c/userdata",
+    "io.katacontainers.pkg.oci.container_type": "pod_container"
+  }
+}
+#+end_verse
+
+コンテナタイプが違うのがわかる。公式のドキュメントのアーキテクチャのところを見ると、
+pod_sandboxの中に、pod_containerがあるようだ。
+
+https://github.com/kata-containers/documentation/blob/master/design/architecture.md
+
+#+begin_verse
+$ sudo kata-runtime exec 4fe1ddb9154cbfc14a7ca514e2705b91f54bfc9b89300c940ff1000b2f0bd17c ps
+PID   USER     TIME   COMMAND
+    1 root       0:00 ./hello-app
+   28 root       0:00 ps
+$ sudo kata-runtime exec fa157caa041230c1593ced717618dc2f96a80f4c0704b7d965421a8e95dc791f ps
+rpc error: code = Internal desc = Could not run process: container_linux.go:349: starting container process caused "exec: \"ps\": executable file not found in $PATH"
+#+end_verse
+pod_contaierの方で、期待するアプリが動いていることが確認できた。sandboxのほうは、shすら起動できなかったので、何が動いているんだろうか。
+
+***** psの結果
+プロセスツリーも見比べてみた。適当にプロセスは実際のものから削っている。
+
+- Node1 (kata利用)
+#+begin_verse
+systemd-+-2*[conmon-+-pause]
+        |           `-{conmon}]
+        |-conmon-+-kube-proxy---7*[{kube-proxy}]
+        |        `-{conmon}
+        |-conmon-+-kube-utils---8*[{kube-utils}]
+        |        |-launch.sh---weaver---15*[{weaver}]
+        |        `-{conmon}
+        |-conmon-+-kata-proxy---8*[{kata-proxy}]
+        |        |-kata-shim---8*[{kata-shim}]
+        |        |-qemu-vanilla-sy---3*[{qemu-vanilla-sy}]
+        |        `-{conmon}
+        |-conmon-+-weave-npc-+-ulogd
+        |        |           `-9*[{weave-npc}]
+        |        `-{conmon}
+        |-conmon-+-kata-shim---10*[{kata-shim}]
+        |        `-{conmon}
+        |-crio---14*[{crio}]
+        |-kubelet---16*[{kubelet}]
+        `-lxcfs---2*[{lxcfs}]
+#+end_verse
+
+- Node2 (runc利用)
+#+begin_verse
+systemd-+-3*[conmon-+-pause]
+        |           `-{conmon}]
+        |-conmon-+-kube-proxy---8*[{kube-proxy}]
+        |        `-{conmon}
+        |-conmon-+-kube-utils---8*[{kube-utils}]
+        |        |-launch.sh---weaver---16*[{weaver}]
+        |        `-{conmon}
+        |-conmon-+-weave-npc-+-ulogd
+        |        |           `-9*[{weave-npc}]
+        |        `-{conmon}
+        |-conmon-+-hello-app---3*[{hello-app}]
+        |        `-{conmon}
+        |-crio---14*[{crio}]
+        |-kubelet---16*[{kubelet}]
+        `-lxcfs---2*[{lxcfs}]
+#+end_verse
+
+見比べてみると、たしかにruncだと目的のhello-appが直接動いているのに対して、
+kata containerの場合は、hello-appは直接ホストから見えず、kata-shimで隠蔽されていて、
+隔離された環境で動いていることがわかる。
+
+**** まとめ
+kata containerは、これまで安全にコンテナ実行するために使う、ぐらいしか聞いておらず
+どういう風に動くのかよくわかっていなかったが、今回構築してみてその動きが理解できた。
+構築も、ドキュメントによって書いてあること違ったりでいくつかトラブルところもあったが、
+だいたいログ見たらどこがあやしいかわかるし、それほど苦労することはなかった。
+1枚噛んでるレイヤが増えるので、性能面とリソースのオーバーヘッドが気になるので、今後その辺見てみたい。
 
 * footnotes
 * COMMENT Local Variables                                           :ARCHIVE:
