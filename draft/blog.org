@@ -343,17 +343,17 @@ az network vnet subnet update --resource-group MC_myResourceGroup_myAKSCluster_j
     96%だった。おそらく何聞かれてるんだか明確でない問題が1問あり、ま、こんなもんだろで回答したものが1つあったので、それだと思う。
     CKA、CKAD両方受けてみて、これまでの知識の棚卸しができてよかったと思う。
     これ取ったから何というわけではないので、これをステップにより知識を高めていきましょう。
-** DONE CRI-O + kata-container + Weavenetでkubernetesをインストールする :kubernetes:
+** DONE CRI-O + Kata containers + Weavenetでkubernetesをインストールする :kubernetes:
    CLOSED: [2020-07-12 Sun 09:33]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
    :EXPORT_FILE_NAME: 202007111344
    :END:
 普段はCRIはDocker、OCIはrunc、CNIはcalicoで構成することが多いのだけど、たまには違う構成でもとってみようと思いインストールしてみる。
-特にこれまでkata-containerはさわったことなかったので。
+特にこれまでKata containersはさわったことなかったので。
 OSはUbuntuを適当に入れた
 
-*** kata-containerのインストール
+*** Kataのインストール
 https://github.com/kata-containers/documentation/blob/master/install/ubuntu-installation-guide.md
 
 #+begin_src sh
@@ -443,7 +443,7 @@ kubeadm token create --print-join-command
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
 *** クラスタのテスト
-OCIとして、runcを使うPodとkata containerを使うPodをデプロイしてみる
+OCIとして、runcを使うPodとkataを使うPodをデプロイしてみる
 
 #+begin_src bash
 kubectl run hello-runc --image=gcr.io/google-samples/hello-app:1.0 --restart Never
@@ -495,10 +495,10 @@ hello-runc   1/1     Running   0          9h    10.38.0.3   node2   <none>      
 無事に起動したっぽい。
 
 **** 動作を見比べる
-うまいことnode1とnode2に分散してPodを動かしたので、通常のruncで動くパターンとkata containerで動くパターンのプロセス構成などを見てみる。
+うまいことnode1とnode2に分散してPodを動かしたので、通常のruncで動くパターンとkataで動くパターンのプロセス構成などを見てみる。
 
 ***** kata-runtime list
-kata containerで動いているコンテナのリストは、 =kata-runtime list= で確認することができる。
+kataで動いているコンテナのリストは、 =kata-runtime list= で確認することができる。
 
 - Node1 (kata利用)
 #+begin_verse
@@ -608,11 +608,11 @@ systemd-+-3*[conmon-+-pause]
 #+end_verse
 
 見比べてみると、たしかにruncだと目的のhello-appが直接動いているのに対して、
-kata containerの場合は、hello-appは直接ホストから見えず、kata-shimで隠蔽されていて、
+kataの場合は、hello-appは直接ホストから見えず、kata-shimで隠蔽されていて、
 隔離された環境で動いていることがわかる。
 
 **** まとめ
-kata containerは、これまで安全にコンテナ実行するために使う、ぐらいしか聞いておらず
+Kata Containersは、これまで安全にコンテナ実行するために使う、ぐらいしか聞いておらず
 どういう風に動くのかよくわかっていなかったが、今回構築してみてその動きが理解できた。
 構築も、ドキュメントによって書いてあること違ったりでいくつかトラブルところもあったが、
 だいたいログ見たらどこがあやしいかわかるし、それほど苦労することはなかった。
