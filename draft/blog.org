@@ -619,6 +619,81 @@ Kata Containersは、これまで安全にコンテナ実行するために使�
 構築も、ドキュメントによって書いてあること違ったりでいくつかトラブルところもあったが、
 だいたいログ見たらどこがあやしいかわかるし、それほど苦労することはなかった。
 1枚噛んでるレイヤが増えるので、性能面とリソースのオーバーヘッドが気になるので、今後その辺見てみたい。
+** DONE Tektonをさわってみた                              :kubernetes:tekton:
+   CLOSED: [2020-07-19 Sun 12:25]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_FILE_NAME: 202007191122
+:END:
+
+kubernetesで動かすCI/CDツールとして、聞いてはいたものの、これまでぜんぜんさわれてなかったtektonをちょっとだけさわってみた。
+
+https://tekton.dev/
+
+タスクやパイプラインがCRDとして定義されているので、ぜんぶフォーマットを統一できるのがよさそう。
+
+*** インストール
+https://github.com/tektoncd/pipeline/blob/master/docs/install.md
+にしたがって実施。
+#+begin_src bash
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+#+end_src
+
+=tekton-pipeline= namespaceができてるのでPodを確認。
+#+begin_export
+NAME                                           READY   STATUS    RESTARTS   AGE
+tekton-pipelines-controller-559bd4d4df-9rwjl   1/1     Running   0          54s
+tekton-pipelines-webhook-7bfd859f8c-mzc2n      1/1     Running   0          54s
+#+end_export
+
+ビルド成果物を格納するためにPersistentVolumeの設定をする。S3やGoogleCloudStorageのような、クラウドストレージも利用できるようだ。
+=config-artifact-pvc= がすでにできていて、StorageClassやVolumeのサイズを設定できるようだ。
+今回は、デフォルト値で動かすことに。
+
+また、tekton cliもインストールしておく。kubectlのプラグインになるようにシンボリックリンクで、kubectl-xxxのファイルを作成する。
+https://github.com/tektoncd/cli
+
+#+begin_src bash
+sudo ln -s /usr/bin/tkn /usr/local/bin/kubectl-tkn
+#+end_src
+
+*** チュートリアルの実施
+https://github.com/tektoncd/pipeline/blob/master/docs/tutorial.md
+
+#+begin_src bash
+cat <<EOF | kubectl apply -f -
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: echo-hello-world
+spec:
+  steps:
+    - name: echo
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "Hello World"
+EOF
+
+cat <<EOF | kubectl apply -f -
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: echo-hello-world-task-run
+spec:
+  taskRef:
+    name: echo-hello-world
+EOF
+
+kubectl tkn taskrun logs echo-hello-world-task-run
+#+end_src
+
+=Task= と =TaskRun= があり、Taskは実際にやることを書き、実行するにはTaskRunを作成する、と。
+
+*** まとめ
+いったんインストールとタスクの定義、その実行まで見てみた。
+これだけだとCI/CDツールっぽさがないので、パイプラインはこのあと見ていく予定。
 
 * footnotes
 * COMMENT Local Variables                                           :ARCHIVE:
