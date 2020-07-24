@@ -697,7 +697,8 @@ kubectl tkn taskrun logs echo-hello-world-task-run
 
 やりました。 [[Tektonでパイプラインを動かす]]
 
-** TODO Tektonでパイプラインを動かす
+** DONE Tektonでパイプラインを動かす
+   CLOSED: [2020-07-24 Fri 15:47]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
 :EXPORT_FILE_NAME: 202007231454
