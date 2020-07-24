@@ -695,7 +695,7 @@ kubectl tkn taskrun logs echo-hello-world-task-run
 いったんインストールとタスクの定義、その実行まで見てみた。
 これだけだとCI/CDツールっぽさがないので、パイプラインはこのあと見ていく予定。
 
-やりました。 
+やりました。 [[Tektonでパイプラインを動かす]]
 
 ** TODO Tektonでパイプラインを動かす
 :PROPERTIES:
