@@ -1,4 +1,4 @@
-/* Background */ .chroma { background-color: #000000; color: #f5f5f5 }
+/* Background */ .chroma { background-color: #000000; color: #f5f5f5;}
 /* Other */ .chroma .x { color: #f5f5f5 }
 /* Error */ .chroma .err { color: #f5f5f5 }
 /* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
@@ -79,5 +79,5 @@
 /* GenericSubheading */ .chroma .gu { color: #f5f5f5; font-weight: bold }
 /* GenericTraceback */ .chroma .gt { color: #f5f5f5; font-weight: bold }
 /* GenericUnderline */ .chroma .gl { color: #f5f5f5; text-decoration: underline }
-/* TextWhitespace */ .chroma .w { color: #f8f8f8; text-decoration: underline }
-/* TextWhitespace */ .chroma .w { color: #f8f8f8; text-decoration: underline }
+/* TextWhitespace */ .chroma .w { color: #333333; text-decoration: underline }
+/* TextWhitespace */ .chroma .w { color: #333333; text-decoration: underline }
