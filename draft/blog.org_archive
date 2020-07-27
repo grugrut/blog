@@ -23,7 +23,7 @@ Archived entries from file /home/grugrut/src/github.com/grugrut/blog/draft/blog.
 どっちかに統一しようかと考え、最近の動向から長年連れそってきたはてなブログのほうをやめて、
 こちらに持ってくるようにします。
 昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
-** emacs on WSLでSuper/Hyperキーを使う                            :Emacs:WSL:
+** emacs on WSLでSuper/Hyperキーを使う                            :emacs:wsl:
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910040445
@@ -161,7 +161,7 @@ ubuntu.exe run "DISPLAY=127.0.0.1:0.0 xmodmap ~/.Xmodmap"
 
 [fn:modifier] たぶん =w32-lwindow-modifier= とかが使えるはず
 [fn:emacs-on-wsl] https://speakerdeck.com/grugrut/emacs-on-wsldefalsekun-rigoto
-** DONE skk-azikで「っ」が誤爆しやすい問題                        :Emacs:skk:
+** DONE skk-azikで「っ」が誤爆しやすい問題                        :emacs:skk:
    CLOSED: [2019-10-22 Tue 22:05]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -226,7 +226,7 @@ skk-azikの中で最後に呼ばれる =skk-azik-load-hook= を使って、自�
 printデバッグしてみたら、 =:config= がそもそも呼ばれてなかったようにも見えたので
 もうすこし上手いやりかたがあるのかもしれない。
 
-** DONE leaf-expandでleafのデバッグをする            :Emacs:smartparens:leaf:
+** DONE leaf-expandでleafのデバッグをする            :emacs:smartparens:leaf:
    CLOSED: [2019-10-14 Mon 22:18]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -299,7 +299,7 @@ beforeの設定がこんな感じ。
 #+end_src
 
 これは便利なので、今後も積極的に使っていきたい。
-** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :OpenShift:kubernetes:crc:
+** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :openshift:kubernetes:crc:
    CLOSED: [2019-10-19 Sat 14:03]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -508,7 +508,7 @@ kubeadminユーザを削除することによって、Webコンソールへの�
 今のところバグで、30日で証明書が期限切れになり、起動できなくなってしまうらしい。
 解決策はなく、一度削除して(当然作成したものも消える)、作りなおす必要があるとか。
 おそろしい話である。
-** DONE emacs26からの行番号表示がddskk入力時にガタつくのを防ぐ    :Emacs:skk:
+** DONE emacs26からの行番号表示がddskk入力時にガタつくのを防ぐ    :emacs:skk:
    CLOSED: [2019-10-20 Sun 23:51]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -688,7 +688,7 @@ class HelloWorld {
   }
 }
 #+end_src
-** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:
+** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :gcp:
    CLOSED: [2019-12-29 Sun 10:11]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-12\")

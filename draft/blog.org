@@ -3,7 +3,7 @@
 #+hugo_auto_set_lastmod: t
 #+options: author:nil
 * 2020
-** DONE org modeのファイルをパースする                            :Emacs:org:
+** DONE org modeのファイルをパースする                            :emacs:org:
    CLOSED: [2020-01-10 Fri 08:56]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-01\")
