@@ -2,6 +2,14 @@
 #+hugo_selection: ./
 #+hugo_auto_set_lastmod: t
 #+options: author:nil
+
+* footnotes
+* COMMENT Local Variables                                           :ARCHIVE:
+# Local Variables:
+# eval: (org-hugo-auto-export-mode)
+# End:
+
+
 * 2020
 ** DONE org modeのファイルをパースする                            :emacs:org:
    CLOSED: [2020-01-10 Fri 08:56]
@@ -838,9 +846,124 @@ Warningがでているが、IPVSモードでは、kube-proxyの負荷分散方�
 https://kubernetes.io/blog/2018/07/09/ipvs-based-in-cluster-load-balancing-deep-dive/#ipvs-based-kube-proxy
 *** まとめ
 ipvsの場合の負荷分散方式が、いろいろあるってことは知らなかったので、やってみてよかった。
+** DONE Hyper-V上でGitLabサーバを構築する              :hyperv:gitlab:docker:
+   CLOSED: [2020-07-30 Thu 07:09]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_FILE_NAME: 202007292345
+:END:
 
-* footnotes
-* COMMENT Local Variables                                           :ARCHIVE:
-# Local Variables:
-# eval: (org-hugo-auto-export-mode)
-# End:
+いろいろあって、GitLabを構築を試す必要があったので手順のメモ。普段使っている検証用の
+VMware環境は、kubernetesが動いていて、特にメモリ確保が厳しそうだったので、
+WindowsのHyper-V上に作ることにした。
+
+*** Hyper-Vに仮想マシンを作る
+
+とにかくHyper-Vのネットワークが難解で、デフォルトスイッチで作ると
+OS起動のたびにIPアドレスが変動するし、
+外部ネットワークも下手に作ると母艦で通信できなくなるという
+なんでこんなことになってるの？って動きをしてくださいますので、
+"管理オペレーティング システムにこのネットワーク アダプターの共有を許可する"
+にチェックをつけて、外部ネットワークにつなげる。
+これにより、VMware Playerなどのブリッジ接続と同じになる。
+
+多分これが一番早いと思います。
+
+検索すると、vNICをふたつ作って内部ネットワークを固定して、インターネット通信は
+デフォルトスイッチにするのがよいってのが多々あったけど、めんどくさいよ。
+
+OSは適当に最新のFedoraのISOをもってきてインストールした。
+
+ホスト名は、シンプルに =gitlab.local= にしている。
+
+ちなみに、SELinuxとFirewallは無効化している。
+
+*** GitLabをインストールする
+
+GitLab EEには魅力的な機能が多数あるが、今回はざっと作るだけなので CEの機能があれば十分。
+なのだが、公式サイトにも別にライセンス登録しないEEはCEと変わらんのでEE入れれば？ってあるので
+GitLab EEを入れることにする。
+
+https://www.gitlab.jp/install/ce-or-ee/
+
+Fedoraは公式には対応していないので、あたかもRHEL8であるかのようにごまかして導入する必要がある。
+
+#+begin_src bash
+curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh -o script.sh
+chmod +x script.sh
+os=el dist=8 ./script.sh
+EXTERNAL_URL="http://gitlab.local" dnf install -y gitlab-ee
+#+end_src
+
+インストールがおわったら、 =http://gitlab.local= にアクセスすると、 =root= ユーザのパスワード設定が求められ、
+設定後ログインが可能になる。
+
+*** 自己署名証明書を作る
+
+イメージレジストリを有効化したいが、こちらはhttpだとdocker操作時に怒られてしまって面倒なので、証明書を準備する。
+Let's Encriptのほうが楽だと思うのだけど、今回は自己署名証明書を作ることにする。
+
+#+begin_src bash
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout registry.gitlab.local.key -x509 -days 3650 -out registry.gitlab.local.crt
+#+end_src
+
+CNだけ指定した。
+
+#+begin_src 
+Country Name (2 letter code) [XX]:
+State or Province Name (full name) []:
+Locality Name (eg, city) [Default City]:
+Organization Name (eg, company) [Default Company Ltd]:
+Organizational Unit Name (eg, section) []:
+Common Name (eg, your name or your server's hostname) []:registry.gitlab.local
+Email Address []:
+#+end_src
+
+*** GitLabのイメージレジストリの有効化
+
+#+begin_src bash
+mkdir -p /etc/gitlab/ssl
+cp registry.gitlab.local.crt registry.gitlab.local.key /etc/gitlab/ssl/
+#+end_src
+
+=/etc/gitlab/gitlab.rb= を編集して、以下の行を追加(コメント化されてあるので、
+コメント化解除して値を書き換え)。
+
+#+begin_src
+registry_external_url 'https://registry.gitlab.local'
+
+gitlab_rails['registry_host'] = "registry.gitlab.local"
+#+end_src
+
+変更を反映する。
+#+begin_src bash
+gitlab-ctl reconfigure
+#+end_src
+
+試しに適当にプロジェクトを作ってみると、コンテナレジストリも有効化されていることがわかる。
+
+[[file:images/20200730-gitlab-registry.png]]
+
+*** イメージをpushする
+テストとして、docker login & イメージプッシュしたいが、オレオレ証明書なので
+そのままでは利用できない。
+
+- Linuxの場合
+先ほど作った registry.gitlab.local.crt を クライアント側(docker loginする側)の
+=/etc/docker/certs.d/registry.gitlab.local/ca.crt= にコピーする。
+ディレクトリがなければ作成する。
+
+- Windowsの場合
+Docker for Windowsのダッシュボードを開いて、SettingsのDocker Engineから以下のように設定する。
+
+#+begin_src json
+{
+  "registry-mirrors": [],
+  "insecure-registries": ["registry.gitlab.local"],
+  "debug": true,
+  "experimental": false
+}
+#+end_src
+
+これで、docker loginならびにdocker pushできるはず。
+
