@@ -73,15 +73,17 @@
                   <h2 class="{{ .Type }}-subheading">{{ $subtitle }}</h2>
                 {{ end }}
               {{ end }}
+              <div class="col-lg-9 col-md-9">    
               {{ if eq .Type "posts" }}
                 {{ partial "post_meta.html" . }}
               {{ end }}
+              </div>  
             </div>
           </div>
         </div>
       </div>
     </div>
   </header>
-{{ else }}
+  {{ else }}
   <div class="intro-header"></div>
 {{ end }}

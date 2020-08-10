@@ -1965,3 +1965,215 @@ CodeReady Containersのころは、OpenShift 4.2相当だったと思うので�
 [[file:images/20200801-okd-dashboard.png]]
 
 インストールが無事にできたので、今度はなんか適当にアプリケーションを動かしてみよう。
+** DONE kubernetes-mixinのダッシュボードでgrafanaダッシュボードを簡単に構築する :kubernetes:grafana:
+   CLOSED: [2020-08-10 Mon 12:56]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
+:EXPORT_FILE_NAME: 202008032123
+:END:
+kubernetesのメトリクスモニタリングを、SaaSではなく手元でやろうとしたらPrometheusがおそらく最大の候補であろう。
+
+Prometheusを使うならダッシュボードにはgrafanaを使うことになると思うが、
+grafanaはダッシュボード表示エンジンであって、ダッシュボード自体は自分で作ることになる。
+これが、やっぱり自分でクエリを書いてレイアウトも考えてと結構面倒くさい。
+
+もちろんgrafanaのコミュニティにも、だれかが作ったkubernetes用のダッシュボードは存在するのだが、
+kubernetes-monitoringというプロジェクトがあって、そこでダッシュボードやアラートルールを整備しているものがある。
+コントリビュータをピックアップしてみると、Red Hatのメンバーが多いみたい。
+
+https://github.com/kubernetes-monitoring/kubernetes-mixin
+
+今回はこれを使ってみることにした。
+意外とネット上の情報だと、とりあえずhelmでprometheusやgrafana入れてみました〜♪ で終わってて、
+どうやってダッシュボード使うのよ、まで書かれてなかったりするが、そこまでやっている。
+
+*** 導入するもの
+
+今回は、Prometheus、Grafanaをhelmを使って導入する。
+
+https://github.com/helm/charts/tree/master/stable/prometheus
+
+https://github.com/helm/charts/tree/master/stable/grafana
+
+prometheusを入れるだけであれば、Prometheus Operatorやkube-prometheusなど
+いくつか選択肢があるが、今回helmにしたのは、pushgatewayが含まれているから。
+今のところpushgatewayを使いたいものも無いのだけど、それだけ個別に導入するのも嫌だったので。
+
+prometheusをhelmで入れるなら、grafanaもhelmでいっか、という感じである。
+*** kubernetes-mixinのyaml定義を作る
+kubernetes-mixinのプロジェクトでは、yaml形式では提供されておらず、
+jsonnetという形式で提供されている。
+
+特にダッシュボードのyaml定義だと、同じ記載内容があちこちにでてしまって
+修正もれの恐れがあったり、そもそも修正箇所がわかりにくかったりという課題がある。
+jsonnetはそれをプログラミング言語のように構造化することで、わかりやすくしている。
+といっても、最初自分が見たときも、なにをすればよいのやらという感じでわかりにくいと感じたが。
+
+README.mdに書いてあるとおり、以下のようなかんじで、ダッシュボード、レコーディングルール、アラートルールのyamlを作ることができる。
+
+#+begin_src bash
+# 必要なコマンドの取得
+go get github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb
+pip install jsonnet
+
+# 依存定義の取得
+jb install
+
+# yaml定義の出力
+make dashboards_out
+make prometheus_rules.yaml
+make prometheus_alerts.yaml
+#+end_src
+*** ダッシュボード定義の修正
+先ほどの手順で作成した各種yamlを使えばよいのだが、dashboardの各種yaml定義のPromQLは、
+helmで入れるprometheusに対しては、一部動かないところがあり、例えば、CPU Utilisationや各グラフが *N/A* や *No data* になる。
+
+helmで入れるprometheusのjob設定に書かれたメトリクスに付与されるラベルと、
+kubernetes-mixinで期待するラベル定義に差があるのが原因だ。
+
+それをhelmチャートにあわせて修正したものが以下の内容である。
+
+https://github.com/grugrut/kubernetes-mixin/commit/d4361ca715b4fcbeab289cf2f7c29282f316651b
+
+やってから気付いたが、本来は直接修正するんじゃなくて、
+Configだけ作って上書きするのが正しかったのだと思う。
+
+とはいえ、 =$__interval= でうまくいかず、 =$__range= にするとかもやったので修正は必要。
+=$__range= だとうまくいくのが、そもそも誤りなのか、自分の環境固有なのかわかってない。
+さすがにこのレベルのミスが、issueにもあがってないというのは奇妙なので自分の環境固有な気がしてる。
+*** 各コンポーネントが、メトリクスを返せるようにする
+あとは、そもそもPrometheusがメトリクスを収集できるように、いくつかのコンポーネントを修正する必要がある。
+
+ 1. metrics-serverを導入する
+
+ 2. kube-controllerのメトリクスをprometheusが収集できるようにする
+
+    Masterサーバの =/etc/kubernetes/manifests/kube-controller-manager.yaml= を修正。
+    podにannotationを付与。
+
+    #+begin_src yaml
+ # 追加するところだけ記載
+ metadata:
+   annotations:
+     prometheus.io/scrape: "true" #追加
+     prometheus.io/port: "10252"  #追加
+    #+end_src
+
+ 3. kube-proxyがメトリクスを外部からアクセスできるようにしていなかったので修正する
+
+    =kubectl -n kube-system edit configmap kube-proxy= でconfig.confを修正。
+    =.metrisBindAddress= が、デフォルトでは =""= になっているので、 ="0.0.0.0"= とする
+
+ 4. kube-proxyのメトリクスをprometheusが収集できるようにする
+
+    =kubectl -n kube-system edit daemonset kube-proxy= で、podにannotationを付与。
+ 
+    #+begin_src yaml
+ # 追加するところだけ記載
+ spec:
+   template:
+     metadata:
+       annotations:
+         prometheus.io/port: "10249"  #追加
+         prometheus.io/scrape: "true" #追加
+    #+end_src
+ 5. kube-schedulerのメトリクスをprometheusが収集できるようにする
+
+    Masterサーバの =/etc/kubernetes/manifests/kube-scheduler.yaml= を修正。
+    podにannotationを付与。
+
+    #+begin_src yaml
+ # 追加するところだけ記載
+ metadata:
+   annotations:
+     prometheus.io/scrape: "true" #追加
+     prometheus.io/port: "10251"  #追加
+    #+end_src
+*** helmでprometheusとgrafanaを入れる
+ここまで下準備ができたら、helmでprometheusとgrafanaを入れるだけだ。
+基本的には、各chartのドキュメント通りに入れればおしまいだが、
+作ったyamlを読みこむために、それぞれ以下のような仕込みをする。
+
+ちなみに自分の作った定義は以下に配置している。
+
+https://github.com/grugrut/k8s-playground/tree/4073c565320d396467348a9c7839bcde90873e3a/03_monitoring
+
+**** prometheus
+レコーディングルールとアラートルールを、それぞれhelm chartの変数 =serverFiles.recording_rules.yml= と
+=serverFiles.alerting_rules.yml= で指定する必要がある。
+もし他のルールが必要ないのであれば、以下のように、先ほど作った =prometheus-rules.yaml= を編集して作るのが楽だと思う。
+
+#+begin_src yaml
+serverFiles:
+  recording_rules.yml:
+    # 全ての行に4つスペースをつけてインデントさせた prometheus-rules.yamlを流しこむ
+#+end_src
+
+できたファイルがこんな感じ。
+
+https://github.com/grugrut/k8s-playground/blob/0c6c4025686027c6e18aa723d4ac4779f00a3043/03_monitoring/prometheus_rules-variables.yaml
+
+yqとか使っていいかんじに作れないかなと思ったのだけど、式のところが崩れてしまってダメだった。
+内部的にjsonに変換する都合上、パイプを使った複数行の表現がうまくいかないのだろう。
+
+ちなみに、emacsなら以下な感じで簡単に作れる。
+
+1. =serverFiles:= と =recording_rules.yaml:= の行を書く
+2. =C-x i= で =prometheus-rules.yaml= の内容を挿入する
+3. 3行目の先頭で =C-SPC= してマークし、 =M->= で最終行までジャンプする
+4. =C-x r t=で、各行の先頭0バイトを空白4つに置き換える
+
+それ以外の設定は、nodeExporterをmasterノードにも配置されるようにしたり、
+PVの設定を少ししている。
+
+最終的には、以下のコマンドでインストールできる。
+
+#+begin_src bash
+helm install prometheus stable/prometheus -n monitoring -f prometheus-variables.yaml -f prometheus_rules-variables.yaml -f prometheus_alerts-variables.yaml
+#+end_src
+
+**** grafana
+grafana側では作ったダッシュボードを読み込ませる必要がある。方法としてはいくつかある。
+
+1. インストール後に設定する
+2. ひとつのConfigMapにまとめる
+3. 別々のConfigMapとする
+
+いろいろと試してみたが、別々のConfigMapにする方法がいちばん簡単だった。
+
+これを実現するには、 grafanaのhelm chartsの =sidecar.dashboards.enabled= をtrueにする。
+すると以下のページにもあるとおり、 =grafana_dashboard= というラベルがついたConfigMapが
+自動で読み込まれダッシュボードとして使えるようになる。しかも、オンラインなので
+設定の反映のために再起動なども不要である。
+
+https://github.com/helm/charts/tree/master/stable/grafana#sidecar-for-dashboards
+
+dashboardのyamlはたくさんあるので、ひとつひとつConfigMapを作るのも、それはそれで面倒だが、
+特定のディレクトリにyamlを配置しておけば、以下のようにワンライナーで可能だ。
+
+#+begin_src bash
+find dashboards/ -name "*.json" -printf "%f\n" | xargs -t -IXXX -- kubectl -n monitoring create configmap dashboard-XXX --from-file=dashboards/XXX
+find dashboards/ -name "*.json" -printf "%f\n" | xargs -t -IXXX -- kubectl -n monitoring label configmap dashboard-XXX grafana_dashboard=1
+#+end_src
+
+更新したい場合も、ひとつひとつやってもいいが、以下のようにまとめてやることもできる。
+
+#+begin_src bash
+find dashboards/ -name "*.json" -printf "%f\n" | xargs -t -IXXX -- sh -c "kubectl -n monitoring create configmap dashboard-XXX --from-file=dashboards/XXX --dry-run=client -o yaml | kubectl replace -f -"
+find dashboards/ -name "*.json" -printf "%f\n" | xargs -t -IXXX -- kubectl -n monitoring label configmap dashboard-XXX grafana_dashboard=1
+#+end_src
+
+あとは、helmでgrafanaを入れてしまえばよい。
+
+#+begin_src bash
+helm install grafana stable/grafana -f grafana-variables.yaml
+#+end_src
+
+ちなみに、実行結果にも出力されるが、grafanaのadminパスワードは自動生成されて
+secretに格納されているので、以下のようにして取得する。
+
+#+begin_src bash
+kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+#+end_src
+
+これでしばらくすれば、prometheusに収集されたデータをgrafanaで確認することができるはず。
