@@ -110,7 +110,7 @@ KeyPress event, serial 33, synthetic NO, window 0x800001,
 
 ***** 手順3. xmodmapの設定を作成する
        調べると、 ~xmodmap -pke~ を実行して、必要なところだけ書きかえましょう。というのが出てくるのだが、実際のところ必要な設定だけ書けばよかったので、いきなり =.Xmodmap= ファイルを作成する。
-       WSLで手持ちのXサーバ使う分には別にファイル名は何でもいいと思うのだが、ここは慣例に従っておく。(なお、 =startx= コマンドでx起動するときは、雛形で =.Xmodmap=を読み込むのでファイル名重要)
+       WSLで手持ちのXサーバ使う分には別にファイル名は何でもいいと思うのだが、ここは慣例に従っておく。(なお、 =startx= コマンドでXを起動するときは、雛形で =.Xmodmap=を読み込むのでファイル名重要)
 
        自分の設定は、こんなかんじ。
 
@@ -176,11 +176,10 @@ azikは簡単に言うと、日本語ローマ字入力(qwertyを想定)に特�
 [[http://hp.vector.co.jp/authors/VA002116/azik/azikinfo.html]]
 
 ところで、われらがemacsの =ddskk= にもazik用の設定が搭載されているのだが、
-なぜかそのマッピングの中に =tU= が、 =っ= にわりあてられているせいで、
-よく入力中に、意図せず =っ= が入力されてしまう問題が発生していた。
+なぜかそのマッピングの中に =tU= が、 =っ= にわりあてられている。
+そのため、よく入力中に、意図せず =っ= が入力されてしまう問題が発生していた。
 
-もし、私と同じように、 ddskk + azikを利用していて、例えば「疲れた」や「積む」のような、「つ」から始まる感じを入力しようとして、「▽っかれた」のように、頭が =つ= ではなく =っ= になってしまう人がいたら、同じ症状だと思う。
-おそらく意識せず =Tu= と打とうとして、 =TU= とか =tU= と入力しているはず。
+例えば「疲れた」や「積む」のような「つ」から始まる感じを入力しようとして、「▽っかれた」のように頭が =つ= ではなく =っ= になってしまう人がいたら同じ症状だと思う。おそらく意識せず =Tu= と打とうとして、 =TU= とか =tU= と入力しているはず。
 
 いろいろ試して以下の設定で改善することが確認できた。
 私も長年、そもそも何がおきているかわからずに困っていたのだけれど、もし同様に困っている人いたら参考になれば幸いである。
@@ -213,8 +212,8 @@ azikは簡単に言うと、日本語ローマ字入力(qwertyを想定)に特�
 
 参考: [[http://mail.ring.gr.jp/skk/200106/msg00009.html]]
 
-また、普通なら =leaf= なり、 =use-package= なりの、 =:config= ブロックに設定すればよいのだけど、
-ロード後の処理の影響からか、 azikの設定に上書きされてしまっているように見えたので、
+また、普通なら =leaf= なり =use-package= なりの =:config= ブロックに設定すればよいのだけど、
+ロード後の処理の影響からかazikの設定に上書きされてしまっているように見えたので、
 skk-azikの中で最後に呼ばれる =skk-azik-load-hook= を使って、自前のルール修正関数を呼ぶようにしている。
 
 printデバッグしてみたら、 =:config= がそもそも呼ばれてなかったようにも見えたので
@@ -231,6 +230,7 @@ printデバッグしてみたら、 =:config= がそもそも呼ばれてなか�
 具体的には、lispを編集するモード(emacs-lisp-modeとか)のときに、「'(シングルクオート)」がダブルクオートとかと同じく「''」となってしまいかえって面倒なことに。
 
 beforeの設定がこんな感じ。
+最近は、 =use-package= のかわりに =leaf= を使っているが、use-packageでもだいたい同じだと思う。
 
 #+begin_src lisp
 (leaf smartparens
@@ -245,7 +245,7 @@ beforeの設定がこんな感じ。
     (prog-mode-hook . smartparens-mode)))
 #+end_src
 
-最近は、 =use-package= のかわりに =leaf= を使っているのだけど、smartparensの設定は、 =(require 'smartparens-config)= が楽だし確実、というのを見て、たしかにそのように設定してるんだけどなあ。。。って感じだった。
+smartparensの設定は、 =(require 'smartparens-config)= が楽だし確実、というのを見て、たしかにそのように設定してるんだけどなあ。。。って感じだった。
 
 いろいろ見た結果、期待通りにrequireできてないんじゃないの？って結論に至るのだけど、そういったときのデバッグって大変ですよね。
 
@@ -303,8 +303,8 @@ OpenShift4.2がリリースされたので、家で使ってみようと、 =Cod
 CodeReady Containersは、これまで =minishift= という名前のプロダクトだったものが、OpenShift 4.xになって名前が変わったもので、
 テストとか開発とかに使えるものである。
 
-10/17に、github上では、1.0.0のタグが切られていたが、まだpre-releaseということで、Red Hat Developers Programに登録していれば、
-Developer Preview版が利用できるようだ。
+10/17にgithub上では1.0.0のタグが切られていたが、まだpre-releaseのようだ。
+Red Hat Developers Programに登録していれば、Developer Preview版が利用できるようだ。
 *** 導入した環境
 - Windows 10 Professional
 - メモリ 64 GB (メモリはわりと食うので少ないとつらいと思う)
@@ -445,7 +445,7 @@ deployment.extensions/telemeter-client scaled
 #+end_src
 
 しばらくすると、ダッシュボードに収集した値が表示されるようになるだろう。
-ちなみに結構監視機能はメモリを消費するので、デフォルトの8GBだとメモリが足りなくて必要なPodを起動できず動かない問題が確認できている。
+ちなみに監視機能は結構メモリを消費するので、デフォルトの8GBだとメモリが足りなくて必要なPodを起動できず動かない問題が確認できている。
 **** ユーザの追加
 kubeadminユーザでWebコンソールにログインすると上の方で警告画面がでているところからもわかるとおり、
 kubeadminユーザは一時的なユーザらしく、あまりこれを使うのは好ましくないらしい。
@@ -509,8 +509,8 @@ kubeadminユーザを削除することによって、Webコンソールへの�
 :EXPORT_FILE_NAME: 201910202227
 :END:
 Emacs26までは、行番号の表示をemacs lispで頑張るというアプローチがために、
-重たくてなかなか使いどころに困る問題があったが、Emacs26では、待望の
-Cで書かれた組み込みの行番号表示である、 =display-line-numbers-mode= が導入された。
+重たくてなかなか使いどころに困る問題があった。
+それに対してEmacs26では、待望のCで書かれた組み込みの行番号表示である、 =display-line-numbers-mode= が導入された。
 これは軽くてたいへん便利なのであるが、使っていて、ひとつめちゃくちゃ気になる問題があった。
 
 それはごらんの通り、ddskkで日本語を入力するときに行番号の表示がずれて、がたがたとなり見辛いのである。
@@ -540,9 +540,9 @@ Cで書かれた組み込みの行番号表示である、 =display-line-numbers
 :EXPORT_FILE_NAME: 201910262251
 :END:
 
-といっても、Chromaの解釈とEmacsの解釈でちがう(Emacsだと ~default~ faceあつかいになるところが、
-Chromaだとキーワードとして解釈される、とか)ところがあるので、
+といっても、Chromaの解釈とEmacsの解釈でちがうところがあるので、
 完全に同じではないが、そこはご愛嬌ということで。
+例えば、Emacsだと ~default~ faceあつかいになるところが、Chromaだとキーワードとして解釈される、とか。
 
 あとは、いくつかサンプルをば。
 
@@ -737,7 +737,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
     - JIS配列を愛用してるので、ある程度キー数が多いこと
     - emacsでハイパーキー、super キーを使ってるので親指でmodifier keyをいろいろ使えること
     - 分割キーボードであること
-    - 一旦は、はんだ付けなしで沼への第一歩をふみだせること
+    - いったんは、はんだ付けなしで沼への第一歩をふみだせること
 
     ちなみに、職場では、今は亡き、Barrocoの日本語配列を使っている。
     [[https://www.archisite.co.jp/products/mistel/barocco-jp/]]
@@ -1147,8 +1147,8 @@ systemd-+-3*[conmon-+-pause]
 #+end_src
 
 見比べてみると、たしかにruncだと目的のhello-appが直接動いているのに対して、
-kataの場合は、hello-appは直接ホストから見えず、kata-shimで隠蔽されていて、
-隔離された環境で動いていることがわかる。
+kataの場合は、hello-appは直接ホストから見えない。
+kata-shimで隠蔽されていて、隔離された環境で動いていることがわかる。
 
 **** まとめ
 Kata Containersは、これまで安全にコンテナ実行するために使う、ぐらいしか聞いておらず
@@ -1440,7 +1440,7 @@ PipelineRunでは、どのパイプラインを実行するかとserviceAccount�
 *** パイプラインの結果を見る
 パイプラインのタスクはPodとして動くが、 =tkn= コマンドでよりわかりやすく見ることができる。
 
-- パイプラインの実行結果一覧を見る
+- パイプラインの実行結果の一覧を見る
 
   =tkn pipelinerun list=
 
@@ -1500,9 +1500,9 @@ Tektonを使ってパイプラインを実行することができた。CI/CDと
 今、家で使っているKubernetesクラスタについて、インストール時に気にかけておらず、
 =kube-proxy= が =iptables= モードで動いているのでは？ と思ったので、確認して =ipvs= モードに変更してみた。
 
-ちなみに、ipvsモードのほうがパフォーマンスに優れると言われてはいるが、
-Calicoでおなじみのtigeraによると、大規模になれば違いはでてくるが、
-100程度のオーダーでは、違いは無いらしい。もはや、ただの自己満である。
+ちなみに、たしかにipvsモードのほうがパフォーマンスに優れると言われてはいる。
+しかしながら、Calicoでおなじみのtigeraによると、大規模になれば違いはでてくるが、
+100程度のオーダーでは違いは無いらしい。もはや、ただの自己満である。
 
 https://www.tigera.io/blog/comparing-kube-proxy-modes-iptables-or-ipvs/
 *** 現状確認
@@ -1708,7 +1708,7 @@ Bootstrapサーバがインストール時だけ必要なくせに、16GB必要�
 
 https://github.com/openshift/okd/blob/master/FAQ.md#can-i-run-a-single-node-cluster
 
-ロードバランサー、DNS、HTTPサーバは先日作ったGitlab用のVMがあったので、そこにまとめて入れることにした。
+ロードバランサ、DNS、HTTPサーバは先日作ったGitlab用のVMがあったので、そこにまとめて入れることにした。
 
 また、okd(openshift)は、 =xxx.クラスタ名.ベースドメイン= という形式のFQDNでアクセスすることになる。
 今回は、クラスタ名を =okd= 、ベースドメインを =local= とした。
@@ -1790,7 +1790,7 @@ openshift-install create ignition-configs --dir=<
 
    を実行すると、 =bootstrap.ign= =master.ign= =worker.ign= というファイルが作成される。
 
-   作業用端末での操作は一旦止めて、次に周辺サーバの準備、および Fedora CoreOSのインストールをおこなう。
+   作業用端末での操作はいったん止めて、次に周辺サーバの準備、および Fedora CoreOSのインストールをおこなう。
 
 **** DNSの準備
 dnsmasqを適当に設定すればよい。自分は以下の通り/etc/hostsを設定し、必要な名前解決ができるようにした。
@@ -1951,7 +1951,7 @@ INFO Time elapsed: 30m
 
 okd/auth 配下に、kubeconfigファイルとkubeadmin-passwdファイルができている。
 
-kubeconfigファイルを使えば、 =oc= や、 =kubectl= でCLIアクセスできるし、
+kubeconfigファイルを使えば =oc= 、 =kubectl= でCLIアクセスできるし、
 https://console-openshift-console.apps.okd.local/ にアクセスすることでWebコンソールも利用可能。
 初期ユーザは kubeadmin であり、パスワードは kubeadmin-passwd に書かれている。
 
@@ -1977,15 +1977,15 @@ Prometheusを使うならダッシュボードにはgrafanaを使うことにな
 grafanaはダッシュボード表示エンジンであって、ダッシュボード自体は自分で作ることになる。
 これが、やっぱり自分でクエリを書いてレイアウトも考えてと結構面倒くさい。
 
-もちろんgrafanaのコミュニティにも、だれかが作ったkubernetes用のダッシュボードは存在するのだが、
+もちろんgrafanaのコミュニティにも誰かが作ったkubernetes用のダッシュボードは存在するのだが、
 kubernetes-monitoringというプロジェクトがあって、そこでダッシュボードやアラートルールを整備しているものがある。
 コントリビュータをピックアップしてみると、Red Hatのメンバーが多いみたい。
 
 https://github.com/kubernetes-monitoring/kubernetes-mixin
 
 今回はこれを使ってみることにした。
-意外とネット上の情報だと、とりあえずhelmでprometheusやgrafana入れてみました〜♪ で終わってて、
-どうやってダッシュボード使うのよ、まで書かれてなかったりするが、そこまでやっている。
+ネット上の情報だと、とりあえずhelmでprometheusやgrafana入れてみました〜♪ で終わってて
+どうやってダッシュボード使うのよ、まで書かれてなかったりするがそこまでやっている。
 
 *** 導入するもの
 
@@ -1995,8 +1995,8 @@ https://github.com/helm/charts/tree/master/stable/prometheus
 
 https://github.com/helm/charts/tree/master/stable/grafana
 
-prometheusを入れるだけであれば、Prometheus Operatorやkube-prometheusなど
-いくつか選択肢があるが、今回helmにしたのは、pushgatewayが含まれているから。
+prometheusを入れるだけであれば、Prometheus Operator、kube-prometheusなど
+いくつか選択肢がある。今回helmにしたのは、pushgatewayがはじめから含まれているのが理由だ。
 今のところpushgatewayを使いたいものも無いのだけど、それだけ個別に導入するのも嫌だったので。
 
 prometheusをhelmで入れるなら、grafanaもhelmでいっか、という感じである。
@@ -2026,7 +2026,8 @@ make prometheus_alerts.yaml
 #+end_src
 *** ダッシュボード定義の修正
 先ほどの手順で作成した各種yamlを使えばよいのだが、dashboardの各種yaml定義のPromQLは、
-helmで入れるprometheusに対しては、一部動かないところがあり、例えば、CPU Utilisationや各グラフが *N/A* や *No data* になる。
+helmで入れるprometheusに対して一部動かないところがある。
+例えば、CPU Utilisationや各グラフが *N/A* や *No data* になる。
 
 helmで入れるprometheusのjob設定に書かれたメトリクスに付与されるラベルと、
 kubernetes-mixinで期待するラベル定義に差があるのが原因だ。
@@ -2091,7 +2092,7 @@ Configだけ作って上書きするのが正しかったのだと思う。
     #+end_src
 *** helmでprometheusとgrafanaを入れる
 ここまで下準備ができたら、helmでprometheusとgrafanaを入れるだけだ。
-基本的には、各chartのドキュメント通りに入れればおしまいだが、
+基本的には各chartのドキュメント通りに入れればおしまいなのだが、
 作ったyamlを読みこむために、それぞれ以下のような仕込みをする。
 
 ちなみに自分の作った定義は以下に配置している。
@@ -2148,8 +2149,8 @@ grafana側では作ったダッシュボードを読み込ませる必要があ�
 
 https://github.com/helm/charts/tree/master/stable/grafana#sidecar-for-dashboards
 
-dashboardのyamlはたくさんあるので、ひとつひとつConfigMapを作るのも、それはそれで面倒だが、
-特定のディレクトリにyamlを配置しておけば、以下のようにワンライナーで可能だ。
+dashboardのyamlはたくさんあるので、ひとつひとつConfigMapを作るのも、それはそれで面倒だ。
+特定のディレクトリにyamlを配置しておけば、以下のようにワンライナーで設定できる。
 
 #+begin_src bash
 find dashboards/ -name "*.json" -printf "%f\n" | xargs -t -IXXX -- kubectl -n monitoring create configmap dashboard-XXX --from-file=dashboards/XXX
@@ -2169,8 +2170,8 @@ find dashboards/ -name "*.json" -printf "%f\n" | xargs -t -IXXX -- kubectl -n mo
 helm install grafana stable/grafana -f grafana-variables.yaml
 #+end_src
 
-ちなみに、実行結果にも出力されるが、grafanaのadminパスワードは自動生成されて
-secretに格納されているので、以下のようにして取得する。
+ちなみに、実行結果にも出力されるが、grafanaのadminパスワードは自動生成されてsecretに格納されている。
+以下のようにして取得できる。
 
 #+begin_src bash
 kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode

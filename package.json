@@ -1,0 +1,35 @@
+{
+  "name": "blog",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "textlint": "^11.7.6"
+  },
+  "devDependencies": {
+    "@textlint-ja/textlint-rule-no-synonyms": "^1.1.0",
+    "sudachi-synonyms-dictionary": "^6.0.0",
+    "textlint-rule-ja-hiragana-fukushi": "^1.2.0",
+    "textlint-rule-ja-hiragana-hojodoushi": "^1.0.4",
+    "textlint-rule-ja-hiragana-keishikimeishi": "^1.0.2",
+    "textlint-rule-ja-unnatural-alphabet": "^2.0.1",
+    "textlint-rule-max-kanji-continuous-len": "^1.1.1",
+    "textlint-rule-max-ten": "^2.0.4",
+    "textlint-rule-no-mix-dearu-desumasu": "^4.0.1",
+    "textlint-rule-no-nfd": "^1.0.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "textlint -f pretty-error content"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grugrut/blog.git"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/grugrut/blog/issues"
+  },
+  "homepage": "https://github.com/grugrut/blog#readme"
+}

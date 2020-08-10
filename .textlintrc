@@ -1,0 +1,23 @@
+{
+    "rules": {
+        "no-nfd": true,
+        "max-ten": {
+            "max": 5
+        },
+        "max-kanji-continuous-len": {
+            max: 5,
+            allow: ["自己署名証明書", "負荷分散方式"]
+        },
+        "no-mix-dearu-desumasu": {
+            "preferInHeader": "である",
+            "preferInBody": "である",
+            "preferInList": "である",
+            "strict": false
+        },
+        "ja-hiragana-keishikimeishi": true,
+        "ja-hiragana-fukushi": true,
+        "ja-hiragana-hojodoushi": true,
+        "ja-unnatural-alphabet": true,
+        "@textlint-ja/no-synonyms": true,
+    }
+}
