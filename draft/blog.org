@@ -2048,10 +2048,6 @@ tektonでもう少し複雑なCI/CDフローを作ったり、別の基盤で動
 最初は =VueJS= で考えていたが、ユーザ側に公開するサービスは1つだけにしたかったので
 =NuxtJS= のほうがやりやすいかな、とこういう構成にしてみた。
 
-ソースコードは以下に配置している。
-
-https://github.com/grugrut/todo-springboot
-
 #+begin_src plantuml :file 20200822-architecture.png
 left to right direction
 
@@ -2071,6 +2067,10 @@ User --> NuxtJS :HTTP
 NuxtJS --> SpringBoot :HTTP
 SpringBoot --> DB :JDBC
 #+end_src
+
+ソースコードは以下に配置している。
+
+https://github.com/grugrut/todo-springboot
 
 基本的な作りはシンプルだが、やはり初めてさわるものであり、いくつかハマったところがあるので紹介。
 *** バックエンド側のSpringBoot
