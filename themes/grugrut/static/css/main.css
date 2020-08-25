@@ -76,6 +76,7 @@ article.blog-post h3 {
 }
 a {
   color: #008aff;
+  word-break: break-all;
 }
 a:hover,
 a:focus {
