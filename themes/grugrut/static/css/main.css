@@ -867,3 +867,8 @@ ul.share li a {
 ul.share li:hover .fab {
   transform: scale(1.4);
 }
+
+code {
+  background-color: #f7f7f8;
+  color: #e83e8c;
+}
