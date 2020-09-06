@@ -1,6 +1,4 @@
-# Beautiful Hugo - An adaptation of the Beautiful Jekyll theme
-
-![Beautiful Hugo Theme Screenshot](https://github.com/halogenica/beautifulhugo/blob/master/images/screenshot.png)
+# Grugrut theme forked from Beautiful Hugo
 
 ## Installation
 
