@@ -45,11 +45,9 @@ body {
 
 p {
   line-height: 1.5;
-  margin: 6px 0;
+  margin-bottom: 16px;
 }
-p + p {
-  margin: 24px 0 6px 0;
-}
+
 p a {
   /* text-decoration: underline */
   color: #008aff;
@@ -64,15 +62,22 @@ h6 {
   font-weight: 800;
 }
 article.blog-post h2 {
+  font-size: 2em;
   padding-top: 4px;
   padding-bottom: 4px;
-  padding-left: 1em;
+  padding-left: 1rem;
   border-top: 4px solid #999;
   border-bottom: 4px solid #999;
 }
 article.blog-post h3 {
-  padding-left: 1em;
+  font-size: 1.5em;
+  padding-left: 1rem;
   border-bottom: 2px solid #999;
+}
+article.blog-post h4 {
+  font-size: 1.2em;
+  padding-left: 1rem;
+  border-bottom: 1px solid #999;
 }
 a {
   color: #008aff;
