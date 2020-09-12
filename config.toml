@@ -21,9 +21,6 @@ pygmentsUseClasses = true
   showRelatedPosts = true
   comments = true
 
-[blackfriday]
-  hrefTargetBlank = true
-
 [Author]
   name = "grugrut"
   github = "grugrut"
@@ -42,3 +39,8 @@ pygmentsUseClasses = true
 [taxonomies]
 tag = "tags"
 archive = "archives"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
