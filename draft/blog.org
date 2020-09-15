@@ -2394,5 +2394,123 @@ Fargateの場合は、直接設定を書けないので、 =SSM= のパラメー
 ECSの場合、同じタスクの中のコンテナは、 =localhost= でポートを共有しており、
 =localhost:8125= にメトリクスを送信するようにSpring Boot側で設定をしているので、
 ヒープ使用率などのメトリクスをCloudWatchに送信することができる。
+** DONE HelmからIvyに差分小さく移行する                      :emacs:helm:ivy:
+   CLOSED: [2020-09-16 Wed 06:54]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-09\")
+:EXPORT_FILE_NAME: 202009160653
+:END:
 
+いろいろあって、HelmからIvyに移行を進めている。
+いろいろは以下の理由からだが、特に前2つによるものが大きく、でも移行面倒くさいと思っていたところに最後のが決定打となった。
 
+- posframeとの相性が良くない
+
+  視線移動を最小化できるposframeは便利。
+
+  helm-posframeパッケージはあるものの、posframe表示中に、それが残ったまま新しいposframeが表示されてしまう事象が多発してしまう。
+  =posframe-hide-all= を実行すれば消せるがさすがに厳しい。
+  とはいえ、発動条件もよくわからず解析が厳しそうだな、と思っていた。
+- 一時バッファが作られてしまう
+
+  一時バッファが出ること自体はしょうがない。 =switch-to-buffer= で表示しないとか制御すれば普段は気にならない。
+
+  ただ、 =mid-night= との相性が悪く、一時バッファが変に削除されると動かなくなってしまう。
+  そんなに発動するものではないので、最近は遭遇しなくなっているが、調べなきゃな〜とは思っていた。 
+- helmの開発が終了してしまった
+
+  https://github.com/emacs-helm/helm/issues/2386
+
+  プロジェクトもアーカイブされてしまった。Helmの最新機能を追いかけてるわけではなく、
+  問題はすぐには起きないと思われる。
+  また、利用者の多いパッケージなので、たぶんフォーク版ができて使い続けられるのではないか。
+  と思ったが、その状態で上記解決を図るのとivyに移行してみるのと迷って、ivyに移行することにした。
+*** helmからivyへの移行
+
+ざっと使うだけだったらrequireするのを、 =helm= から =counsel= に変更すれば終了である。
+
+詳しいところは、去年のEmacs勉強会でtakaxpさんが発表されてたので、それを見るのがお勧め。
+
+https://qiita.com/takaxp/items/2fde2c119e419713342b
+
+https://speakerdeck.com/takaxp/counsel
+
+*** helmで使っていた機能をivyで実現する
+
+基本的に、考え方として良くない。
+
+郷に入っては郷に従え、と言うが別のパッケージなのだから同じことをしようと考えることが間違いである。
+
+とはいえ、手癖になってるものを変えるのはストレスなのでいくつか実現することにした。
+
+**** helm-mini相当の実現
+
+helm-miniは、バッファリスト + Recentf から選択することができる。
+
+これはシンプルで =ivy-use-virtual-buffers= を =nil= 以外にすることで =ivy-switch-buffer= の情報源に
+Recentfを含めることができる。
+自分は入力しやすいように ~C-;~ にバインドしている。
+
+**** find-file中に C-l で上の階層に移動する
+=helm-find-file= では、 ~C-l~ で上のディレクトリに移動することができた。
+
+=counsel-find-file= でも、 ~C-DEL~ および ~C-BS~ で同じことがおこなえるらしいが、
+~C-l~ でも使えるようにしたかったので、 =counsel-up-directory= を割当て。
+
+**** C-zによるチラ見アクションを実現する
+
+helmでは候補選択中に ~C-z~ に、選択を終了することなく設定された操作をおこなう =helm-execute-persistent-action= が割当てられていた。
+例えばディレクトリなら移動、ファイルやバッファなら内容を表示、 ~M-x~ ならコマンドの情報を表示など。
+(※途中でC-zの割当てが突然消されてしまったので、そこからは自分で設定していた)
+
+ivyでも ~C-M-m~ でミニバッファを閉じずにファイルやバッファの中身を表示することができるが、
+ディレクトリに対する操作が、移動ではなくてディレクトリの中身を表示で期待する動作と違うため自身で関数を定義した。
+~M-x~ 時の挙動を書けていないので、この辺は徐々に育てていかないといけない。
+
+*** まとめ
+上記の3つの設定により、普段の操作で違和感が生じることがかなり軽減されたので
+かなりコスト低くhelmからivyに移行することができた。
+
+ivyはhydraとの連携がやりやすいなど、ivyの良さがいろいろあるようなので、その辺もカスタマイズしていきたい。
+
+最後に、現時点のivyの設定を載せておく。上記3つの内容もこちらに含まれているので、似たようなことを実現したい人の参考になれば。
+
+#+begin_src emacs-lisp
+(leaf counsel
+  :ensure t
+  :require t
+  :init
+  (global-unset-key (kbd "C-z"))
+  :config
+  (ivy-mode 1)
+  :custom
+  (ivy-use-virtual-buffers . t)
+  (ivy-wrap . t)
+  (ivy-count-format . "(%d/%d) ")
+  :bind
+  (("C-;" . ivy-switch-buffer)
+   ("C-x C-f" . counsel-find-file)
+   ("M-x" . counsel-M-x)
+   (ivy-minibuffer-map
+    ("C-z" . grugrut/ivy-partial))
+   (counsel-find-file-map
+    ("C-l" . counsel-up-directory)))
+  :preface
+  (defun grugrut/ivy-partial ()
+    "helmの `helm-execute-persistent-action' に近いものを実現する.
+完全に同じものは無理だったので、ディレクトリなら入る、それ以外はできるだけ補完しバッファは抜けない動作をおこなう."
+    (interactive)
+    (cond
+     ((eq (ivy-state-collection ivy-last) #'read-file-name-internal)
+      ;; ファイルオープン
+      (let (dir)
+        (cond
+         ((setq dir (ivy-expand-file-if-directory (ivy-state-current ivy-last)))
+          ;; ディレクトリなら入る
+          (ivy--cd dir))
+         (t
+          ;; それ以外ならチラ見アクション
+          (ivy-call)))))
+     (t
+      (ivy-call)))))
+#+end_src

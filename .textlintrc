@@ -6,7 +6,7 @@
         },
         "max-kanji-continuous-len": {
             max: 5,
-            allow: ["自己署名証明書", "負荷分散方式"]
+            allow: ["自己署名証明書", "負荷分散方式", "本番対応機能"]
         },
         "no-mix-dearu-desumasu": {
             "preferInHeader": "である",
