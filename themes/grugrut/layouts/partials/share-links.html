@@ -8,11 +8,25 @@
           <i class="fab fa-twitter"></i>
         </a>
       </li>
+
+      <!-- Hatena -->
+      <li>
+        <a href="//b.hatena.ne.jp/entry/{{ .Permalink }}" target="_blank" title="はてなブックマーク">
+          <i class="fab fa-hatena"></i>
+        </a>
+      </li>
   
       <!-- Facebook -->
       <li>
         <a href="//www.facebook.com/sharer/sharer.php?u={{ .Permalink }}" target="_blank" title="Share on Facebook">
           <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+
+      <!-- get pocket -->
+      <li>
+        <a href="//getpocket.com/save?url={{ .Permalink}}" target="_blank" title="Save to Pocket">
+          <i class="fab fa-get-pocket"></i>
         </a>
       </li>
   
@@ -29,14 +43,6 @@
           <i class="fab fa-linkedin"></i>
         </a>
       </li>
-  
-      <!-- StumbleUpon -->
-      <li>
-        <a href="//www.stumbleupon.com/submit?url={{ .Permalink }}&amp;title={{ .Title }}" target="_blank" title="Share on StumbleUpon">
-          <i class="fab fa-stumbleupon"></i>
-        </a>
-      </li>
-  
       <!-- Pinterest -->
       <li>
         <a href="//www.pinterest.com/pin/create/button/?url={{ .Permalink }}&amp;description={{ .Title }}" target="_blank" title="Share on Pinterest">
