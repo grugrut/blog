@@ -2654,7 +2654,8 @@ CKAの勉強をしているときにkubeadmを使ってクラスタをバージ�
 EKSなどのマネージドなものに比べると多少面倒ではあるが、意外と簡単だし詰まりポイントも少ない印象を受けた。
 
 とはいえ、4台構成だからまだやっていけるけど、これが多くなるようだと単純に面倒なので =kubespray= とか使ってansibleで一気に回したい気持ちはある。
-** TODO Ergodox EZをJIS配列で利用して5ヶ月経過したので振り返り      :ergodox:
+** DONE Ergodox EZをJIS配列で利用して5ヶ月経過したので振り返り      :ergodox:
+   CLOSED: [2020-10-17 Sat 11:33]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-10\")
 :EXPORT_FILE_NAME: 202010140032
