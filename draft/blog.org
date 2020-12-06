@@ -2768,5 +2768,173 @@ ergodox ezに親指用にキーたくさんあっても結局押せないじゃ�
 キーを減らしてコンパクトになる感じで対応されていて、結構よさそう。
 
 blankモデルがでたら欲しい、が、ergodox ezを使い続けるんだろうな。
+** DONE OpenFaaSでお手軽API環境を手にいれる             :kubernetes:openfaas:
+   CLOSED: [2020-12-06 Sun 23:50]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-12\")
+:EXPORT_FILE_NAME: 202012060916
+:END:
 
 
+これは、[[https://qiita.com/advent-calendar/2020/kubernetes2][Kubernetes2 Advent Calendar 2020]]の6日目の記事です。
+
+おうちにある、kubernetesクラスタを有効活用するため、FaaS基盤を簡単に作れる
+[[https://www.openfaas.com/][OpenFaaS]]を導入しました。
+
+組んであるkubernetesの環境は、以下でまとめてありますが、普通にkubeadmで構築したものです。
+https://www.grugrut.net/posts/202007111344/
+
+*** OpenFaaSとは
+HTTP APIとしての、Functionの実行環境を簡単に作ることができます。
+
+単にhttpリクエストを受けディスパッチするような実行環境だけでなく、
+Function作成面においても色々な言語のテンプレートがあらかじめ用意されているので
+開発者はFunctionの実装をおこなうだけで、APIを作ることができます。
+
+なんなら、実装自体はコンテナが標準入力を受けて標準出力で返すだけなので
+テンプレートが用意されてなくても簡単に作れると思います。
+
+*** Why not Knative
+そもそも比較するもんじゃないよね、という気はしつつ調べてたときに出てきてたので。
+
+Knativeもこれまで使ったことなかったので、Knativeでもいいかなと思いつつ、
+結局OpenFaaSにしました。
+
+KnativeもFaaSとして使うことはできますが、FaaSのためだけの導入には
+リッチすぎるかなと思ったのが主な理由です。
+Knativeが目指しているのは、kubernetesにおける開発体験の全般の改善だと
+理解しているので、広すぎるなあ、と。
+
+Eventingとかpub/subとか、Service周りの改善とか、Knativeにも気になるところは多々あるので
+見てみようとは思ってます。
+
+*** インストール
+**** CLIのインストール
+OpenFaaSには、FunctionをビルドしたりデプロイするためのCLI =faas-cli= コマンドが用意されています。
+公式ドキュメントでは、arkadeを使ったインストールが推奨されていますが、コマンド単体の導入も可能です。
+
+#+begin_src bash
+curl -sSL https://cli.openfaas.com | sudo sh
+#+end_src
+
+**** kubernetesへのデプロイ
+kubernetesへのデプロイはhelm chartが既に用意されているので、これを使います。
+
+ https://github.com/openfaas/faas-netes/blob/master/chart/openfaas/README.md
+
+URLを公開するのに、IngressやLoadBalancer、NodePortなどを選べますが
+手元の環境はMetalLBでtype: LoadBalancerが使えるようになっているのでこれを利用するようにインストールします。
+
+#+begin_src bash
+helm repo add openfaas https://openfaas.github.io/faas-netes/
+helm repo update
+helm install openfaas openfaas/openfaas \
+     --namespace openfaas \
+     --set functionNamespace=openfaas-fn \
+     --set generateBasicAuth=true \
+     --set serviceType=LoadBalancer
+#+end_src
+
+上の設定だと、OpenFaaSの実行基盤が、namespace =openfaas= に、デプロイするFunctionが namespace =openfaas-fn= で動きます。
+
+デプロイしたりWebUIを参照するために、 =admin= ユーザが用意され、パスワードは自動生成されるので適当にsecretを覗いて確認しておきます。
+
+#+begin_src bash
+kubectl -n openfaas get secret basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 -d
+#+end_src
+
+*** Functionを作成する
+今回は、prometheusからメトリクスを取得するAPIを作りました。
+
+最近在宅ワーカーになったので、部屋の温湿度やCO2濃度を計測し、prometheusに入れているのですが
+これをpromqlを一々たたいたりgrafana見たりしなくても確認できるようにしたい。
+
+**** ひな形を作成する
+以下のコマンドで、Functionのひな形を作成することができます。
+引数 =lang= で実装する言語を設定することができ、 =python= や =NodeJS= など
+Functionで一般的に使われる他の言語のものも、もちろん用意されています。
+
+詳細は、https://github.com/openfaas/templates
+
+#+begin_src bash
+faas-cli new prom-getter --lang go
+#+end_src
+
+これを実行すると実行ディレクトリ配下に設定用のyamlファイルと
+言語に応じたひな形が作られるので、ここにAPIの実装を書くだけでよい。
+
+例えば、実装言語をgoにした場合はhandler.goが作られるのでそれに実装すればよい。
+
+実装自体は、githubにあげてあるのでそちらをご覧ください。
+
+https://github.com/grugrut/prom-getter
+
+**** ビルドする
+OpenFaaSのいいところとして、コンテナのベースイメージが用意されていて、
+ビルドもそっちでできることがあります。
+
+ビルドする場合は以下のコマンドだけで、各言語に応じてコンテナビルドまでいくのがいいですね。
+引数にいろいろ与えてあげることで、追加の設定もできますがビルド後のイメージ名の指定などはymlの中でできるので、
+基本はこれだけでいいはず。
+
+#+begin_src bash
+ faas-cli build -f ./prom-getter.yml
+#+end_src
+
+このコマンド実行後はローカルでコンテナイメージができるところまでいくので、
+あとはdocker pushして適宜イメージレジストリにpushしておけばOK。
+
+**** デプロイする
+デプロイも =faas-cli= ででき、以下のコマンドを実行するだけ。
+ローカルなのでIPアドレスも書いてるけど、ビルドのときと同じyamlに加えて
+デプロイ先のエンドポイントも指定してあげます。
+
+#+begin_src 
+ faas-cli deploy -f ./prom-getter.yml --gateway 192.168.2.202:8080
+#+end_src
+
+これだけでPodやServiceなど必要なものは作成されるので、ホントに関数の実装だけ書けば
+簡単にAPIが実装できて簡単でした。
+
+環境構築含め数時間レベルで構築・実装・デプロイまでできました。
+
+*** TIPS
+最後に、いろいろ試してみたところをば。
+
+**** POSTメソッドしか対応していない
+参照系のAPIであれば、GETでURLパスにパラメータを含めたかったのだけど、
+POSTにしか対応していないっぽい。
+
+**** パラメータの扱い
+当然、実装の中にハードコーディングだけでなく、外部でパラメータを与えたいケースがあると思います。
+その場合も、環境変数としてパラメータを与えることができます。
+
+環境変数の与えかたは大きく分けて以下の二つ
+
+- yamlに書く
+
+  yamlの中に環境変数を書くことができます。ビルドとデプロイで別のyamlを使うこともできるので、
+  先のPOSTにしか対応していないことから、今回は同じイメージにそれぞれ環境変数にqueryを与えることで
+  複数のメトリクスに対応するようにしました
+
+- デプロイ時に与える
+  
+  デプロイするときの引数として =--env KEY=VALUE= の形式で引数に加えることで、
+  デプロイコマンド実行時にも変数を与えることができます。
+  なので、環境ごとに変わってyamlに書いておきたくない値なんかも、こういった形で設定することが可能です。
+
+ドキュメントを見るとSecretは名前を指定するだけで使えるっぽいので
+パスフレーズとかはそっちを使うのがよいかも。
+
+*** まとめ
+簡単にFaaS環境が作れるOpenFaaSを試してみました。
+
+たまにしか使わないものをPodとして常に用意しておくのは無駄なのでゼロスケールで用意したいとか、
+Cron的に定期実行したいとか、やりたいことはもっとたくさんあるので
+その辺は今後見ていこうと思います。
+
+あと、OpenFaaSですが、公式のチュートリアルの他、最近はLinux Foundationによるトレーニングもあります。
+無料だと演習は無くテキストだけなのですが、これも最初のとっかかりとしてはわかりやすくて良いと思うので興味あるかたは是非。
+(OpenFaasの作成者である Alex Ellis からも、オススメされたので宣伝)
+
+https://www.openfaas.com/blog/introduction-to-serverless-linuxfoundation/
