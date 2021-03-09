@@ -241,27 +241,7 @@ early-init.elに逃した設定を読みこむために入れていた。
 ```
 
 
-### 全体設定 {#全体設定}
-
-
-#### gcmh {#gcmh}
-
-アイドル状態のときに、ガベージコレクトしてくれるらしい。
-
-<https://github.com/emacsmirror/gcmh>
-
-```emacs-lisp
-(leaf gcmh
-  :ensure t
-  :diminish gcmh
-  :custom
-  (gcmh-verbose . t)
-  :config
-  (gcmh-mode 1))
-```
-
-
-#### ライブラリ群 {#ライブラリ群}
+### ライブラリ群 {#ライブラリ群}
 
 ```emacs-lisp
 (leaf libraries
@@ -270,15 +250,6 @@ early-init.elに逃した設定を読みこむために入れていた。
   (leaf cl-lib
     :leaf-defer t)
   (leaf dash
-    :ensure t
-    :leaf-defer t)
-  (leaf s
-    :ensure t
-    :leaf-defer t)
-  (leaf f
-    :ensure t
-    :leaf-defer t)
-  (leaf ht
     :ensure t
     :leaf-defer t)
   (leaf posframe
@@ -294,6 +265,43 @@ early-init.elに逃した設定を読みこむために入れていた。
     :ensure t
     :leaf-defer t))
 ```
+
+
+### 全体設定 {#全体設定}
+
+
+#### メモリ管理 {#メモリ管理}
+
+<!--list-separator-->
+
+-  gcmh
+
+    アイドル状態のときに、ガベージコレクトしてくれるらしい。
+
+    <https://github.com/emacsmirror/gcmh>
+
+    ```emacs-lisp
+    (leaf gcmh
+      :ensure t
+      :diminish gcmh
+      :custom
+      (gcmh-verbose . t)
+      :config
+      (gcmh-mode 1))
+    ```
+
+<!--list-separator-->
+
+-  GC後に利用メモリサイズを出力する
+
+    ```emacs-lisp
+    (defun grugrut/gc-debug-function (str)
+      (let ((sum 0))
+        (dolist (x str)
+          (setq sum (+ sum (* (cl-second x) (cl-third x)))))
+        (message "Used Memory: %d MB" (/ sum (* 1024 1024)))))
+    (advice-add 'garbage-collect :filter-return #'grugrut/gc-debug-function)
+    ```
 
 
 #### popwin {#popwin}
@@ -364,6 +372,7 @@ early-init.elに逃した設定を読みこむために入れていた。
   :setq-default
   (indent-tabs-mode . nil) ; タブはスペースで
   (tab-width        . 2)
+  (require-final-newline . t)
   )
 ```
 
@@ -1109,9 +1118,8 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
 (leaf python-mode
   :ensure t
   :leaf-defer t
+  :custom ((python-shell-interpreter . "ipython"))
   :mode (("\\.py\\'" . python-mode))
-  :config
-  (bind-key "C-c C-c" 'quickrun python-mode-map)
   )
 ```
 
@@ -1299,7 +1307,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   (setq org-directory "~/src/github.com/grugrut/PersonalProject/")
   :custom
   ;; TODO状態の設定
-  (org-todo-keywords . '((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d)")
+  (org-todo-keywords . '((sequence "TODO(t)" "IN PROGRESS(i)" "|" "DONE(d)")
                          (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "MEETING")))
   (org-todo-keyword-faces . '(("TODO" :foreground "red" :weight bold)
                               ("STARTED" :foreground "cornflower blue" :weight bold)
@@ -1318,11 +1326,14 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   :commands (org-capture)
   :config
   (defvar grugrut/org-inbox-file (concat org-directory "inbox.org"))
+  (defvar grugrut/org-journal-file (concat org-directory "journal.org"))
   (setq org-capture-templates `(
                                 ("t" " Tasks" entry (file ,grugrut/org-inbox-file)
                                  "* TODO %? %^G\n:PROPERTIES:\n:DEADLINE: %^{Deadline}T\n:EFFORT: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}\n:END:\n")
                                 ("e" " Event" entry (file ,grugrut/org-inbox-file)
                                  "* TODO %? %^G\n:PROPERTIES:\n:SCHEDULED: %^{Scheduled}T\n:EFFORT:%^{effort|1:00|0:05|0:15|0:30|2:00|4:00}\n:END:\n")
+                                ("j" " Journal" entry (file+olp+datetree ,grugrut/org-journal-file)
+                                 "* %<%H:%M> %?")
                                 ("b" " blog" entry
                                  (file+headline "~/src/github.com/grugrut/blog/draft/blog.org" ,(format-time-string "%Y"))
                                  "** TODO %?\n:PROPERTIES:\n:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\\\"%(format-time-string \"%Y\")\\\" \\\"%(format-time-string \"%Y-%m\")\\\")\n:EXPORT_FILE_NAME: %(format-time-string \"%Y%m%d%H%M\")\n:END:\n\n")
@@ -1363,6 +1374,35 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
 ```
 
 
+#### Org Roam {#org-roam}
+
+```emacs-lisp
+(leaf org-roam
+  :ensure t
+  :custom
+  (org-roam-directory . "~/src/github.com/grugrut/til")
+  :bind
+  ((:org-roam-mode-map
+    ("C-c n l" . org-roam)
+    ("C-c n f" . org-roam-find-file)
+    ("C-c n g" . org-roam-graph))
+   (:org-mode-map
+    ("C-c n i" . org-roam-insert)
+    ("C-c n I" . org-roam-insert-immediate)))
+  :config
+  (setq org-roam-capture-template '(
+                                    ("r" " Roam" plain (function org-roam--capture-get-point)
+                                     "%?"
+                                     :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                     :head "#+title: ${title}\n"
+                                     :unnarrowed t)
+                                    ))
+  :hook
+  (after-init-hook . org-roam-mode))
+
+```
+
+
 ### Git操作 {#git操作}
 
 ```emacs-lisp
@@ -1399,7 +1439,12 @@ Git gutter:
                              ("r" git-gutter:revert-hunk)
                              ("p" git-gutter:popup-hunk)
                              ("R" git-gutter:set-start-revision)
-                             ("q" nil :color blue))))
+                             ("q" nil :color blue)))
+  (leaf browse-at-remote
+    :ensure t
+    :custom
+    (browse-at-remote-prefer-symbolic . nil)
+    ))
 ```
 
 
@@ -1514,6 +1559,15 @@ ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終�
     (org-hugo-export-as-md)
     (write-file file t)))
 
+```
+
+
+#### Toast通知 {#toast通知}
+
+```emacs-lisp
+(leaf win-toast
+  :el-get (win-toast
+           :url "https://raw.githubusercontent.com/grugrut/win-toast/master/win-toast.el"))
 ```
 
 
