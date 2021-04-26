@@ -1,249 +1,63 @@
 +++
-title = "My Emacs Config"
-date = 2020-09-07
-tags = ["emacs", "config"]
+author = ["DESKTOP-D84HRUA"]
 draft = false
 +++
 
-## Early Init {#early-init}
-
-Emacs 27から `early-init.el` が追加された。
-正直、速度的な効果は感じられないが、せっかくなので追加している。
-
-
-### ヘッダ {#ヘッダ}
-
-```emacs-lisp
-;;; early-init.el --- My early-init script -*- coding: utf-8 ; lexical-binding: t -*-
-;; Author: grugrut <grugruglut+github@gmail.com>
-;; URL:
-;; Version: 1.00
-
-;; This program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-;;; Commentary:
-
-;;; Code:
-
-```
-
-
-### init処理中に問題があれば気付けるように {#init処理中に問題があれば気付けるように}
-
-エラーがおきたときに、ログだけだと問題がどこにあるのかデバッグが大変なので、
-ちゃんとわかるようにしている。
-
-```emacs-lisp
-(setq debug-on-error t)
-```
-
-
-### init.orgだけ編集してたら警告 {#init-dot-orgだけ編集してたら警告}
-
-init.elを直接編集するのではなく、init.org経由で管理するようにしてみたが、
-ついorg編集完了後にinit.elに反映するのを忘れがちになってしまう。
-
-そのため、起動時にチェックしてinit.orgの方が新しかったら警告する。
-本来は、保存時に自動でこの辺やってくれたほうがよい気はする。
-
-```emacs-lisp
-(let ((my-init-org (concat user-emacs-directory "init.org"))
-      (my-init-el (concat user-emacs-directory "init.el"))
-      (my-early-init-el (concat user-emacs-directory "early-init.el")))
-  (when (or (file-newer-than-file-p my-init-org my-init-el)
-            (file-newer-than-file-p my-init-org my-early-init-el))
-    (message "WARN: init.el is old.\n")))
-```
-
-
-### GUIの見た目設定 {#guiの見た目設定}
-
-ツールバーは使わないので消している。
-メニューバーはときどき使うので残している。
-
-Emacs26から登場したネイティブの行番号表示は、ddskkと相性が悪く
-入力中に行がガタガタとずれてつらいので抑制している。
-
-<https://www.grugrut.net/posts/201910202227/>
-
-```emacs-lisp
-;; ツールバーを表示しない
-(tool-bar-mode 0)
-
-;; スクロールバーを表示しない
-(set-scroll-bar-mode nil)
-
-;; 行番号を表示
-(line-number-mode +1)
-(column-number-mode +1)
-
-;; 行番号表示(Emacs26以降)
-(global-display-line-numbers-mode t)
-(custom-set-variables '(display-line-numbers-width-start t))
-```
-
-
-### フレームサイズ {#フレームサイズ}
-
-```emacs-lisp
-(setq default-frame-alist
-      (append '((width                . 140)  ; フレーム幅
-                (height               . 40 ) ; フレーム高
-                (left                 . 170 ) ; 配置左位置
-                (top                  . 30 ) ; 配置上位置
-                (line-spacing         . 0  ) ; 文字間隔
-                (left-fringe          . 12 ) ; 左フリンジ幅
-                (right-fringe         . 12 ) ; 右フリンジ幅
-                (menu-bar-lines       . 1  ) ; メニューバー
-                (cursor-type          . box) ; カーソル種別
-                (alpha                . 100) ; 透明度
-                )
-              default-frame-alist))
-(setq initial-frame-alist default-frame-alist)
-
-(modify-frame-parameters nil '((sticky . t) (width . 100) (height . 40))) ; Xを使う場合の高速化設定らしい
-```
-
-
-### カスタムファイル {#カスタムファイル}
-
-`custom-set-variables` を利用すると、 `custom-file` に設定内容が書かれる。
-しかしこれをロードしてしまうと、 `custom-file` に残ったゴミのせいで、=init.el= を修正したつもりなのに
-昔の設定で動いてしまうことがある。
-
-しかし、定義はしておかないと起動時に文句を言われてしまうので設定だけして読まずに捨ててる。
-
-```emacs-lisp
-(custom-set-variables '(custom-file (expand-file-name "custom.el" user-emacs-directory)))
-```
-
-
-### フッタ {#フッタ}
-
-```emacs-lisp
-;;; early-init.el ends here
-
-```
-
-
-## init.el本体 {#init-dot-el本体}
-
-
-### ヘッダ {#ヘッダ}
-
-```emacs-lisp
-;;; init.el --- My init script -*- coding: utf-8 ; lexical-binding: t -*-
+;;; init.el --- My init script -**- coding: utf-8 ; lexical-binding: t -**-
 
 ;; Author: grugrut
-;; URL: https://github.com/grugrut/.emacs.d/init.el
+;; URL: <https://github.com/grugrut/.emacs.d/init.el>
 
 ;;; Commentary:
 
 ;;; Code:
 
-```
-
-
-### パッケージ読込 {#パッケージ読込}
-
-
-#### leaf.el {#leaf-dot-el}
-
-以前は `use-package` + `straight.el` を使っていたが、
- `straight.el` は、会社のプロキシ環境下での相性が悪く、
-パッケージ取得に失敗してしまうことが多くあきらめた。
-
-現在は、 `leaf.el` を使っていて、
-一部 `packages` だけでは対応しきれないものについては、 `el-get` を使っている。
-
-```emacs-lisp
 ;; leaf.el
 
 (prog1 "leaf"
   (prog1 "install leaf"
     (custom-set-variables
-     '(package-archives '(("org"   . "https://orgmode.org/elpa/")
-                          ("melpa" . "https://melpa.org/packages/")
-                          ("gnu"   . "https://elpa.gnu.org/packages/"))))
+     '(package-archives '(("org"   . "<https://orgmode.org/elpa/>")
+                          ("melpa" . "<https://melpa.org/packages/>")
+                          ("gnu"   . "<https://elpa.gnu.org/packages/>"))))
     (package-initialize)
     (unless (package-installed-p 'leaf)
       (package-refresh-contents)
       (package-install 'leaf)))
 
-  (leaf leaf-keywords
-    :ensure t
-    :config
-    ;; optional packages if you want to use :hydra, :el-get,,,
-    (leaf hydra :ensure t)
-    (leaf el-get :ensure t
-      :custom ((el-get-git-shallow-clone . t)))
+(leaf leaf-keywords
+  :ensure t
+  :config
+  ;; optional packages if you want to use :hydra, :el-get,,,
+  (leaf hydra :ensure t)
+  (leaf el-get :ensure t
+    :custom ((el-get-git-shallow-clone . t)))
 
-    ;; initialize leaf-keywords.el
-    (leaf-keywords-init)))
+;; initialize leaf-keywords.el
+(leaf-keywords-init)))
 
-```
-
-表示するマイナーモードはできるだけ小さくしたいので、 `diminish` で抑制している。
-今のところは制御できているが、 `diminish` はモードの実装によっては適用するのが難しく、
-blackoutの方が簡単らしく、ちょっと気にはなっている。
-
-```emacs-lisp
 (leaf leaf-util-packages
   :config
   (leaf diminish :ensure t :require t)
   (leaf bind-key)
   (leaf key-chord
     :el-get (key-chord
-             :url "https://raw.githubusercontent.com/zk-phi/key-chord/master/key-chord.el")
+             :url "<https://raw.githubusercontent.com/zk-phi/key-chord/master/key-chord.el>")
     :require t
     :config (key-chord-mode 1)))
-```
 
-
-#### Paradox {#paradox}
-
-`package.el` のラッパーとして、 paradoxを使っている。
-表示内容を拡張してわかりやすくしてくれたり、アップデート時に並列で処理をしてくれたりと便利。
-
-```emacs-lisp
 (leaf paradox
   :ensure t
   :config
   (paradox-enable))
-```
 
-
-### early-init.elの読みこみ {#early-init-dot-elの読みこみ}
-
-Emacs27がリリースされる前に、一部の環境では26.3を利用していたので、
-early-init.elに逃した設定を読みこむために入れていた。
-
-今は、Windowsの27バイナリもリリースされたので不要かも。
-
-```emacs-lisp
 (leaf early-init
   :doc "emacs26以前はearly-init.elが使えないので手動で読みこむ"
   :emacs< "27.1"
   :config
   (load (concat user-emacs-directory "early-init.el"))
   )
-```
 
-
-### ライブラリ群 {#ライブラリ群}
-
-```emacs-lisp
 (leaf libraries
   :doc "ライブラリ群"
   :config
@@ -264,59 +78,27 @@ early-init.elに逃した設定を読みこむために入れていた。
   (leaf smartrep
     :ensure t
     :leaf-defer t))
-```
 
+(leaf gcmh
+  :ensure t
+  :diminish gcmh
+  :custom
+  (gcmh-verbose . t)
+  :config
+  (gcmh-mode 1))
 
-### 全体設定 {#全体設定}
+(defun grugrut/gc-debug-function (str)
+  (let ((sum 0))
+    (dolist (x str)
+      (setq sum (+ sum (\* (cl-second x) (cl-third x)))))
+    (message "Used Memory: %d MB" (/ sum (\* 1024 1024)))))
+(advice-add 'garbage-collect :filter-return #'grugrut/gc-debug-function)
 
-
-#### メモリ管理 {#メモリ管理}
-
-<!--list-separator-->
-
--  gcmh
-
-    アイドル状態のときに、ガベージコレクトしてくれるらしい。
-
-    <https://github.com/emacsmirror/gcmh>
-
-    ```emacs-lisp
-    (leaf gcmh
-      :ensure t
-      :diminish gcmh
-      :custom
-      (gcmh-verbose . t)
-      :config
-      (gcmh-mode 1))
-    ```
-
-<!--list-separator-->
-
--  GC後に利用メモリサイズを出力する
-
-    ```emacs-lisp
-    (defun grugrut/gc-debug-function (str)
-      (let ((sum 0))
-        (dolist (x str)
-          (setq sum (+ sum (* (cl-second x) (cl-third x)))))
-        (message "Used Memory: %d MB" (/ sum (* 1024 1024)))))
-    (advice-add 'garbage-collect :filter-return #'grugrut/gc-debug-function)
-    ```
-
-
-#### popwin {#popwin}
-
-```emacs-lisp
 (leaf popwin
   :ensure t
   :custom
   (popwin:popup-window-position . 'bottom))
-```
 
-
-#### 変数設定 {#変数設定}
-
-```emacs-lisp
 (leaf general-setting
   :config
   (prefer-coding-system 'utf-8-unix)
@@ -351,54 +133,36 @@ early-init.elに逃した設定を読みこむために入れていた。
     (global-visual-line-mode t)
     (diminish 'visual-line-mode nil))
 
-  ;; マウスを避けさせる
-  (mouse-avoidance-mode 'jump)
-  (setq frame-title-format "%f")
-  :setq
-  `((large-file-warning-threshold	         . ,(* 25 1024 1024))
-    (read-file-name-completion-ignore-case . t)
-    (use-dialog-box                        . nil)
-    (history-length                        . 500)
-    (history-delete-duplicates             . t)
-    (line-move-visual                      . nil)
-    (mouse-drag-copy-region                . t)
-    (backup-inhibited                      . t)
-    (inhibit-startup-message               . t)
-    (require-final-newline                 . t)
-    (next-line-add-newlines                . nil)
-    (frame-title-format                    . "%f")
-    (truncate-lines                        . t)
-    (read-process-output-max               . ,(* 1024 1024)))
-  :setq-default
-  (indent-tabs-mode . nil) ; タブはスペースで
-  (tab-width        . 2)
-  (require-final-newline . t)
-  )
-```
+;; マウスを避けさせる
+(mouse-avoidance-mode 'jump)
+(setq frame-title-format "%f")
+:setq
+\`((large-file-warning-threshold	         . ,(\* 25 1024 1024))
+  (read-file-name-completion-ignore-case . t)
+  (use-dialog-box                        . nil)
+  (history-length                        . 500)
+  (history-delete-duplicates             . t)
+  (line-move-visual                      . nil)
+  (mouse-drag-copy-region                . t)
+  (backup-inhibited                      . t)
+  (inhibit-startup-message               . t)
+  (require-final-newline                 . t)
+  (next-line-add-newlines                . nil)
+  (frame-title-format                    . "%f")
+  (truncate-lines                        . t)
+  (read-process-output-max               . ,(\* 1024 1024)))
+:setq-default
+(indent-tabs-mode . nil) ; タブはスペースで
+(tab-width        . 2)
+(require-final-newline . t)
+)
 
-
-#### uniquify {#uniquify}
-
-```emacs-lisp
 ;; 同一バッファ名にディレクトリ付与
 (leaf uniquify
   :custom
   (uniquify-buffer-name-style . 'post-forward-angle-brackets)
-  (uniquify-ignore-buffers-re . "*[^*]+*"))
-```
+  (uniquify-ignore-buffers-re . "**[^\*]+**"))
 
-
-### 外観設定 {#外観設定}
-
-
-#### フォント設定 {#フォント設定}
-
-基本的にはCicaを使っているが、Cicaが独自の絵文字領域をもっていて、
-unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵文字が使われない問題があったので、
-範囲をしぼっている。
-不都合があれば、都度追加していく必要がある。
-
-```emacs-lisp
 (leaf font
   :config
   ;; 絵文字
@@ -413,13 +177,13 @@ unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵
   ;; abcdefghik
   ;; 0123456789
   ;; あいうえお
-  (let* ((family "Cica")
+  (let\* ((family "Cica")
          (fontspec (font-spec :family family :weight 'normal)))
     (set-face-attribute 'default nil :family family :height 120)
     (set-fontset-font nil 'ascii fontspec nil 'append)
     (set-fontset-font nil 'japanese-jisx0208 fontspec nil 'append))
-  (add-to-list 'face-font-rescale-alist '(".*icons.*" . 0.9))
-  (add-to-list 'face-font-rescale-alist '(".*FontAwesome.*" . 0.9))
+  (add-to-list 'face-font-rescale-alist '(".\*icons.\*" . 0.9))
+  (add-to-list 'face-font-rescale-alist '(".\*FontAwesome.\*" . 0.9))
   (leaf text-scale
     :hydra (hydra-zoom ()
                        "Zoom"
@@ -428,12 +192,7 @@ unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵
                        ("r" (text-scale-set 0) "reset")
                        ("0" (text-scale-set 0) :bind nil :exit t))
     :bind ("<f2>" . hydra-zoom/body)))
-```
 
-
-#### テーマ設定 {#テーマ設定}
-
-```emacs-lisp
 (leaf doom-themes
   :ensure t
   :config
@@ -441,76 +200,36 @@ unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵
   (doom-themes-visual-bell-config)
   (doom-themes-neotree-config)
   (doom-themes-org-config))
-```
 
+(leaf minions
+  :ensure t
+  :disabled t
+  :config
+  (minions-mode t))
 
-#### モードライン {#モードライン}
+(leaf eldoc
+  :diminish eldoc-mode)
 
-<!--list-separator-->
+(leaf doom-modeline
+  :ensure t
+  :require t
+  :hook (after-init-hook . doom-modeline-mode)
+  :custom
+  (doom-modeline-bar-width . 3)
+  (doom-modeline-height . 25)
+  (doom-modeline-major-mode-color-icon . t)
+  (doom-modeline-minor-modes . t)
+  (doom-modeline-github . nil)
+  (doom-modeline-mu4e . nil)
+  (doom-modeline-irc . nil))
 
--  minions
-
-    モードラインにマイナーモードが並んで圧迫されるのが嫌だったので、
-    一時期は `minions` を使っていた。
-    `ddskk` の状態表示もまとめられてしまって使い勝手が良くなかったので、
-    今は無効化して、不要なマイナーモードは `diminish` で消すようにしている。
-
-    ```emacs-lisp
-    (leaf minions
-      :ensure t
-      :disabled t
-      :config
-      (minions-mode t))
-    ```
-
-<!--list-separator-->
-
--  eldoc
-
-    ```emacs-lisp
-    (leaf eldoc
-      :diminish eldoc-mode)
-    ```
-
-<!--list-separator-->
-
--  doom-modeline
-
-    ```emacs-lisp
-    (leaf doom-modeline
-      :ensure t
-      :require t
-      :hook (after-init-hook . doom-modeline-mode)
-      :custom
-      (doom-modeline-bar-width . 3)
-      (doom-modeline-height . 25)
-      (doom-modeline-major-mode-color-icon . t)
-      (doom-modeline-minor-modes . t)
-      (doom-modeline-github . nil)
-      (doom-modeline-mu4e . nil)
-      (doom-modeline-irc . nil))
-    ```
-
-
-#### beacon {#beacon}
-
-バッファを移動したときに、カーソル位置を一瞬だけ強調してわかりやすくする。
-
-```emacs-lisp
 (leaf beacon
   :ensure t
   :diminish beacon-mode
   :require t
   :config
   (beacon-mode 1))
-```
 
-
-#### volatile-highlights {#volatile-highlights}
-
-ヤンクした場合などに編集箇所を強調表示してわかりやすくする。
-
-```emacs-lisp
 ;; 操作した際に、操作箇所を強調表示する
 (leaf volatile-highlights
   :ensure t
@@ -518,12 +237,7 @@ unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵
   :diminish volatile-highlights-mode
   :config
   (volatile-highlights-mode t))
-```
 
-
-#### インデント表示 {#インデント表示}
-
-```emacs-lisp
 (leaf highlight-indent-guides
   :ensure t
   :require t
@@ -531,18 +245,10 @@ unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵
   :custom
   (highlight-indent-guides-method . 'character)
   (highlight-indent-guides-auto-character-face-perc . 20)
-  (highlight-indent-guides-character . ?\|)
+  (highlight-indent-guides-character . ?\\|)
   :hook
   (prog-mode-hook . highlight-indent-guides-mode))
-```
 
-
-#### ファイル最終行以降をわかりやすく {#ファイル最終行以降をわかりやすく}
-
-vim風に、最終行以降に~を表示する。
-これはfringeに表示するので、行番号表示とずれてしまうのが難点。
-
-```emacs-lisp
 ;; vi風に空行に~を表示する
 (leaf vi-tilde-fringe
   :ensure t
@@ -552,12 +258,7 @@ vim風に、最終行以降に~を表示する。
   :diminish vi-tilde-fringe-mode
   :config
   (global-vi-tilde-fringe-mode))
-```
 
-
-#### minimap {#minimap}
-
-```emacs-lisp
 (leaf minimap
   :ensure t
   :leaf-defer t
@@ -566,40 +267,18 @@ vim風に、最終行以降に~を表示する。
         minimap-update-delay 0.2
         minimap-minimum-width 20)
   :bind ("s-m" . minimap-mode))
-```
 
-
-#### rainbow-mode {#rainbow-mode}
-
-CSSなどのカラーコードを実際の色で表示してくれる。
-
-```emacs-lisp
 (leaf rainbow-mode
   :ensure t
   :leaf-defer t
   :hook
   (web-mode-hook . rainbow-mode))
-```
 
-
-### カーソル移動 {#カーソル移動}
-
-
-#### backward-forward {#backward-forward}
-
-`C-Left` と `C-Right` でマークを行き来できる。あまり使いこなせてない。
-
-```emacs-lisp
 (leaf backward-forward
   :ensure t
   :config
   (backward-forward-mode 1))
-```
 
-
-#### bookmark {#bookmark}
-
-```emacs-lisp
 (leaf bm
   :ensure t
   :leaf-defer t
@@ -610,31 +289,18 @@ CSSなどのカラーコードを実際の色で表示してくれる。
   (("C-S-SPC" . bm-toggle)
    ("C-}" . bm-previous)
    ("C-]" . bm-next)))
-```
 
-
-#### avy {#avy}
-
-vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェースで削除位置を指定できるようにしている。
-
-```emacs-lisp
 (leaf avy
   :ensure t
   :bind
   (("C-:" . avy-goto-char-timer)
-   ("C-*" . avy-resume)
+   ("C-\*" . avy-resume)
    ("M-g M-g" . avy-goto-line))
   :config
   (leaf avy-zap
     :ensure t
     :bind
     ([remap zap-to-char] . avy-zap-to-char)))
-```
-
-
-### ace-window {#ace-window}
-
-```emacs-lisp
 
 (leaf ace-window
   :ensure t
@@ -644,12 +310,7 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   :custom-face
   (aw-leading-char-face . '((t (:height 2.0)))))
-```
 
-
-### ddskk {#ddskk}
-
-```emacs-lisp
 (leaf ddskk
   :ensure t
   :bind
@@ -678,24 +339,16 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   (skk-azik-load-hook . my/skk-azik-disable-tU)
   :preface
   (defun my/skk-azik-disable-tU ()
-    "ddskkのazikモードが`tU'を`っ'として扱うのを抑制する."
+    "ddskkのazikモードが\`tU'を\`っ'として扱うのを抑制する."
     (setq skk-rule-tree (skk-compile-rule-list
                          skk-rom-kana-base-rule-list
                          (skk-del-alist "tU" skk-rom-kana-rule-list)))))
-```
 
-
-### 操作 {#操作}
-
-```emacs-lisp
 (leaf highlight-symbol
   :ensure t
   :leaf-defer t
   :bind
   (("C-." . highlight-symbol-at-point)))
-```
-
-```emacs-lisp
 
 (leaf expand-region
   :ensure t
@@ -703,9 +356,6 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   :bind
   (("C-," . er/expand-region)
    ("C-M-," . er/contract-region)))
-```
-
-```emacs-lisp
 
 (leaf multiple-cursors
   :ensure t
@@ -721,16 +371,13 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
       ("U"   . 'mc/unmark-previous-like-this)
       ("s"   . 'mc/skip-to-next-like-this)
       ("S"   . 'mc/skip-to-previous-like-this)
-      ("*"   . 'mc/mark-all-like-this)
+      ("\*"   . 'mc/mark-all-like-this)
       ("a"   . 'mc/mark-all-like-this)
       ("d"   . 'mc/mark-all-like-this-dwim)
       ("i"   . 'mc/insert-numbers)
       ("l"   . 'mc/insert-letters)
       ("o"   . 'mc/sort-regions)
       ("O"   . 'mc/reverse-regions))))
-```
-
-```emacs-lisp
 
 (leaf smooth-scroll
   :ensure t
@@ -738,20 +385,12 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   :diminish smooth-scroll-mode
   :config
   (smooth-scroll-mode t))
-```
-
-```emacs-lisp
 
 (leaf auto-revert
   :diminish auto-revert-mode
   :config
   (global-auto-revert-mode t))
-```
 
-
-### 検索処理 {#検索処理}
-
-```emacs-lisp
 (leaf search-functions
   :setq
   (case-fold-search . nil) ; 大文字・小文字を区別しないでサーチ（有効：t、無効：nil）
@@ -762,54 +401,41 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
     :leaf-defer t
     :bind (("M-s g" . google-this-noconfirm)))
 
-  (leaf anzu
-    :ensure t
-    :bind
-    (("M-%" . anzu-query-replace))
-    :config
-    (global-anzu-mode +1)
-    )
-
-  (leaf migemo
-    :ensure t
-    :require t
-    :custom
-    (migemo-command . "cmigemo")
-    (migemo-options . '("-q" "--emacs"))
-    (migemo-dictionary . "/usr/share/cmigemo/utf-8/migemo-dict")
-    (migemo-user-dictionary . nil)
-    (migemo-regex-dictionary . nil)
-    (migemo-coding-system . 'utf-8-unix)
-    :config
-    (migemo-init))
-
-  (leaf ripgrep
-    :ensure t
-    :leaf-defer t
-    :bind (("M-s r" . ripgrep-regexp))
-    :config
-    (setq ripgrep-arguments '("-S")))
-  ;; minibufferのアクティブ時、IMEを無効化
-  (add-hook 'minibuffer-setup-hook
-            (lambda ()
-              (deactivate-input-method)))
+(leaf anzu
+  :ensure t
+  :bind
+  (("M-%" . anzu-query-replace))
+  :config
+  (global-anzu-mode +1)
   )
-```
 
+(leaf migemo
+  :ensure t
+  :require t
+  :custom
+  (migemo-command . "cmigemo")
+  (migemo-options . '("-q" "--emacs"))
+  (migemo-dictionary . "/usr/share/cmigemo/utf-8/migemo-dict")
+  (migemo-user-dictionary . nil)
+  (migemo-regex-dictionary . nil)
+  (migemo-coding-system . 'utf-8-unix)
+  :config
+  (migemo-init))
 
-### ソースコード編集 {#ソースコード編集}
+(leaf ripgrep
+  :ensure t
+  :leaf-defer t
+  :bind (("M-s r" . ripgrep-regexp))
+  :config
+  (setq ripgrep-arguments '("-S")))
+;; minibufferのアクティブ時、IMEを無効化
+(add-hook 'minibuffer-setup-hook
+          (lambda ()
+            (deactivate-input-method)))
+)
 
-
-#### コメントスタイル {#コメントスタイル}
-
-```emacs-lisp
 (setq comment-style 'extra-line)
-```
 
-
-#### imenu-list {#imenu-list}
-
-```emacs-lisp
 (leaf imenu-list
   :ensure t
   :bind (("s-i" . imenu-list-smart-toggle))
@@ -820,28 +446,13 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
     :doc "leafのブロックを意識して表示"
     :diminish leaf-tree
     :ensure t))
-```
-
-
-#### ソースコードの折り畳み {#ソースコードの折り畳み}
-
-ソースコードブロックの折り畳みには、yafolgindを使っている。
-
-```emacs-lisp
 
 (leaf yafolding
   :ensure t
   :leaf-defer t
   :hook
   (prog-mode-hook . yafolding-mode))
-```
 
-
-#### projectile {#projectile}
-
-プロジェクトの扱いにはprojectileを使っているが、正直モードライン表示で意識するぐらいにしか使えていない。
-
-```emacs-lisp
 (leaf projectile
   :ensure t t
   :init
@@ -849,12 +460,7 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   (setq projectile-mode-line-prefix " Prj")
   (projectile-mode +1)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
-```
 
-
-#### quickrun {#quickrun}
-
-```emacs-lisp
 (leaf quickrun
   :ensure t
   :leaf-defer t
@@ -862,37 +468,16 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   :commands (quickrun)
   :init
   (bind-key "C-c C-c" 'quickrun prog-mode-map))
-```
-
-
-#### ファイルツリー {#ファイルツリー}
-
-ファイルツリーの表示にはneotreeを使っている。ほとんど使ってない。
-
-```emacs-lisp
 
 (leaf neotree
   :ensure t
   :bind ("H-t" . neotree-toggle))
-```
 
-
-#### エラーチェック {#エラーチェック}
-
-```emacs-lisp
 (leaf flycheck
   :ensure t
   :leaf-defer t
   :diminish flycheck-mode
   :hook (prog-mode-hook . flycheck-mode))
-```
-
-
-#### lsp {#lsp}
-
-lspには、lsp-modeを使っている。
-
-```emacs-lisp
 
 (leaf lsp-mode
   :ensure t
@@ -922,32 +507,29 @@ lspには、lsp-modeを使っている。
     :hydra (hydra-lsp (:exit t :hint nil)
                       "
  Buffer^^               Server^^                   Symbol
--------------------------------------------------------------------------------------
- [_f_] format           [_M-r_] restart            [_d_] declaration  [_i_] implementation  [_o_] documentation
- [_m_] imenu            [_S_]   shutdown           [_D_] definition   [_t_] type            [_r_] rename
- [_x_] execute action   [_M-s_] describe session   [_R_] references   [_s_] signature"
-                      ("d" lsp-find-declaration)
-                      ("D" lsp-ui-peek-find-definitions)
-                      ("R" lsp-ui-peek-find-references)
-                      ("i" lsp-ui-peek-find-implementation)
-                      ("t" lsp-find-type-definition)
-                      ("s" lsp-signature-help)
-                      ("o" lsp-describe-thing-at-point)
-                      ("r" lsp-rename)
 
-                      ("f" lsp-format-buffer)
-                      ("m" lsp-ui-imenu)
-                      ("x" lsp-execute-code-action)
+---
 
-                      ("M-s" lsp-describe-session)
-                      ("M-r" lsp-restart-workspace)
-                      ("S" lsp-shutdown-workspace))))
-```
+[\_f\_] format           [\_M-r\_] restart            [\_d\_] declaration  [\_i\_] implementation  [\_o\_] documentation
+[\_m\_] imenu            [\_S\_]   shutdown           [\_D\_] definition   [\_t\_] type            [\_r\_] rename
+[\_x\_] execute action   [\_M-s\_] describe session   [\_R\_] references   [\_s\_] signature"
+                     ("d" lsp-find-declaration)
+                     ("D" lsp-ui-peek-find-definitions)
+                     ("R" lsp-ui-peek-find-references)
+                     ("i" lsp-ui-peek-find-implementation)
+                     ("t" lsp-find-type-definition)
+                     ("s" lsp-signature-help)
+                     ("o" lsp-describe-thing-at-point)
+                     ("r" lsp-rename)
 
+("f" lsp-format-buffer)
+("m" lsp-ui-imenu)
+("x" lsp-execute-code-action)
 
-#### Golang {#golang}
+("M-s" lsp-describe-session)
+("M-r" lsp-restart-workspace)
+("S" lsp-shutdown-workspace))))
 
-```emacs-lisp
 (leaf golang
   :config
   (leaf go-mode
@@ -958,29 +540,24 @@ lspには、lsp-modeを使っている。
     (add-hook 'before-save-hook 'gofmt-before-save)
     (setq tab-width 4))
 
-  (leaf protobuf-mode
-    :ensure t)
+(leaf protobuf-mode
+  :ensure t)
 
-  (leaf go-impl
-    :ensure t
-    :leaf-defer t
-    :commands go-impl))
-```
+(leaf go-impl
+  :ensure t
+  :leaf-defer t
+  :commands go-impl))
 
-
-#### Web-mode {#web-mode}
-
-```emacs-lisp
 (leaf web-mode
   :ensure t
   :after flycheck
   :defun flycheck-add-mode
-  :mode (("\\.html?\\'" . web-mode)
-         ("\\.scss\\'" . web-mode)
-         ("\\.css\\'" . web-mode)
-         ("\\.twig\\'" . web-mode)
-         ("\\.vue\\'" . web-mode)
-         ("\\.js\\'" . web-mode))
+  :mode (("\\\\.html?\\\\'" . web-mode)
+         ("\\\\.scss\\\\'" . web-mode)
+         ("\\\\.css\\\\'" . web-mode)
+         ("\\\\.twig\\\\'" . web-mode)
+         ("\\\\.vue\\\\'" . web-mode)
+         ("\\\\.js\\\\'" . web-mode))
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq web-mode-markup-indent-offset 2
@@ -990,63 +567,38 @@ lspには、lsp-modeを使っている。
         web-mode-style-padding 1
         web-mode-script-padding 1)
   )
-```
 
-<!--list-separator-->
-
--  emmet
-
-    HTMLタグを簡単に入力できる。
-
-    ```emacs-lisp
-    (leaf emmet-mode
-      :ensure t
-      :leaf-defer t
-      :commands (emmet-mode)
-      :hook
-      (web-mode-hook . emmet-mode))
-    ```
-
-
-#### TypeScript {#typescript}
-
-```emacs-lisp
+(leaf emmet-mode
+  :ensure t
+  :leaf-defer t
+  :commands (emmet-mode)
+  :hook
+  (web-mode-hook . emmet-mode))
 
 (leaf typescript-mode
-  :ensure t)
-```
+  :ensure t
+  :custom
+  (typescript-indent-level . 2)
+  )
 
-
-#### Jenkinsfile編集 {#jenkinsfile編集}
-
-```emacs-lisp
 (leaf groovy-mode
   :ensure t
   :leaf-defer t
   :mode (("Jenkinsfile" . groovy-mode)))
-```
 
-
-#### rust {#rust}
-
-```emacs-lisp
 (leaf rust-mode
   :ensure t
   :leaf-defer t
   :config
   (setq-default rust-format-on-save t))
-```
 
-```emacs-lisp
 (leaf racer
   :ensure t
   :leaf-defer t
   :hook
   (rust-mode-hook . racer-mode)
   (racer-mode-hook . eldoc-mode))
-```
 
-```emacs-lisp
 (leaf flycheck-rust
   :ensure t
   :leaf-defer t
@@ -1055,12 +607,7 @@ lspには、lsp-modeを使っている。
   (add-hook 'rust-mode-hook (lambda ()
                               (racer-mode)
                               (flycheck-rust-setup))))
-```
 
-
-#### Elixir {#elixir}
-
-```emacs-lisp
 (leaf alchemist
   :ensure t
   :leaf-defer t
@@ -1072,9 +619,7 @@ lspには、lsp-modeを使っている。
     (newline-and-indent)
     (forward-line -1)
     (indent-according-to-mode)))
-```
 
-```emacs-lisp
 (leaf elixir-mode
   :ensure t
   :after smartparens
@@ -1093,88 +638,52 @@ lspには、lsp-modeを使っている。
                    :post-handlers '(:add my/elixir-do-end-close-action)
                    :actions '(insert)))
   )
-```
 
-```emacs-lisp
 (leaf flycheck-elixir
   :ensure t
   :leaf-defer t
   :after elixir-mode)
-```
 
-```emacs-lisp
 (leaf elixir-yasnippets
   :ensure t
   :leaf-defer t
   :after elixir-mode)
-```
 
-
-#### python {#python}
-
-pythonのモード複数あってなにがよいのかよくわかっていない。
-
-```emacs-lisp
 (leaf python-mode
   :ensure t
   :leaf-defer t
   :custom ((python-shell-interpreter . "ipython"))
-  :mode (("\\.py\\'" . python-mode))
+  :mode (("\\\\.py\\\\'" . python-mode))
   )
-```
 
-
-#### yaml {#yaml}
-
-```emacs-lisp
 (leaf yaml-mode
   :ensure t
   :leaf-defer t
-  :mode ("\\.yaml\\'" . yaml-mode))
-```
+  :mode ("\\\\.yaml\\\\'" . yaml-mode))
 
-
-#### markdown {#markdown}
-
-```emacs-lisp
 (leaf markdown
   :config
   (leaf markdown-mode
     :ensure t
     :leaf-defer t
-    :mode ("\\.md\\'" . gfm-mode)
+    :mode ("\\\\.md\\\\'" . gfm-mode)
     :custom
     (markdown-command . "github-markup")
     (markdown-command-needs-filename . t))
   (leaf markdown-preview-mode
     :ensure t))
-```
 
-
-#### dockerfile {#dockerfile}
-
-```emacs-lisp
 (leaf dockerfile-mode
   :ensure t)
-```
 
-
-#### plantuml {#plantuml}
-
-```emacs-lisp
 (leaf plantuml-mode
   :ensure t
-  :mode ("\\.puml\\'" . plantuml-mode)
+  :mode ("\\\\.puml\\\\'" . plantuml-mode)
   :custom
   (plantuml-default-exec-mode . 'jar)
   (plantuml-jar-path . "~/bin/plantuml.jar")
   )
-```
 
-
-#### smartparens {#smartparens}
-
-```emacs-lisp
 (leaf smartparens
   :ensure t
   :require smartparens-config
@@ -1183,35 +692,19 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   (prog-mode-hook . turn-on-smartparens-mode)
   :config
   (show-smartparens-global-mode t))
-```
 
-
-#### カッコの対応関係をわかりやすくする {#カッコの対応関係をわかりやすくする}
-
-```emacs-lisp
 (leaf rainbow-delimiters
   :ensure t
   :leaf-defer t
   :hook
   (prog-mode-hook . rainbow-delimiters-mode))
-```
 
-```emacs-lisp
 (leaf fontawesome
   :ensure t)
-```
-
-```emacs-lisp
 
 (leaf codic
   :ensure t
   :leaf-defer t)
-```
-
-
-#### 補完 {#補完}
-
-```emacs-lisp
 
 (leaf code-completion
   :config
@@ -1230,40 +723,37 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
           company-selection-wrap-around t
           company-show-numbers t))
 
-  (leaf company-box
-    :ensure t
-    :require t
-    :diminish company-box-mode
-    :hook (company-mode-hook . company-box-mode)
-    :after all-the-icons
-    :init
-    (setq company-box-icons-elisp
-          (list
-           (concat (all-the-icons-material "functions") " ")
-           (concat (all-the-icons-material "check_circle") " ")
-           (concat (all-the-icons-material "stars") " ")
-           (concat (all-the-icons-material "format_paint") " ")))
-    (setq company-box-icons-unknown (concat (all-the-icons-material "find_in_page") " "))
-    (setq company-box-backends-colors nil)
-    (setq company-box-icons-alist 'company-box-icons-all-the-icons))
+(leaf company-box
+  :ensure t
+  :require t
+  :diminish company-box-mode
+  :hook (company-mode-hook . company-box-mode)
+  :after all-the-icons
+  :init
+  (setq company-box-icons-elisp
+        (list
+         (concat (all-the-icons-material "functions") " ")
+         (concat (all-the-icons-material "check\_circle") " ")
+         (concat (all-the-icons-material "stars") " ")
+         (concat (all-the-icons-material "format\_paint") " ")))
+  (setq company-box-icons-unknown (concat (all-the-icons-material "find\_in\_page") " "))
+  (setq company-box-backends-colors nil)
+  (setq company-box-icons-alist 'company-box-icons-all-the-icons))
 
-  (leaf company-posframe
-    :ensure t
-    :require t
-    :diminish company-posframe-mode
-    :after company
-    :config
-    (company-posframe-mode 1))
+(leaf company-posframe
+  :ensure t
+  :require t
+  :diminish company-posframe-mode
+  :after company
+  :config
+  (company-posframe-mode 1))
 
-  (leaf company-tabnine
-    :ensure t
-    :after company
-    :require t
-    :config
-    (add-to-list 'company-backends #'company-tabnine)))
-```
-
-```emacs-lisp
+(leaf company-tabnine
+  :ensure t
+  :after company
+  :require t
+  :config
+  (add-to-list 'company-backends #'company-tabnine)))
 
 (leaf yasnippet
   :ensure t
@@ -1272,9 +762,6 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   :defun yas-global-mode
   :config
   (yas-global-mode 1))
-```
-
-```emacs-lisp
 
 (leaf view
   :require t
@@ -1286,12 +773,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
           ("l" . forward-char))
   :config
   (setq view-read-only t))
-```
 
-
-### Org Mode {#org-mode}
-
-```emacs-lisp
 (leaf org
   :leaf-defer t
   :bind (("C-c c" . org-capture)
@@ -1300,7 +782,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
           ("C-c C-;" . org-edit-special))
          (:org-src-mode-map
           ("C-c C-;" . org-edit-src-exit)))
-  :mode ("\\.org$'" . org-mode)
+  :mode ("\\\\.org$'" . org-mode)
   ;; :hook  (org-mode . (lambda ()
   ;;                      (set (make-local-variable 'system-time-locale) "C")))
   :config
@@ -1327,16 +809,16 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   :config
   (defvar grugrut/org-inbox-file (concat org-directory "inbox.org"))
   (defvar grugrut/org-journal-file (concat org-directory "journal.org"))
-  (setq org-capture-templates `(
+  (setq org-capture-templates \`(
                                 ("t" " Tasks" entry (file ,grugrut/org-inbox-file)
-                                 "* TODO %? %^G\n:PROPERTIES:\n:DEADLINE: %^{Deadline}T\n:EFFORT: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}\n:END:\n")
+                                 "\* TODO %? %^G\n:PROPERTIES:\n:DEADLINE: %<sup>Deadline</sup>T\n:EFFORT: %<sup>effort|1:00|0:05|0:15|0:30|2:00|4:00</sup>\n:END:\n")
                                 ("e" " Event" entry (file ,grugrut/org-inbox-file)
-                                 "* TODO %? %^G\n:PROPERTIES:\n:SCHEDULED: %^{Scheduled}T\n:EFFORT:%^{effort|1:00|0:05|0:15|0:30|2:00|4:00}\n:END:\n")
+                                 "\* TODO %? %^G\n:PROPERTIES:\n:SCHEDULED: %<sup>Scheduled</sup>T\n:EFFORT:%<sup>effort|1:00|0:05|0:15|0:30|2:00|4:00</sup>\n:END:\n")
                                 ("j" " Journal" entry (file+olp+datetree ,grugrut/org-journal-file)
-                                 "* %<%H:%M> %?")
+                                 "\* %<%H:%M> %?")
                                 ("b" " blog" entry
                                  (file+headline "~/src/github.com/grugrut/blog/draft/blog.org" ,(format-time-string "%Y"))
-                                 "** TODO %?\n:PROPERTIES:\n:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\\\"%(format-time-string \"%Y\")\\\" \\\"%(format-time-string \"%Y-%m\")\\\")\n:EXPORT_FILE_NAME: %(format-time-string \"%Y%m%d%H%M\")\n:END:\n\n")
+                                 "\*\* TODO %?\n:PROPERTIES:\n:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\\\\\\"%(format-time-string \\"%Y\\")\\\\\\" \\\\\\"%(format-time-string \\"%Y-%m\\")\\\\\\")\n:EXPORT_FILE_NAME: %(format-time-string \\"%Y%m%d%H%M\\")\n:END:\n\n")
                                 )))
 
 (leaf org-superstar
@@ -1350,7 +832,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
 (leaf ox-hugo
   :ensure t
   :after ox
-  :mode ("\\.org$'" . org-hugo-auto-export-mode))
+  :mode ("\\\\.org$'" . org-hugo-auto-export-mode))
 
 (leaf ob
   :leaf-defer t
@@ -1371,12 +853,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
      (go . t)
      (rust . t)
      (plantuml . t))))
-```
 
-
-#### Org Roam {#org-roam}
-
-```emacs-lisp
 (leaf org-roam
   :ensure t
   :custom
@@ -1400,12 +877,6 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   :hook
   (after-init-hook . org-roam-mode))
 
-```
-
-
-### Git操作 {#git操作}
-
-```emacs-lisp
 (leaf git
   :config
   (leaf magit
@@ -1424,10 +895,10 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
                                         :hint nil)
                              "
 Git gutter:
-  _j_: next hunk     _s_tage hunk   _q_uit
-  _k_: previous hunk _r_evert hunk
-  _h_: first hunk    _p_opup hunk
-  _l_: last hunk     set _R_evision
+  <span class="underline">j</span>: next hunk     <span class="underline">s\_tage hunk   \_q\_uit
+  \_k</span>: previous hunk <span class="underline">r\_evert hunk
+  \_h</span>: first hunk    <span class="underline">p\_opup hunk
+  \_l</span>: last hunk     set \_R\_evision
 "
                              ("j" git-gutter:next-hunk)
                              ("k" git-gutter:previous-hunk)
@@ -1445,14 +916,7 @@ Git gutter:
     :custom
     (browse-at-remote-prefer-symbolic . nil)
     ))
-```
 
-
-### Ivy {#ivy}
-
-ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終了しそうになったこととivyに移行中。
-
-```emacs-lisp
 (leaf counsel
   :ensure t
   :require t
@@ -1485,7 +949,7 @@ ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終�
     ("C-l" . counsel-up-directory)))
   :preface
   (defun grugrut/ivy-partial ()
-    "helmの `helm-execute-persistent-action' に近いものを実現する.
+    "helmの \`helm-execute-persistent-action' に近いものを実現する.
 完全に同じものは無理だったので、ディレクトリなら入る、それ以外はできるだけ補完しバッファは抜けない動作をおこなう."
     (interactive)
     (cond
@@ -1511,46 +975,30 @@ ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終�
      cands
      "\n"))
   )
-```
 
-```emacs-lisp
 (leaf all-the-icons-ivy-rich
   :ensure t
   :init (all-the-icons-ivy-rich-mode 1))
-```
 
-```emacs-lisp
 (leaf ivy-rich
   :ensure t
   :init (ivy-rich-mode 1))
-```
 
-```emacs-lisp
 (leaf ivy-posframe
   :ensure t
   :diminish t
   :custom
   (ivy-posframe-display-functions-alist . '((t . ivy-posframe-display-at-frame-center)))
   :init (ivy-posframe-mode 1))
-```
 
-
-### 外部連携 {#外部連携}
-
-```emacs-lisp
 (leaf atomic-chrome
   :ensure t
   :config
   (atomic-chrome-start-server))
-```
 
+(leaf vterm
+  :ensure t)
 
-### Utility {#utility}
-
-
-#### markdownへの出力 {#markdownへの出力}
-
-```emacs-lisp
 (defun grugrut/export-my-init-to-blog ()
   ""
   (interactive)
@@ -1559,21 +1007,10 @@ ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終�
     (org-hugo-export-as-md)
     (write-file file t)))
 
-```
-
-
-#### Toast通知 {#toast通知}
-
-```emacs-lisp
 (leaf win-toast
   :el-get (win-toast
-           :url "https://raw.githubusercontent.com/grugrut/win-toast/master/win-toast.el"))
-```
+           :url "<https://raw.githubusercontent.com/grugrut/win-toast/master/win-toast.el>"))
 
-
-### キー設定 {#キー設定}
-
-```emacs-lisp
 (leaf key-settings
   :doc "キー入力設定"
   :config
@@ -1604,12 +1041,5 @@ ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終�
     :doc "利用していないキーマップを教えてくれる"
     :ensure t)
   )
-```
 
-
-### フッタ {#フッタ}
-
-```emacs-lisp
 ;;; init.el ends here
-
-```
