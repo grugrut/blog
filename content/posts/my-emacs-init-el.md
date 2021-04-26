@@ -1,5 +1,7 @@
 +++
-author = ["DESKTOP-D84HRUA"]
+title = "My Emacs Config"
+date = 2021-04-26
+tags = ["emacs", "config"]
 draft = false
 +++
 
