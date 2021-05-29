@@ -1,3 +1,3 @@
-[submodule "themes/beautifulhugo"]
-	path = themes/beautifulhugo
-	url = https://github.com/halogenica/beautifulhugo.git
+[submodule "themes/sauvignon"]
+	path = themes/sauvignon
+	url = git@github.com:grugrut/hugo-sauvignon-theme.git
