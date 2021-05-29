@@ -3187,6 +3187,8 @@ CONTAINER ID   IMAGE                            COMMAND    CREATED         STATU
 **** つまづいたポイント
      インスタンスロールに、 =AmazonSSMRoleForAutomationAssumeQuickSetup= が出てきたので
      これでいいのかなと選んでしまったが、ECS周りのポリシーが不足しているのでインストールでこけた。
+     新しいロールを作成する、で作ってもらうか =AmazonSSMManagedInstanceCore= =AmazonEC2ContainerServiceforEC2Role=
+     のポリシーがアタッチされたロールを作って設定するのが正解だったようだ。
 
      /var/log/ecs/ecs-agent.logに以下のようなログが出るので問題がどこにあるかはすぐにわかる。
 #+begin_quote
