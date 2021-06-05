@@ -1,7 +1,7 @@
 baseURL = "https://www.grugrut.net"
-DefaultContentLanguage = "en"
+DefaultContentLanguage = "ja"
 title = "ぐるっとぐりっど"
-theme = "grugrut"
+theme = "sauvignon"
 disqusShortname = "grugrut"
 googleAnalytics = "UA-41607666-9"
 enableGitInfo = true
