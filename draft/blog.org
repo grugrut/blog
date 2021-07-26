@@ -3211,15 +3211,15 @@ level=error time=2021-05-28T23:36:26Z msg="Unable to register as a container ins
    #+begin_src plain
 # docker ps
 CONTAINER ID   IMAGE                                                        COMMAND                  CREATED          STATUS                    PORTS                                         NAMES
-5a6dc5f7a402   066582408312.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49153->8080/tcp, :::49153->8080/tcp   ecs-go-hello-1-go-hello-e09cf6f5e6f3e895b901
-a371576de001   066582408312.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49154->8080/tcp, :::49154->8080/tcp   ecs-go-hello-1-go-hello-d08094a6fb85aefc1400
+5a6dc5f7a402   123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49153->8080/tcp, :::49153->8080/tcp   ecs-go-hello-1-go-hello-e09cf6f5e6f3e895b901
+a371576de001   123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49154->8080/tcp, :::49154->8080/tcp   ecs-go-hello-1-go-hello-d08094a6fb85aefc1400
 8ec251e819a2   amazon/amazon-ecs-agent:latest                               "/agent"                 14 minutes ago   Up 14 minutes (healthy)                                                 ecs-agent
 # curl localhost:49153
 Hello, World! My name is 5a6dc5f7a402
 # curl localhost:49154
 Hello, World! My name is a371576de001
    #+end_src
-
+   
 *** 所感
     想像以上に簡単にオンプレ側にコンテナインスタンスを作成することができた。
 
@@ -3235,3 +3235,362 @@ Hello, World! My name is a371576de001
 
     タスクへのインバウンド通信の手段が無いといろいろ不便な気がするので、
     その辺は今後に期待なのかと思う。
+** DONE EKSのPodのSecurityGroupを試す                               :aws:eks:
+   CLOSED: [2021-07-26 Mon 23:50]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-07\")
+:EXPORT_FILE_NAME: 202107250958
+:END:
+
+EKSは、3年前ぐらいに少しさわったぐらいで、あまり深くいじれてなかったので、再入門してみる。
+今回は、2020年の9月ごろに利用できるようになった、Podへのセキュリティグループの割当てを試してみる。
+*** セットアップ
+
+    ドキュメントを参考にセットアップする。
+    
+ https://docs.aws.amazon.com/ja_jp/eks/latest/userguide/security-groups-for-pods.html
+
+ やることは、eksクラスタのIAMロールに =AmazonEKSVPCResourceController= マネージドポリシーを追加することと
+ 以下のコマンドで =aws-node= デーモンセットの環境変数でPodへのENI割当てを有効化するぐらい。
+
+#+begin_src bash
+   $ kubectl set env daemonset aws-node -n kube-system ENABLE_POD_ENI=true
+#+end_src
+*** 試してみる
+
+    実際にPodに適用して試してみる。
+
+    あまり複雑にしてもしょうがないので、nginxを3種類動かす。
+
+    #+begin_src bash
+      $ kubectl create deployment nginx --image nginx
+      $ kubectl expose deployment nginx --port 80
+      $ kubectl create deployment nginx2 --image nginx
+      $ kubectl expose deployment nginx2 --port 80
+      $ kubectl create deployment nginx3 --image nginx
+      $ kubectl expose deployment nginx3 --port 80
+
+      $ kubectl get pod --show-labels
+      NAME                      READY   STATUS    RESTARTS   AGE   LABELS
+      nginx-596bdcb889-qbvsf    1/1     Running   0          30s   app=nginx,pod-template-hash=596bdcb889
+      nginx2-5fc4444698-srd9l   1/1     Running   0          20h   app=nginx2,pod-template-hash=5fc4444698
+      nginx3-5465449d99-7jfww   1/1     Running   0          34m   app=nginx3,pod-template-hash=5465449d99
+#+end_src
+
+まずは、何もセキュリティグループを設定していない状態なので、
+各Pod間で通信できることを確認する。
+
+#+begin_src bash
+      $ kubectl exec nginx-596bdcb889-qbvsf  -- curl nginx2 -s --head
+      HTTP/1.1 200 OK
+
+      $ kubectl exec nginx-596bdcb889-qbvsf  -- curl nginx3 -s --head
+      HTTP/1.1 200 OK
+
+      $ kubectl exec nginx2-5fc4444698-srd9l -- curl nginx -s --head
+      HTTP/1.1 200 OK
+
+      $ kubectl exec nginx2-5fc4444698-srd9l -- curl nginx3 -s --head
+      HTTP/1.1 200 OK
+
+      $ kubectl exec nginx3-5465449d99-7jfww -- curl nginx -s --head
+      HTTP/1.1 200 OK
+
+      $ kubectl exec nginx3-5465449d99-7jfww -- curl nginx2 -s --head
+      HTTP/1.1 200 OK
+#+end_src
+
+同じセキュリティグループからのTCP80を許可するセキュリティグループを作成し、内容を確認する。
+
+#+begin_src bash
+  $ aws ec2 describe-security-groups --group-ids sg-0ee9cf2b805966c5a
+  {
+      "SecurityGroups": [
+          {
+              "Description": "Allow access to 80",
+              "GroupName": "eks-sg-policy-nginx",
+              "IpPermissions": [
+                  {
+                      "FromPort": 80,
+                      "IpProtocol": "tcp",
+                      "IpRanges": [],
+                      "Ipv6Ranges": [],
+                      "PrefixListIds": [],
+                      "ToPort": 80,
+                      "UserIdGroupPairs": [
+                          {
+                              "GroupId": "sg-0ee9cf2b805966c5a",
+                              "UserId": "123456789012"
+                          }
+                      ]
+                  }
+              ],
+              "OwnerId": "123456789012",
+              "GroupId": "sg-0ee9cf2b805966c5a",
+              "IpPermissionsEgress": [
+                  {
+                      "IpProtocol": "-1",
+                      "IpRanges": [
+                          {
+                              "CidrIp": "0.0.0.0/0"
+                          }
+                      ],
+                      "Ipv6Ranges": [],
+                      "PrefixListIds": [],
+                      "UserIdGroupPairs": []
+                  }
+              ],
+              "VpcId": "vpc-0d0d85fab71542349"
+          }
+      ]
+  }
+
+#+end_src
+次に =nginx= と =nginx2= にだけセキュリティグループが割当てられるようにラベルをつける。
+#+begin_src bash
+  $ kubectl label pod nginx-596bdcb889-qbvsf sg=true
+  pod/nginx-596bdcb889-qbvsf labeled
+  $ kubectl label pod nginx2-5fc4444698-srd9l sg=true
+  pod/nginx2-5fc4444698-srd9l labeled
+  $ kubectl label pod nginx3-5465449d99-7jfww sg=false
+  pod/nginx3-5465449d99-7jfww labeled
+
+  $ kubectl get pod --show-labels
+  NAME                      READY   STATUS    RESTARTS   AGE     LABELS
+  nginx-596bdcb889-qbvsf    1/1     Running   0          3m58s   app=nginx,pod-template-hash=596bdcb889,sg=true
+  nginx2-5fc4444698-srd9l   1/1     Running   0          20h     app=nginx2,pod-template-hash=5fc4444698,sg=true
+  nginx3-5465449d99-7jfww   1/1     Running   0          38m     app=nginx3,pod-template-hash=5465449d99,sg=false
+#+end_src
+最後に、 =SecurityGroupPolicy= を作成して、 =sg=true= のラベルがついたPodにのみ、
+先ほど作成したTCP80を許可するセキュリティグループが割り当てられるように設定する。
+#+begin_src bash
+  $ cat <<EOF | kubectl apply -f -
+  apiVersion: vpcresources.k8s.aws/v1beta1
+  kind: SecurityGroupPolicy
+  metadata:
+    name: sgp-eks-sg-policy-nginx
+  spec:
+    podSelector: 
+      matchLabels:
+        sg: "true"
+    securityGroups:
+      groupIds:
+      - sg-0ee9cf2b805966c5a
+  EOF
+#+end_src
+これで  =nginx= と =nginx2= 間は通信できて、 =nginx3= からは通信できなくなる、はずだったのだが、通信できてしまった。
+#+begin_src bash
+  $ kubectl exec nginx3-5465449d99-7jfww -- curl nginx -s --head
+  HTTP/1.1 200 OK
+#+end_src
+
+どうやら、 =SecurityGroupPolicy= を作成すると、該当するPodにENIが割り当てられることで、
+セキュリティグループを利用できるようになるのだが、その動作はPod起動時にしか反映されないらしい。
+
+しょうがないので、Deploymentの設定をいじって、Podを再作成する。
+Podの再作成後、再度ラベルが付与されていることを確認する。
+
+#+begin_src bash
+  $ kubectl get pod --show-labels
+  NAME                      READY   STATUS    RESTARTS   AGE   LABELS
+  nginx-8667fff857-wsdsd    1/1     Running   0          49s   app=nginx,pod-template-hash=8667fff857,sg=true
+  nginx2-7bf6674f46-2nb2v   1/1     Running   0          31s   app=nginx2,pod-template-hash=7bf6674f46,sg=true
+  nginx3-5b6ffc5664-wl8k5   1/1     Running   0          18s   app=nginx3,pod-template-hash=5b6ffc5664,sg=false
+#+end_src
+
+ラベルが付与されていることを確認できたので、再度通信テストしてみる。
+
+今度は期待通り、 =nginx3= からの通信はおこなえず、それ以外の通信は許可されていることがわかる。
+終了コードも7なので、ホストに接続できなかったことを示している。
+
+#+begin_src bash
+  $ kubectl exec nginx-8667fff857-wsdsd  -- curl nginx2 -s --head
+  HTTP/1.1 200 OK
+  $ kubectl exec nginx-8667fff857-wsdsd  -- curl nginx3 -s --head
+  HTTP/1.1 200 OK
+  $ kubectl exec nginx2-7bf6674f46-2nb2v  -- curl nginx -s --head
+  HTTP/1.1 200 OK
+  $ kubectl exec nginx2-7bf6674f46-2nb2v  -- curl nginx3 -s --head
+  HTTP/1.1 200 OK
+  $ kubectl exec nginx3-5b6ffc5664-wl8k5 -- curl nginx -s --head
+  command terminated with exit code 7
+  $ kubectl exec nginx3-5b6ffc5664-wl8k5 -- curl nginx2 -s --head
+  command terminated with exit code 7
+#+end_src
+
+EC2でしか利用できずFargateでは利用できないとか、EC2に割り当てられるENIの上限がそのままノードで起動できるPod数の上限になるとか、
+使い勝手が必ずしもよいとは言えないが、NetworkPolicyよりも手軽には使えるな、という印象。
+*** Podの違い
+
+=kubectl describe= で見てみると、セキュリティグループを割り当てたPodには
+割り当てていないPodよりもいくつか設定が追加されていることが確認できた。
+**** セキュリティグループを割り当てたPod
+     
+ #+begin_src bash
+   $ kubectl describe pod nginx-8667fff857-wsdsd
+   Name:         nginx-8667fff857-wsdsd
+   Namespace:    default
+   Priority:     0
+   Node:         ip-10-0-0-161.ap-northeast-1.compute.internal/10.0.0.161
+   Start Time:   Sun, 25 Jul 2021 01:39:54 +0000
+   Labels:       app=nginx
+                 pod-template-hash=8667fff857
+                 sg=true
+   Annotations:  kubectl.kubernetes.io/restartedAt: 2021-07-25T01:31:55Z
+                 kubernetes.io/psp: eks.privileged
+                 vpc.amazonaws.com/pod-eni:
+                   [{"eniId":"eni-0e89d1162f64567cf","ifAddress":"06:e3:5d:e6:08:31","privateIp":"10.0.0.48","vlanId":1,"subnetCidr":"10.0.0.0/24"}]
+   Status:       Running
+   IP:           10.0.0.48
+   IPs:
+     IP:           10.0.0.48
+   Controlled By:  ReplicaSet/nginx-8667fff857
+   Containers:
+     nginx:
+       Container ID:   docker://8b8288860b60c8f5212992706a1b7ee07acc3bfab95f2c386b21e7a8158fc9d4
+       Image:          nginx
+       Image ID:       docker-pullable://nginx@sha256:8f335768880da6baf72b70c701002b45f4932acae8d574dedfddaf967fc3ac90
+       Port:           <none>
+       Host Port:      <none>
+       State:          Running
+         Started:      Sun, 25 Jul 2021 01:39:58 +0000
+       Ready:          True
+       Restart Count:  0
+       Limits:
+         vpc.amazonaws.com/pod-eni:  1
+       Requests:
+         vpc.amazonaws.com/pod-eni:  1
+       Environment:                  <none>
+       Mounts:
+         /var/run/secrets/kubernetes.io/serviceaccount from default-token-fpfjx (ro)
+   Conditions:
+     Type              Status
+     Initialized       True 
+     Ready             True 
+     ContainersReady   True 
+     PodScheduled      True 
+   Volumes:
+     default-token-fpfjx:
+       Type:        Secret (a volume populated by a Secret)
+       SecretName:  default-token-fpfjx
+       Optional:    false
+   QoS Class:       BestEffort
+   Node-Selectors:  <none>
+   Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                    node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+                    vpc.amazonaws.com/pod-eni:NoSchedule op=Exists
+   Events:
+     Type     Reason                  Age   From                     Message
+     ----     ------                  ----  ----                     -------
+     Normal   Scheduled               99s   default-scheduler        Successfully assigned default/nginx-8667fff857-wsdsd to ip-10-0-0-161.ap-northeast-1.compute.internal
+     Normal   SecurityGroupRequested  99s   vpc-resource-controller  Pod will get the following Security Groups [sg-0ee9cf2b805966c5a]
+     Warning  FailedCreatePodSandBox  99s   kubelet                  Failed to create pod sandbox: rpc error: code = Unknown desc = failed to set up sandbox container "863c69846507747844c18042d7ad2505b6316bcafd9395ca33f9480578599203" network for pod "nginx-8667fff857-wsdsd": networkPlugin cni failed to set up pod "nginx-8667fff857-wsdsd_default" network: add cmd: failed to assign an IP address to container
+     Normal   ResourceAllocated       98s   vpc-resource-controller  Allocated [{"eniId":"eni-0e89d1162f64567cf","ifAddress":"06:e3:5d:e6:08:31","privateIp":"10.0.0.48","vlanId":1,"subnetCidr":"10.0.0.0/24"}] to the pod
+     Normal   SandboxChanged          98s   kubelet                  Pod sandbox changed, it will be killed and re-created.
+     Normal   Pulling                 97s   kubelet                  Pulling image "nginx"
+     Normal   Pulled                  95s   kubelet                  Successfully pulled image "nginx" in 2.423182635s
+     Normal   Created                 95s   kubelet                  Created container nginx
+     Normal   Started                 95s   kubelet                  Started container nginx
+     #+end_src
+**** セキュリティグループを割り当てないPod
+     #+begin_src bash
+   $ kubectl describe pod nginx3-5b6ffc5664-wl8k5
+   Name:         nginx3-5b6ffc5664-wl8k5
+   Namespace:    default
+   Priority:     0
+   Node:         ip-10-0-0-161.ap-northeast-1.compute.internal/10.0.0.161
+   Start Time:   Sun, 25 Jul 2021 01:40:25 +0000
+   Labels:       app=nginx3
+                 pod-template-hash=5b6ffc5664
+                 sg=false
+   Annotations:  kubernetes.io/psp: eks.privileged
+   Status:       Running
+   IP:           10.0.0.180
+   IPs:
+     IP:           10.0.0.180
+   Controlled By:  ReplicaSet/nginx3-5b6ffc5664
+   Containers:
+     nginx:
+       Container ID:   docker://bee90795077ee863e602f81950d34c6572c1018b9bea99d3e0167f8957ab9ed9
+       Image:          nginx
+       Image ID:       docker-pullable://nginx@sha256:8f335768880da6baf72b70c701002b45f4932acae8d574dedfddaf967fc3ac90
+       Port:           <none>
+       Host Port:      <none>
+       State:          Running
+         Started:      Sun, 25 Jul 2021 01:40:29 +0000
+       Ready:          True
+       Restart Count:  0
+       Environment:    <none>
+       Mounts:
+         /var/run/secrets/kubernetes.io/serviceaccount from default-token-fpfjx (ro)
+   Conditions:
+     Type              Status
+     Initialized       True 
+     Ready             True 
+     ContainersReady   True 
+     PodScheduled      True 
+   Volumes:
+     default-token-fpfjx:
+       Type:        Secret (a volume populated by a Secret)
+       SecretName:  default-token-fpfjx
+       Optional:    false
+   QoS Class:       BestEffort
+   Node-Selectors:  <none>
+   Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                    node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+   Events:
+     Type    Reason     Age    From               Message
+     ----    ------     ----   ----               -------
+     Normal  Scheduled  4m38s  default-scheduler  Successfully assigned default/nginx3-5b6ffc5664-wl8k5 to ip-10-0-0-161.ap-northeast-1.compute.internal
+     Normal  Pulling    4m37s  kubelet            Pulling image "nginx"
+     Normal  Pulled     4m35s  kubelet            Successfully pulled image "nginx" in 2.441671981s
+     Normal  Created    4m35s  kubelet            Created container nginx
+     Normal  Started    4m34s  kubelet            Started container nginx
+#+end_src
+
+   $ kubectl describe pod nginx-8667fff857-qrxzj
+   Name:           nginx-8667fff857-qrxzj
+   Namespace:      default
+   Priority:       0
+   Node:           <none>
+   Labels:         app=nginx
+                   pod-template-hash=8667fff857
+                   sg=true
+   Annotations:    kubectl.kubernetes.io/restartedAt: 2021-07-25T01:31:55Z
+                   kubernetes.io/psp: eks.privileged
+   Status:         Pending
+   IP:             
+   IPs:            <none>
+   Controlled By:  ReplicaSet/nginx-8667fff857
+   Containers:
+     nginx:
+       Image:      nginx
+       Port:       <none>
+       Host Port:  <none>
+       Limits:
+         vpc.amazonaws.com/pod-eni:  1
+       Requests:
+         vpc.amazonaws.com/pod-eni:  1
+       Environment:                  <none>
+       Mounts:
+         /var/run/secrets/kubernetes.io/serviceaccount from default-token-fpfjx (ro)
+   Conditions:
+     Type           Status
+     PodScheduled   False 
+   Volumes:
+     default-token-fpfjx:
+       Type:        Secret (a volume populated by a Secret)
+       SecretName:  default-token-fpfjx
+       Optional:    false
+   QoS Class:       BestEffort
+   Node-Selectors:  <none>
+   Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                    node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+                    vpc.amazonaws.com/pod-eni:NoSchedule op=Exists
+   Events:
+     Type     Reason            Age                 From               Message
+     ----     ------            ----                ----               -------
+     Warning  FailedScheduling  95s (x5 over 110s)  default-scheduler  0/2 nodes are available: 2 node(s) were unschedulable.
+     Warning  FailedScheduling  56s (x3 over 77s)   default-scheduler  0/3 nodes are available: 1 node(s) had taint {node.kubernetes.io/not-ready: }, that the pod didn't tolerate, 2 node(s) were unschedulable.
+     Warning  FailedScheduling  1s (x3 over 46s)    default-scheduler  0/3 nodes are available: 1 Insufficient vpc.amazonaws.com/pod-eni, 2 node(s) were unschedulable
+  #+end_src
