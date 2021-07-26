@@ -3209,8 +3209,8 @@ level=error time=2021-05-28T23:36:26Z msg="Unable to register as a container ins
    #+begin_src plain
 # docker ps
 CONTAINER ID   IMAGE                                                        COMMAND                  CREATED          STATUS                    PORTS                                         NAMES
-5a6dc5f7a402   066582408312.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49153->8080/tcp, :::49153->8080/tcp   ecs-go-hello-1-go-hello-e09cf6f5e6f3e895b901
-a371576de001   066582408312.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49154->8080/tcp, :::49154->8080/tcp   ecs-go-hello-1-go-hello-d08094a6fb85aefc1400
+5a6dc5f7a402   123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49153->8080/tcp, :::49153->8080/tcp   ecs-go-hello-1-go-hello-e09cf6f5e6f3e895b901
+a371576de001   123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/go-hello   "/bin/sh -c /bin/go-…"   29 seconds ago   Up 26 seconds             0.0.0.0:49154->8080/tcp, :::49154->8080/tcp   ecs-go-hello-1-go-hello-d08094a6fb85aefc1400
 8ec251e819a2   amazon/amazon-ecs-agent:latest                               "/agent"                 14 minutes ago   Up 14 minutes (healthy)                                                 ecs-agent
 # curl localhost:49153
 Hello, World! My name is 5a6dc5f7a402
