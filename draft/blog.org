@@ -3424,7 +3424,6 @@ EC2でしか利用できずFargateでは利用できないとか、EC2に割り�
 
 =kubectl describe= で見てみると、セキュリティグループを割り当てたPodには
 割り当てていないPodよりもいくつか設定が追加されていることが確認できた。
-
 **** セキュリティグループを割り当てないPod
      いたって普通の設定内容。
      
@@ -3470,7 +3469,7 @@ EC2でしか利用できずFargateでは利用できないとか、EC2に割り�
      アタッチしたENIに関するアノテーションや、Tolerationsが追加されていることがわかる。
      また、起動時のイベントを見てみても、最初はENIがアタッチされておらず起動できなかったのが、
      vpc-resource-controllerが動いてENIをアタッチすることで起動できたことがわかる。
-     
+
  #+begin_src bash
    $ kubectl describe pod nginx-8667fff857-wsdsd
    Name:         nginx-8667fff857-wsdsd
