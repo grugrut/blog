@@ -1087,7 +1087,7 @@ kubectl tkn taskrun logs echo-hello-world-task-run
 
 やりました。 [[Tektonでパイプラインを動かす]]
 
-** DONE Tektonでパイプラインを動かす                                 :tekton:kubernetes:
+** DONE Tektonでパイプラインを動かす                      :tekton:kubernetes:
    CLOSED: [2020-07-24 Fri 15:47]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -3466,8 +3466,8 @@ EC2でしか利用できずFargateでは利用できないとか、EC2に割り�
 #+end_src
 
 **** セキュリティグループを割り当てたPod
-     アタッチしたENIに関するアノテーションや、Tolerationsが追加されていることがわかる。
-     また、起動時のイベントを見てみても、最初はENIがアタッチされておらず起動できなかったのが、
+アタッチしたENIに関するアノテーションや、Tolerationsが追加されていることがわかる。
+また、起動時のイベントを見てみても、最初はENIがアタッチされておらず起動できなかったのが、
      vpc-resource-controllerが動いてENIをアタッチすることで起動できたことがわかる。
 
  #+begin_src bash
@@ -3534,3 +3534,30 @@ Podのセキュリティグループは、利用できるインスタンスタ�
     ----     ------            ----                ----               -------
     Warning  FailedScheduling  1s (x3 over 46s)    default-scheduler  0/3 nodes are available: 1 Insufficient vpc.amazonaws.com/pod-eni, 2 node(s) were unschedulable
  #+end_src
+** TODO org modeのノードのレベルに応じたインデントを止める        :org:emacs:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-07\")
+:EXPORT_FILE_NAME: 202107301104
+:END:
+
+#+begin_src emacs-lisp
+(custom-set-variables '(org-adapt-indentation nil))
+#+end_src
+* 2022
+** TODO bitboardアルゴリズムでN-Queen問題を解く                   :Algorithm:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-01\")
+:EXPORT_FILE_NAME: 202201142319
+:END:
+*** はじめに
+
+探索アルゴリズムを組むにあたって、配列を使うと効率が良くないので
+ビット列を使って節約することが知られている。
+自分もオセロのCPUアルゴリズムを組んでいるときにビットボードの存在を知った。
+ビットボードは書いたことがなく面白そうだったので、比較的簡単なアルゴリズムで書けるN-Queenをbitboardで解いてみることにした。
+*** N-Queen問題
+その名の通りだが、NxNのチェス版に、N個のクイーンを互いに取られない位置に配置する組み合わせを求める問題である。
+クイーンは将棋の飛車と角行を組み合わせた動き、つまり縦横斜めに移動できるので、
+その一直線上に複数のクイーンが配置されないようにする必要がある。
+
+
