@@ -3544,7 +3544,7 @@ Podのセキュリティグループは、利用できるインスタンスタ�
 (custom-set-variables '(org-adapt-indentation nil))
 #+end_src
 * 2022
-** DONE bitboardアルゴリズムでN-Queen問題を解く                   :Algorithm:
+** DONE bitboardアルゴリズムでN-Queen問題を解く                   :algorithm:
 CLOSED: [2022-01-18 Tue 23:43]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-01\")
@@ -3620,3 +3620,10 @@ uint64でビット演算を考えると意外と思い違いなどもあり、�
 
 もともとの目的だったオセロのアルゴリズムについても今後ビットボードアルゴリズムで書き直して
 短時間で強い探索ができるオセロAIを作成していきたい。
+** TODO 戦略の本を読んだ                                               :book:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-01\")
+:EXPORT_FILE_NAME: 202201242348
+:END:
+
+最近、戦略周りを考えることがあり、戦略とはなんぞやって本を数冊読んでみた。
