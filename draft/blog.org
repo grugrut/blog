@@ -3630,4 +3630,236 @@ uint64でビット演算を考えると意外と思い違いなどもあり、�
 本の選択基準は、年末のKindleセール対象になってたとかそれぐらい。
 
 *** 良い戦略、悪い戦略
+** TODO ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-04\")
+:EXPORT_FILE_NAME: 202204241336
+:END:
+[[*ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する][ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する]]
+の後、CloudWatchエージェント自体にPrometheusメトリクスを収集する機能が追加されていたが、
+試せてなかったので、今回試してみた。
+
+ほとんど公式ドキュメントに書いてあることをやってみただけだが、あちこちにちらばって記載されていて、ちょっとわかりにくい。
+*** アプリケーション側の準備
+まずは情報の取得元となるJavaアプリケーションを用意する。
+SpringBootであれば、SpringBoot ActuatorがPrometheusエンドポイントを用意しているので、簡単にJavaアプリケーションの情報(ヒープやgcなど)をPrometheusのメトリクスとして公開することができる。
+
+pom.xmlに以下の依存関係を設定する。actuatorはSpringBoot Starterで設定してしまうほうが多いので、 =micrometer-registry-prometheus= だけ追加するほうが多い気はする。
+#+begin_src xml
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-prometheus</artifactId>
+  </dependency>
+#+end_src
+
+そして、 =application.properties= に公開するエンドポイントを設定してあげればよい。
+#+begin_src plain
+management.endpoints.web.exposure.include=health,prometheus
+#+end_src
+
+これだけで、起動したアプリケーションに対して =/actuator/prometheus= のパスにアクセスすればPrometheusメトリクス形式で情報を取ることができる。超簡単。
+*** アプリケーションのデプロイ
+
+今回はECS Fargateで動かす。
+Prometheusメトリクス取得するCloudWatch Agentはタスクの情報を取得して、ネットワーク経由でエンドポイントにアクセスして情報を収集してくれるので、
+EC2のホストに導入しておく必要もなく、サイドカーにする必要もない。
+
+そのため、メトリクスにアクセスできるようにSecurity Groupなどを設定しておけばよい。
+
+公開するときは、せめてALBのパスルーティング設定などで =/actuator/= 配下に対してはインターネット経由ではアクセスできず、
+VPC内部のプライベートIPアドレスレンジからしかアクセスできないようにしておくのがよい。
+外部経由でいろいろ操作できると攻撃の足掛りにされてしまう危険があるので。
+
+まじめにやる場合はもっと対策しましょう。
+*** CloudWatch Agentのデプロイ
+公式でCloudFormationが用意されているので、それを使えば簡単にデプロイできるが、
+それほど複雑なことはやっていない。
+
+以下のようなタスク定義を作成して、デプロイすればOK。
+
+#+begin_src json
+  {
+  "executionRoleArn": "arn:aws:iam::0123456789012:role/EcsExecutionRole",
+  "containerDefinitions": [
+    {
+      "dnsSearchDomains": null,
+      "environmentFiles": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/cwagent-prometheus-fargate",
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "portMappings": [],
+      "cpu": 0,
+      "environment": [],
+      "secrets": [
+        {
+          "valueFrom": "CloudWatch-Prometheus-Config",
+          "name": "PROMETHEUS_CONFIG_CONTENT"
+        },
+        {
+          "valueFrom": "CloudWatch-Agent-Config",
+          "name": "CW_CONFIG_CONTENT"
+        }
+      ],
+      "memory": null,
+      "memoryReservation": null,
+      "stopTimeout": null,
+      "image": "amazon/cloudwatch-agent",
+      "startTimeout": null,
+      "privileged": null,
+      "name": "cloudwatch-agent"
+    }
+  ],
+  "memory": "1024",
+  "taskRoleArn": "arn:aws:iam::0123456789012:role/EcsTaskRole",
+  "compatibilities": [
+    "EC2",
+    "FARGATE"
+  ],
+  "family": "cwagent-prometheus-fargate",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "networkMode": "awsvpc",
+  "runtimePlatform": {
+    "operatingSystemFamily": "LINUX",
+    "cpuArchitecture": null
+  },
+  "cpu": "512",
+  "revision": 1,
+}
+#+end_src
+
+Dockerイメージは =amazon/cloudwatch-agent= が公開されているのでそれを利用すればよい。
+肝となるのはシークレットの設定で、 =PROMETHEUS_CONFIG_CONTENT= の環境変数名でPrometheusの設定を、
+=CW_CONFIG_CONTENT= の環境変数名でCloudWatch Agentの設定を投入することになる。
+
+いろいろやりかたはあると思うが、 SSM ParameterStoreを使って外部から注入するのが一番お手軽でしょう。
+*** Prometheusの設定
+=PROMETHEUS_CONFIG_CONTENT= は、いわゆるPrometheusの設定をいれるので特別なことはない。
+例えば1分間隔で取得するなら、以下のようなyamlを書けばよい。
+
+#+begin_src yaml
+  global:
+    scrape_interval: 1m
+    scrape_timeout: 10s
+  scrape_configs:
+    - job_name: cwagent-ecs-file-sd-config
+      sample_limit: 10000
+      file_sd_configs:
+        - files: ["/tmp/cwagent_ecs_auto_sd.yaml"]
+#+end_src
+
+scrape_configsが肝にはなり、収集先のURLなどは CloudWatch Agentがファイル出力したのを参照するので、
+そのパスを記述することになる。
+*** CloudWatch Agentの設定
+CloudWatch AgentもいわゆるCWAgentの設定なので、json形式で書く。
+どうでもいいが、一つの情報取得のためにyamlやjsonとフォーマットが違うものを複数書こうとすると、結構混乱する。
+
+#+begin_src json
+{
+  "logs": {
+    "metrics_collected": {
+      "prometheus": {
+        "prometheus_config_path": "env:PROMETHEUS_CONFIG_CONTENT",
+        "ecs_service_discovery": {
+          "sd_frequency": "1m",
+          "sd_result_file": "/tmp/cwagent_ecs_auto_sd.yaml",
+          "docker_label": {},
+          "task_definition_list": [
+            {
+              "sd_job_name": "text-changer",
+              "sd_metrics_ports": "8080",
+              "sd_task_definition_arn_pattern": ".*:task-definition/.*text-changer.*:*",
+              "sd_metrics_path": "/actuator/prometheus"
+            }
+          ]
+        },
+        "emf_processor": {
+          "metric_declaration": [
+            {
+              "source_labels": ["container_name"],
+              "label_matcher": "^text-changer$",
+              "dimensions": [["ClusterName","TaskDefinitionFamily"]],
+              "metric_selectors": [
+                "^process_files_max_files$",
+                "^process_cpu_usage$",
+                "^jvm_classes_unloaded_classes_total$"
+              ]
+            },
+            {
+              "source_labels": ["container_name"],
+              "label_matcher": "^text-changer$",
+              "dimensions": [["ClusterName","TaskDefinitionFamily","id"],
+                             ["ClusterName","TaskDefinitionFamily","area"]],
+              "metric_selectors": [
+                "^jvm_memory_(used|committed|max)_bytes$"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "force_flush_interval": 5
+  }
+}
+#+end_src
+
+=sd_result_file= に先ほどPrometheus側の設定にも記述したファイルパスを記述する。
+=task_definition_list= に、収集したいメトリクスを指定するために、タスク定義のパターンマッチや
+ポート、メトリクスのパスを指定する。
+
+そして、実際に収集したいメトリクスは =emf_processor= 配下に指定することになる。
+
+見ればだいたいどうやって設定するのかはわかると思うが、ソースとなるラベルとパターンマッチを指定して、
+そのマッチしたタスクに対して、 =metric_selectors= で指定したメトリクスを収集することができる。
+
+また、結果はCloudWatchのメトリクスとして指定されるので、その際のディメンションをどうするかも指定する。
+配列になってるので、ひとつのメトリクスを複数のディメンションで切ることも可能。
+
+そして、ドキュメント上、どういうディメンションが使えるのかよくわからなかったのだが、
+CloudWatch Logsの方を見てみると、以下のように収集したメトリクスがログとして記録されている。
+これがそれぞれディメンションに設定することができるので、例えばjvm_heapに対して heap領域かnon-heap領域かで分けて収集したいと思ったら、
+=area= をディメンションに指定すれば分離できるんだな、ということがわかる。
+
+#+begin_src json
+{
+    "ClusterName": "ecs-sandbox",
+    "LaunchType": "FARGATE",
+    "StartedBy": "ecs-svc/0926471211139162459",
+    "TaskClusterName": "ecs-sandbox",
+    "TaskDefinitionFamily": "text-changer",
+    "TaskGroup": "service:text-changer",
+    "TaskId": "c2411978f30e4d7e946572418de2fc15",
+    "TaskRevision": "1",
+    "Timestamp": "1651216730390",
+    "Version": "0",
+    "area": "nonheap",
+    "container_name": "text-changer",
+    "id": "Metaspace",
+    "instance": "10.0.0.50:8080",
+    "job": "text-changer",
+    "jvm_memory_committed_bytes": 47972352,
+    "jvm_memory_max_bytes": -1,
+    "jvm_memory_used_bytes": 46019512,
+    "prom_metric_type": "gauge"
+}  
+#+end_src
+*** 収集結果とまとめ
+これらを設定してCloudWatch Agentのタスクを起動すると、以下のように情報を取得し、
+CloudWatch Agentで監視することができた。
+
+[[file:images/20220429-cloudwatch-prometheus.png]]
+
+設定してみての所感だが、CloudWatchだけでメトリクスを収集できるのは非常に便利。
+ただ、いちいちどのメトリクスを収集するか、とか、収集の時点でディメンションを気にしないといけないといった
+面倒さはあるので、Prometheusでそのまま収集してしまったほうが楽なのではないか、と思った。
 
