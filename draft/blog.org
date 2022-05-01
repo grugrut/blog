@@ -3630,7 +3630,7 @@ uint64でビット演算を考えると意外と思い違いなどもあり、�
 本の選択基準は、年末のKindleセール対象になってたとかそれぐらい。
 
 *** 良い戦略、悪い戦略
-** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する
+** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :ecs:springboot:prometheus:cloudwatch:
 CLOSED: [2022-05-01 Sun 13:07]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-04\")
