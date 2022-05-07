@@ -3863,4 +3863,241 @@ CloudWatch Agentで監視することができた。
 設定してみての所感だが、CloudWatchだけでメトリクスを収集できるのは非常に便利。
 ただ、いちいちどのメトリクスを収集するか、とか、収集の時点でディメンションを気にしないといけないといった
 面倒さはあるので、Prometheusでそのまま収集してしまったほうが楽なのではないか、と思った。
+** DONE ECSでfirelensを利用したログ収集で、標準出力と標準エラー出力の転送先を分ける :aws:ecs:firelens:
+CLOSED: [2022-05-07 Sat 13:14]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-05\")
+:EXPORT_FILE_NAME: 202205071017
+:END:
+
+ちょっと前に調べて、全然ネット上に情報がみあたらず結構困ったので、今さらだけど備忘として残しておく。
+
+ECSでは、ログ収集に使うログドライバーをいくつかの種類から選択することができるが、
+デフォルトでは =awslogs= が利用される。
+これは、CloudWatch Logsに標準出力と標準エラー出力をそれぞれ転送するもので、手軽にログ収集の設定をするなら簡単に使える。
+ただし、以下のように標準出力と標準エラー出力が区別なく混ざって出力されてしまうため、きちんとログとして見ようとするとわかりづらい。
+
+#+begin_src text
+2022-05-07T10:55:54.885+09:00	AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 172.17.0.2. Set the 'ServerName' directive globally to suppress this message
+2022-05-07T10:55:54.887+09:00	AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 172.17.0.2. Set the 'ServerName' directive globally to suppress this message
+2022-05-07T10:55:54.895+09:00	[Sat May 07 01:55:54.890732 2022] [mpm_event:notice] [pid 1:tid 139741816851776] AH00489: Apache/2.4.53 (Unix) configured -- resuming normal operations
+2022-05-07T10:55:54.895+09:00	[Sat May 07 01:55:54.890848 2022] [core:notice] [pid 1:tid 139741816851776] AH00094: Command line: 'httpd -D FOREGROUND'
+2022-05-07T10:56:14.880+09:00	10.0.1.128 - - [07/May/2022:01:56:14 +0000] "GET / HTTP/1.1" 200 45
+2022-05-07T10:56:14.897+09:00	10.0.0.29 - - [07/May/2022:01:56:14 +0000] "GET / HTTP/1.1" 200 45
+2022-05-07T10:56:16.747+09:00	10.0.0.29 - - [07/May/2022:01:56:16 +0000] "GET /httpd HTTP/1.1" 404 196
+2022-05-07T10:56:22.181+09:00	10.0.0.29 - - [07/May/2022:01:56:22 +0000] "GET /httpd/ HTTP/1.1" 404 196
+#+end_src
+*** Firelens
+
+ECSでは、標準のawslogs以外に、さらに高度なログ収集をするためにfirelensログドライバーが用意されている。
+firelensは、実体はfluentd/fluentbitでそれをawsで使いやすいようにデフォルトでいくつかプラグイン導入したり、
+いくつか初期設定がいれられている便利なものだ。
+
+firelensもデフォルトでは標準出力、標準エラー出力を拾って処理するようになっている。
+導入は簡単で、タスク定義の設定画面で、 =ログルーターの結合= という項目があるので、その中の
+=Firelensの統合を有効にする= にチェックをつけてあげればよい。
+
+そうすると、実体をfluentbitにするかfulentdにするかと、コンテナイメージの入力ボックスがある。
+fluentbitの方が軽量なので基本的にはfluentbitを選ぶと良いだろう。
+昔はfluentdの方が実績とプラグインが豊富という話も聞いたが、最近fluentdじゃないとできないことがあったってのは自分は聞いたことがない。
+
+コンテナイメージも、AWSで用意しているものがあるので、特にカスタマイズ不要であればそれを選択すればよい。
+カスタマイズについては後述するが、やはりちょっと複雑なことをしようと思うと、
+AWSが用意しているのをベースに独自のイメージビルドが必要になる。
+
+そして、適用をクリックすると、自動でサイドカーコンテナとして、タスクに =log_router= という名前のコンテナが追加される。
+その後、元のメインコンテナの設定に戻ってログドライバーの設定を =awsfirelens= にする。
+
+#+begin_export html
+<span><i class="fas fa-exclamation-triangle"></i>&nbsp;注意事項</span>
+#+end_export
+ここで始めてfirelensを使う人がほぼハマるトラップがある。
+ログオプションにKeyが =Name= のオプションが自動で生成されていると思うが、
+これが値が空だとタスクの起動に失敗する。
+
+=Name= に転送先(cloudwatchとかfirehoseとか)を設定し、それぞれに必要な追加のオプションもいれることで
+それらにログ転送することができる。
+例えば以下のように設定する。
+
+|-------------------+---------------------|
+| Key               | value               |
+|-------------------+---------------------|
+| Name              | cloudwatch          |
+| region            | ap-northeast-1      |
+| log_group_name    | /ecs/httpd-firelens |
+| log_stream_prefix | ecs/                |
+| auto_create_group | true                |
+|-------------------+---------------------|
+
+そして、そのログの出力結果が以下のような感じ。json形式でcloudwatch logsに出力される。
+#+begin_src json
+{
+    "container_id": "1829176055cff356eb14e075e5590066701dcc430a4f5dad1a784030xxxxxxxx",
+    "container_name": "/ecs-httpd-firelens-5-httpd-d6f5ed9ea1e4xxxxxxxx",
+    "ec2_instance_id": "i-089c43b20xxxxxxxx",
+    "ecs_cluster": "sandbox",
+    "ecs_task_arn": "arn:aws:ecs:ap-northeast-1:123456789012:task/ecs-sandbox/949973cbc3b54734aeb1ab6exxxxxxxx",
+    "ecs_task_definition": "httpd-firelens:5",
+    "log": "[Sat May 07 02:37:28.480419 2022] [mpm_event:notice] [pid 1:tid 140549171129664] AH00489: Apache/2.4.53 (Unix) configured -- resuming normal operations",
+    "source": "stderr"
+}
+{
+    "container_id": "1829176055cff356eb14e075e5590066701dcc430a4f5dad1a784030xxxxxxxx",
+    "container_name": "/ecs-httpd-firelens-5-httpd-d6f5ed9ea1e4xxxxxxxx",
+    "ec2_instance_id": "i-089c43b20xxxxxxxx",
+    "ecs_cluster": "sandbox",
+    "ecs_task_arn": "arn:aws:ecs:ap-northeast-1:123456789012:task/ecs-sandbox/949973cbc3b54734aeb1ab6exxxxxxxx",
+    "ecs_task_definition": "httpd-firelens:5",
+    "log": "[Sat May 07 02:37:28.480544 2022] [core:notice] [pid 1:tid 140549171129664] AH00094: Command line: 'httpd -D FOREGROUND'",
+    "source": "stderr"
+}
+#+end_src
+
+先ほどのawslogsとcloudwatchに標準出力も標準エラー出力もどちらも出力されるが、 =source= がjson情報の中に含まれるので、それを元に必要な情報だけを取り出すことが多少はやりやすくなる。
+
+*** Firelensの動作をカスタマイズする
+さて、やっと本題であるが、もちろん全部のログをCloudWatchに送ってそれで問題なければよいのだが、
+おそらく必ずしも全部のログをCloudWatchに送りたいかというと、そうでないケースも多々あるだろう。
+CloudWatch LogsのPutLogEventの料金けっこうエグいし……。
+
+特に監査用のログなどS3に保管しておけばよくてCloudWatchに送る必要がないものを振り分けたくなるはずだ。
+他にも標準出力、標準エラー出力だけでなく、ログファイルを拾いたい場合もあると思う。
+
+そのような場合は、firelensの設定をカスタマイズしてあげる必要がある。
+
+カスタマイズの方法は以下の2パターンがある。
+1. firelens.confをS3に配置して、タスク起動時にそこから読みこむ
+2. 公式のfirelensコンテナイメージをベースイメージとして、カスタマイズしたものをビルドしてそれをサイドカーコンテナにする
+
+ただし、データプレーンにFargateを採用している場合には、1のS3を利用するパターンは使えない。
+おそらくセキュリティのためにホストのディレクトリマウントを制限しているからであろう。
+そのため、Fargateを利用する場合は、2のイメージビルドが必須となる。
+
+また、データプレーンにEC2を利用している場合でもfirelens.confで設定できるfluentbitの設定は、 =[INPUT]= 、 =[OUTPUT]= 、 =[FILTER]= ぐらいなので、たとえばfluentbitのストリーム処理を使ってより柔軟なログ収集がしたい場合などは、結局イメージビルドをする必要がある。
+
+さて、今回の用途ではfirelens.confの設定だけで十分なので、S3にファイルを配置する方式で設定する。
+
+firelens.confをS3から取得するための設定だが、なんとWeb画面のGUI上からは設定できず、
+タスク定義のJSONをいじる必要がある。
+なんで、この状況が放置されているのかは正直よくわからないので、そういうものだとあきらめる。
+
+タスク定義の設定画面の下の方に =JSONによる設定= というボタンがあるので、それをクリックするとjsonの編集画面が表示される。
+その中から、firelensコンテナ側の設定から以下の設定をみつける。
+
+#+begin_src json
+(前略)  
+            "firelensConfiguration": {
+                "type": "fluentbit",
+                "options": null
+            },
+(中略)
+            "name": "log_router"
+(後略)
+#+end_src
+このfirelensConfiguration配下のoptionsを以下のように設定する。
+もしかしたら、optionsの項目が存在しない場合もあるかもしれないが、その場合もoptionsごと追加すればよい。
+以下は、ecs-configバケットにfirelens.confを配置している場合の例だ。
+
+#+begin_src json
+      "firelensConfiguration": {
+        "type": "fluentbit",
+        "options": {
+          "config-file-type": "s3",
+          "config-file-value": "arn:aws:s3:::ecs-config/firelens.conf"
+        }
+      },
+#+end_src
+
+firelens.confには例えば以下のような設定をいれる。
+#+begin_src text
+[OUTPUT]
+	Name cloudwatch
+	Match *
+	region ap-northeast-1
+	log_group_name /ecs/logs/httpd-access
+	log_stream_name ecs/logs/httpd-$(tag)
+	auto_create_group true
+#+end_src
+
+これはcloudwatch logsにすべてのタグにマッチするログを送信する設定になっている。
+
+**** 標準出力・標準エラー出力の出力先を変える。
+ここまでは公式情報も多く、比較的順調に進んだが、結局もともとの課題であった標準出力・標準エラー出力を振り分ける方法が情報がまるで無く結構大変だった。
+
+通常であればソースが違えば付与されるタグが違うので、 =Match= ルールでそのタグにあわせて設定してあげれば簡単にログの出力先を変えることはできる。
+だが残念ながら、firelensで標準出力・標準エラー出力を拾う場合、どちらも同じ =<container name>-firelens-<task ID>= というタグ名になってしまい、 =Match= ではこれが標準出力なのか標準エラー出力なのか、区別することができない。
+
+もちろん、アプリ側のコンテナをいじって標準出力・標準エラー出力をファイルにリダイレクトしてあげて、
+それを読みこめばできるのだが、それはそれでコンテナの基本原則に反しているようで極力やりたくない。
+
+同じことやってる人がいないか探すと、AWSのブログでおなじみのclassmethodの記事がすぐにひっかかる。
+
+https://dev.classmethod.jp/articles/storing-error-logs-and-all-logs-separately-in-firelens/
+
+残念ながら、この記事でやっているのは標準エラー出力に対して何かをやっているのではなく、
+1つのログの中からエラーのログだけを処理するということをやっている。
+
+だが、この記事が大きなヒントになった。
+タグが同じならタグをつけかえてしまえばよいのだ。
+
+firelensの =[FILTER]= では、 =rewrite_tag= という、タグを書き換えるフィルタが存在するし、上記の記事でもこれを利用している。
+タグ書き換えでは対象のログをしぼりこむRuleが存在する。
+
+そして、このRuleはログの本文だけでなく、ログに存在する全てのjsonキーを利用することができる。
+つまり、以下のログのキーが全て対象にできるということだ。
+
+#+begin_src json
+{
+    "container_id": "1829176055cff356eb14e075e5590066701dcc430a4f5dad1a784030xxxxxxxx",
+    "container_name": "/ecs-httpd-firelens-5-httpd-d6f5ed9ea1e4xxxxxxxx",
+    "ec2_instance_id": "i-089c43b20xxxxxxxx",
+    "ecs_cluster": "sandbox",
+    "ecs_task_arn": "arn:aws:ecs:ap-northeast-1:123456789012:task/ecs-sandbox/949973cbc3b54734aeb1ab6exxxxxxxx",
+    "ecs_task_definition": "httpd-firelens:5",
+    "log": "[Sat May 07 02:37:28.480544 2022] [core:notice] [pid 1:tid 140549171129664] AH00094: Command line: 'httpd -D FOREGROUND'",
+    "source": "stderr"
+}
+#+end_src
+
+そのため、このjsonの中には、 "source" というキーが含まれていて、ここにstderr, stdoutが書かれているのでこれをrewrite_tagのルールにしてしまえばよい。
+
+というわけでまとめると、以下のように設定することで標準出力だけをCloudWatch Logsに出力することができる。
+
+#+begin_src text
+[FILTER]
+	Name rewrite_tag
+	Match *-firelens-*
+	Rule $source stdout log-stdout false
+
+[OUTPUT]
+	Name cloudwatch
+	Match log-stdout
+	region ap-northeast-1
+	log_group_name /ecs/logs/httpd-access
+	log_stream_name ecs/logs/httpd-$(tag)
+	auto_create_group true
+#+end_src
+
+これを応用すれば、標準エラー出力をS3に送るなども類似の設定で実現することができる。
+
+*** まとめ
+
+ECSで柔軟にログ収集をするのにはfirelensを使うと非常に便利であるが、
+標準出力・標準エラー出力を振り分けるといった、よくありそうなユースケースがなかなか情報がみつからないのは意外だった。
+英語のサイトも含めて検索したが、単語が一般的すぎて、検索にうまくひっかけられないというのもあったとは思う。
+
+ECSを使いこなすなら以下の本は、結構こまかく書かれてあり、よいと思う。
+今回は省略したfirelensのストリーム設定を含めた使い方などECSを対象に広く深く書かれているので、
+ECSを使いこなそうという人にはオススメの一冊だ。
+
+#+begin_export html
+<div class="card" style="width: 18rem; border: 2px solid #999999; padding: 8px;">
+    <a href="https://www.amazon.co.jp/AWS%E3%82%B3%E3%83%B3%E3%83%86%E3%83%8A%E8%A8%AD%E8%A8%88%E3%83%BB%E6%A7%8B%E7%AF%89-%E6%9C%AC%E6%A0%BC-%E5%85%A5%E9%96%80-%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE%E9%87%8E%E6%9D%91%E7%B7%8F%E5%90%88%E7%A0%94%E7%A9%B6%E6%89%80/dp/4815607656?_encoding=UTF8&qid=1651889384&sr=8-1&linkCode=li3&tag=grugrut-22&linkId=c789bf9f4eef8fdd4730bcd11c060a0b&language=ja_JP&ref_=as_li_ss_il" target="_blank"><img style="width: 177px;" border="0" src="//ws-fe.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=4815607656&Format=_SL250_&ID=AsinImage&MarketPlace=JP&ServiceVersion=20070822&WS=1&tag=grugrut-22&language=ja_JP" ></a><img src="https://ir-jp.amazon-adsystem.com/e/ir?t=grugrut-22&language=ja_JP&l=li3&o=9&a=4815607656" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+  <div class="card-body">
+    <h5 class="card-title"><a href="https://amzn.to/3w9oxaY">AWSコンテナ設計・構築[本格]入門</a></h5>
+    <p class="card-text"><a href="https://amzn.to/3w9oxaY">2021/10/21<br>株式会社野村総合研究所 (著), 新井雅也  (著), 馬勝淳史 (著), NRIネットコム株式会社 (監修), 佐々木拓郎 (監修)</a></p>
+  </div>
+</div>    
+
+#+end_export
 
