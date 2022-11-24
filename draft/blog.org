@@ -4242,7 +4242,7 @@ emacs lispの手習いで書いたりすると思いますが、まさか公式�
 嬉しいといえば嬉しいのかな……？
 
 *** パッケージの更新 package-update
-これまでpackage.elでインストールしたパッケージは、 =M-x list-packages= して
+これまでpackage.elでインストールしたパッケージを更新したい場合は、 =M-x list-packages= して
 アップデートしたいものを選んで実行する必要がありました。
 これが =package-update= コマンドで実現できるようになります。
 =M-x package-update= すると、アップデートできるパッケージが候補に出てくるので、
