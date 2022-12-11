@@ -4269,5 +4269,217 @@ Emacs-JP Slackで流れててそれ自体も目が点だったのですが、こ
 今回は、Emacs 29の新機能から、本筋ではないちょっと面白系の更新をご紹介しました。
 実はEmacs 29は、linumが撤廃されるとか結構アグレッシブな変更もあるようなので、
 その辺も別途確認していきたいと思います。
+** DONE ECS Service Connectを試す                                       :aws:
+CLOSED: [2022-12-11 Sun 15:48]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-12)
+:EXPORT_FILE_NAME: 202212111548
+:END:
+
+AWS ECS(Elastic Container Service)では、コンテナ間通信の方法がいくつか用意されています。
+- ELBを使う方式
+- Cloud Mapを使う方式
+- AppMeshを使う方式
+
+今回、re:Invent 2022にあわせて、新しい方式である ECS Service Connectが発表されたものの、
+いまいちどういう動きをしているのかがドキュメント上だとわからなかったので試してみました。
+
+*** ECS Service Connectとは
+https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/service-connect.html
+
+ドキュメントによると、サービスディスカバリとサービスメッシュの両方を構築できるとかかれています。
+re:Inventでもセッションがありましたが、そこでもCloud Mapよりも機能性がよく、
+AppMeshよりもシンプルな方式とかかれており、今後のデファクトにしたそうです。
+
+これの執筆時点ではB/Gデプロイメントには対応していませんが、
+re:InventのECSの今後について語るセッションで、今後ネイティブ対応でB/Gにも対応するという
+説明もあったので、きっと2023年中にはELBを使わなくてもB/Gができるのではないか、と想像しています。
+
+Cloud Mapの方式に似ているということで、それぞれ試してみました。
+
+*** Cloud Mapによるサービスディスカバリとコンテナ間通信
+実験用の構成として、nginxのサービスとubuntuのサービスの2種類を起動しました。
+ubuntuの方は接続元として利用するだけなので、メインはnginxのほうが重要です。
+
+**** 設定
+
+nginxのServiceを作成するときに、 =サービスの検出の統合の有効化= にチェックをいれると
+=Cloud Map= によるサービスディスカバリを設定することができます。
+なお、新しいECSコンソールでは、この設定がどこにあるかみつからなかったので、
+もしかすると今後はService Connectを使ってほしいということなのかもしれません。
+
+[[file:images/20221211-ecs-servicediscovery.png]]
+
+Cloud Mapによるサービスディスカバリでは、Route53にレコードが追加されていることが確認できます。
+
+[[file:images/20221211-ecs-route53.png]]
+
+**** 動作確認
+
+実際に動いているコンテナが以下の感じ。
+
+#+begin_src plain
+# docker ps
+CONTAINER ID   IMAGE                                    COMMAND                  CREATED             STATUS                       PORTS     NAMES
+72e94b84444a   grugrut/my-nginx                         "nginx -g 'daemon of…"   2 minutes ago       Up 2 minutes                           ecs-nginx-2-nginx-84adfedfabc68ad00b00
+38d5e35ec3ac   grugrut/my-nginx                         "nginx -g 'daemon of…"   2 minutes ago       Up 2 minutes                           ecs-nginx-2-nginx-ace884f199adade51800
+08f47ec37110   amazon/amazon-ecs-pause:0.1.0            "/pause"                 2 minutes ago       Up 2 minutes                           ecs-nginx-2-internalecspause-a4b5b493eb84ced89a01
+e0f55bea0d38   amazon/amazon-ecs-pause:0.1.0            "/pause"                 2 minutes ago       Up 2 minutes                           ecs-nginx-2-internalecspause-96b0c2a2a0a39d906400
+80558e0dfbf8   grugrut/my-ubuntu                        "bash -c 'sleep 3600'"   9 minutes ago       Up 9 minutes                           ecs-ubuntu-6-ubuntu-84d8ec899dbdfec73500
+58b91c46f1b3   amazon/amazon-ecs-pause:0.1.0            "/pause"                 9 minutes ago       Up 9 minutes                           ecs-ubuntu-6-internalecspause-bab982db83c5b6c42800
+84c7988e86fa   ecs-service-connect-agent:interface-v1   "/usr/bin/agent"         About an hour ago   Up About an hour (healthy)             ecs---instance-service-connect-relay-929096c3f1de99a36300
+561af0bc5a06   amazon/amazon-ecs-agent:latest           "/agent"                 2 hours ago         Up 2 hours (healthy)                   ecs-agent
+#+end_src
+
+コンテナの中に入って名前解決すると、先ほど名前をつけた =nginx.local= が解決できることがわかります
+実装にもよりますが、ラウンドロビンでアクセスし、それぞれに対して接続ができていることも確認できました。
+なお、わかりやすさのためにそれぞれのnginxのindex.htmlを変更し、どちらにアクセスしたかわかるように手を入れています。
+
+#+begin_src plain
+# nslookup nginx.local
+Server:         10.0.0.2
+Address:        10.0.0.2#53
+
+Non-authoritative answer:
+Name:   nginx.local
+Address: 10.0.14.132
+Name:   nginx.local
+Address: 10.0.3.218
+
+# curl nginx.local
+contaienr 1
+# curl nginx.local
+container 2
+#+end_src
+
+*** Service Connectによるコンテナ間通信
+
+続いてService Connectのほうを試してみます。
+こちらは新しいECSコンソールでないと設定できないので注意しましょう。
+
+**** 設定
+
+若干コンソールの表示がおかしいもののService Connectというオプションが増えているので、
+そこで設定をします。
+
+[[file:images/20221211-ecs-serviceconnect.png]]
+
+Service Connectの設定には、 =クライアント側のみ= と =クライアントとサーバー= の
+2種類の設定があります。
+リクエストを受ける側は =クライアントとサーバー= を選択し、
+リクエストする側は =クライアント側のみ= を選択すればよさそうです。
+
+**** 動作の確認
+
+クライアントとサーバーの設定をするだけだと、
+名前解決および通信をおこなうことができません。
+
+#+begin_src plain
+# nslookup web
+Server:         10.0.0.2
+Address:        10.0.0.2#53
+ server can't find web NXDOMAIN
+
+# curl web.local
+curl: (6) Could not resolve host: web
+#+end_src
+
+これに対して、クライアント側の設定もしてあげると、通信ができるようになります。
+ただし、名前解決をしてコンテナのIPアドレスに通信をするわけではないところが
+Cloud Mapを使ったサービスディスカバリとは動作が大きく異なりますね。
+
+接続にいっているIPアドレスが、 127.255.0.1 ということで、コンテナのIPアドレスに直接アクセスに
+いっているわけでないことがわかります。
+
+#+begin_src plain
+# nslookup web
+Server:         10.0.0.2
+Address:        10.0.0.2#53
+
+server can't find web: NXDOMAIN
+
+# curl web
+container 2
+# curl web
+container 1
+# curl web -v
+ *   Trying 127.255.0.1:80...
+ * Connected to web (127.255.0.1) port 80 (#0)
+> GET / HTTP/1.1
+> Host: web
+> User-Agent: curl/7.81.0
+> Accept: */*
+>
+ * Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< server: envoy
+< date: Sun, 11 Dec 2022 11:44:35 GMT
+< content-type: text/html
+< content-length: 12
+< last-modified: Sun, 11 Dec 2022 11:43:29 GMT
+< etag: "6395c261-c"
+< accept-ranges: bytes
+< x-envoy-upstream-service-time: 2
+<
+container 2
+#+end_src
+
+起動しているコンテナを見ると以下のような感じです。
+Cloud Mapを使ったときと比べると =ecs-service-connect-agent= のコンテナが
+Service Connectを設定しているコンテナ分起動していることがわかります。
+
+追加でリソースは消費するとはいえ、微々たるものなので、
+そこまで気にしなくてもよいと思います。
 
 
+#+begin_src plain
+# docker ps
+CONTAINER ID   IMAGE                                    COMMAND                  CREATED         STATUS                   PORTS     NAMES
+9ca56498aaeb   grugrut/my-ubuntu                        "bash -c 'sleep 3600'"   8 minutes ago   Up 8 minutes                       ecs-ubuntu-6-ubuntu-eadc82a8ba8adc4d0000
+beaba3ee4bab   ecs-service-connect-agent:interface-v1   "/usr/bin/agent"         9 minutes ago   Up 9 minutes (healthy)             ecs-ubuntu-6-ecs-service-connect-l1ujXbD-b08e87eb81d6eaaf0f00
+20e2ae8e64ae   amazon/amazon-ecs-pause:0.1.0            "/pause"                 9 minutes ago   Up 9 minutes                       ecs-ubuntu-6-internalecspause-e48fb1f5f09fc7c4f701
+f94289122ab4   grugrut/my-nginx                         "nginx -g 'daemon of…"   4 hours ago     Up 4 hours                         ecs-nginx-2-nginx-bea4d392f4b0a69c4a00
+25a2b44a0452   grugrut/my-nginx                         "nginx -g 'daemon of…"   4 hours ago     Up 4 hours                         ecs-nginx-2-nginx-9aa990f493bbe7c01800
+e3c69a975123   ecs-service-connect-agent:interface-v1   "/usr/bin/agent"         4 hours ago     Up 4 hours (healthy)               ecs-nginx-2-ecs-service-connect-PZNlT0-96a7c5d8e7a0d6a95700
+e723950f738f   ecs-service-connect-agent:interface-v1   "/usr/bin/agent"         4 hours ago     Up 4 hours (healthy)               ecs-nginx-2-ecs-service-connect-PZNlT0-dcd5bccb9884a9e18901
+43a6a1c79ff9   amazon/amazon-ecs-pause:0.1.0            "/pause"                 4 hours ago     Up 4 hours                         ecs-nginx-2-internalecspause-eeabc7d4a984af932700
+096800f48572   amazon/amazon-ecs-pause:0.1.0            "/pause"                 4 hours ago     Up 4 hours                         ecs-nginx-2-internalecspause-ecddc5d882f6c4aa8d01
+84c7988e86fa   ecs-service-connect-agent:interface-v1   "/usr/bin/agent"         5 hours ago     Up 5 hours (healthy)               ecs---instance-service-connect-relay-929096c3f1de99a36300
+561af0bc5a06   amazon/amazon-ecs-agent:latest           "/agent"                 6 hours ago     Up 6 hours (healthy)               ecs-agent
+#+end_src
+
+とはいえ、docker topで見てみると、Service Connect Agentのほうがメモリ消費しているようにも見えますね。
+どちらかというと凪のときにみたので、nginxが使ってないという見方もできそうですが。
+
+#+begin_src plain
+# docker top f9 aux
+USER                PID                 %CPU                %MEM                VSZ                 RSS                 TTY                 STAT                START               TIME                COMMAND
+root                695                 0.0                 0.3                 55196               12216               ?                   Ss                  08:04               0:00                nginx: master process nginx -g daemon off;
+33                  740                 0.0                 0.1                 55828               5588                ?                   S                   08:04               0:00                nginx: worker process
+33                  741                 0.0                 0.1                 55828               5588                ?                   S                   08:04               0:00                nginx: worker process
+# docker top be aux
+USER                PID                 %CPU                %MEM                VSZ                 RSS                 TTY                 STAT                START               TIME                COMMAND
+20000               1812                0.0                 0.6                 732180              23584               ?                   Ssl                 11:37               0:01                /usr/bin/agent
+20000               1851                0.1                 1.8                 46363700            71852               ?                   Sl                  11:37               0:02                /usr/bin/envoy -c /tmp/envoy-config-2006183657.yaml -l info --concurrency 2 --drain-time-s 20
+#+end_src
+
+また、docker topしてみると、ECS Service Connect AgentはEnvoyが動いていることが確認できますね。
+これは、冒頭のre:Inventの動画でも言っていました。
+Cloud Mapの設定を見てもAPIコールのみのサービスが作成されていたので、
+これをもとにEnvoyがうまく仲介しているのだと思います。
+
+[[file:images/20221211-ecs-serviceconnect-cloudmap.png]]
+
+そして、Service Connectを利用するもうひとつの利点が
+通信のメトリクスを取得できることです。
+
+[[file:images/20221211-ecs-serviceconnect-cloudwatch.png]]
+
+これは受信側しか見てないですが、もちろん送信側もレスポンス内容がどうだったか
+メトリクスを取得することが可能です。
+
+*** まとめ
+
+最近発表されたECS Service Connectを動かしてみて、簡単にコンテナ間通信が実現できることを確認しました。
+ヘルスチェック周りなど、細かいところの挙動までみれてないので、
+もう少しその辺を掘り下げてみていきたいと思います。
