@@ -5203,6 +5203,74 @@ Ergodox EZは無刻印の場合はDCSプロファイルなのですが、Moonlan
 
 Ergodoxが故障してしまったので、Moonlanderに乗り換えてみました。
 気になるところは多少ありますが、慣れの問題ですし、これから使いこなしていきたいと思います。
+** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :aws:
+CLOSED: [2023-12-03 Sun 09:21]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
+:EXPORT_FILE_NAME: 202312030921
+:END:
 
+[[*AWSの資格を全制覇した][AWSの資格を全制覇した]] の通り、私はAWSの資格を全部取得済なのですが、
+今回新しく AWS Certified Data Engineer - Associate (DEA)とデータ活用系の資格が出るということでベータ版を受講してきました。
 
+ちなみに、去年は全資格制覇ということで、2023 Japan AWS All Certifications Engineersにも選んでもらい、
+今年度も全部維持できてるから更新できるぞ、と思っていた矢先の新資格登場でしたが、2024のクライテリアには影響ないようです。よかった。
 
+*** Data Engineer Associateは
+https://aws.amazon.com/jp/certification/certified-data-engineer-associate/
+の公式の説明によると、
+#+begin_quote
+AWS Certified Data Engineer - Associate は、コアデータ関連の AWS サービスのスキルと知識や、データパイプラインの実装、問題のモニタリングとトラブルシューティング、ベストプラクティスに従ってコストとパフォーマンスを最適化する能力を検証します。
+#+end_quote
+ということで、データエンジニア向けの資格ですね。
+
+データエンジニア向けの資格というと、これまで Data Analytics Specialty (DAS)があり、
+棲み分けどうなるのかなと思ってましたが、なんとこちらは2024/4/9に廃しされるということです。
+
+FAQにも
+#+begin_quote
+AWS Certified Data Engineer - Associate は、AWS Certified Data Analytics - Specialty ほど深くも複雑でもなく、プログラミングの概念の適用を含み (AWS Certified Data Analytics - Specialty の範囲外)、AWS Certified Data Analytics - Specialty よりもデータ運用/サポートおよびセキュリティ要件の実装に重点を置いています。
+#+end_quote
+と書かれているように、DASのほうはいかにデータ分析をするかが問われていたと思いますが、
+DAEのほうが、よりデータの準備やセキュリティの方が重視されるようです。
+
+*** 試験について
+当然、どんな問題が出たかなどは書けないですが、試験の感想です。
+
+長かったし、疲れた。
+
+この一言に尽きます。
+試験時間が170分で85問、しかも言語は英語ということで気を休めることなく解き続ける必要があったので、
+オフラインの試験会場で受験したのですが、試験後はかなりぐったりしていました。
+
+Solution Architect Professionalが180分で75問、Specialtyは180分で65問ということで、かなり密度が濃いです。
+Associateなので問題のレベルはそれなりとは言え、普段は雰囲気で英語を読んでたり機械翻訳も併用したりとたるんでいたので
+自力で全部英文を読まないといけないことから集中力をかなり使いました。
+あと、ベータ版だからか判断に迷う問題もでてきたり。
+
+普段は問題文の和訳が微妙すぎてかえって難しかったので英文を読んだほうが楽だわー、と毒づいてたりしましたが、
+いざ英語だけになると苦戦しますね。Google Cloud Database Engineerも英語だったけど、そっちはそこまで大変じゃなかったのにな。
+
+普段は1時間ぐらいで完了して出てしまうのですが、今回は最後まで解ききった時点で残り時間30分とちょっとヒヤヒヤする時間配分になりました。
+私は使わなかったですが、母語でない言語で試験を受ける場合は試験時間30分延長の特別措置を受けられるので、申し込むだけ申し込んでおいたほうが良いと思います。結果早めに終わったらそこで退出するだけなので。
+
+結果は90日後ということなので、気長に待ちたいと思います。
+おかげさまで、周りにも後を追ってAll Certifications Engineerを目指す人たちが増えてきてくれているので、その人たちにも宣伝していこうと思います。
+
+*** 振り返り
+今回英語のベータ版を受験しましたが、日本語ならそんなに難しくないと思うので、正式版が出たらそこまで苦労せず取れるのではないでしょうか。
+
+あと、余談ですが直前にre:Invent振り返りを見たのは失敗でした。
+試験ガイドのとおりデータの準備、取り回しみたいな問題もありましたが、何度「zero-ETLってやつでなんとかして」と思ったことか
+(該当の問題がzero-ETLで対応してるかどうか知らないですが)。
+
+#+begin_export html
+<div class="card" style="width: 18rem; border: 2px solid #999999; padding: 8px;">
+<a href="https://www.amazon.co.jp/%E8%A6%81%E7%82%B9%E6%95%B4%E7%90%86%E3%81%8B%E3%82%89%E6%94%BB%E7%95%A5%E3%81%99%E3%82%8B%E3%80%8EAWS%E8%AA%8D%E5%AE%9A-%E3%83%87%E3%83%BC%E3%82%BF%E5%88%86%E6%9E%90-%E5%B0%82%E9%96%80%E7%9F%A5%E8%AD%98%E3%80%8F-Compass-Books%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA-NRI%E3%83%8D%E3%83%83%E3%83%88%E3%82%B3%E3%83%A0%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/dp/4839978174?_encoding=UTF8&qid=1701565221&sr=8-1&linkCode=li2&tag=grugrut-22&linkId=55e75d6ada479cc9cbe7fd69a94ec539&language=ja_JP&ref_=as_li_ss_il" target="_blank"><img border="0" src="//ws-fe.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=4839978174&Format=_SL160_&ID=AsinImage&MarketPlace=JP&ServiceVersion=20070822&WS=1&tag=grugrut-22&language=ja_JP" ></a><img src="https://ir-jp.amazon-adsystem.com/e/ir?t=grugrut-22&language=ja_JP&l=li2&o=9&a=4839978174" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+  <div class="card-body">
+    <h5 class="card-title"><a href="https://amzn.to/46P44sw">要点整理から攻略する『AWS認定 データ分析-専門知識』 (Compass Booksシリーズ)</a></h5>
+    <p class="card-text"><a href="https://amzn.to/46P44sw">2023/6/26<br>
+    NRIネットコム株式会社 (著), 佐々木拓郎 (著), 喜早彬 (著), 小西秀和 (著), 望月拓矢 (著), 和田将利 (著)</a></p>
+  </div>
+</div>    
+#+end_export
