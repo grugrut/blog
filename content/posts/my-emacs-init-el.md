@@ -5,6 +5,11 @@ tags = ["emacs", "config"]
 draft = false
 +++
 
+## このページについて {#このページについて}
+
+自分のinit.elの設定メモです。元の設定はOrg modeで管理していて、そこから `org-babel-tangle` でelファイルを出力するようにしています。
+
+
 ## Early Init {#early-init}
 
 Emacs 27から `early-init.el` が追加された。
@@ -911,6 +916,22 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
 ```
 
 
+#### tree-sitter {#tree-sitter}
+
+新しい言語を導入する際は、M-x treesit-install-language-grammerを実行する。
+
+```emacs-lisp
+(leaf tree-sitter
+  :ensure t
+  :config
+  (leaf tree-sitter-langs
+    :ensure t)
+  (tree-sitter-require 'tsx)
+  :hook
+  (go-mode-hook . tree-sitter-mode))
+```
+
+
 #### Golang {#golang}
 
 ```emacs-lisp
@@ -982,6 +1003,8 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   (js-indent-level . 2))
 (leaf typescript-mode
   :ensure t
+  :after tree-sitter
+  :mode (("\\.tsx\\'" . tsx-ts-mode))
   :custom
   (typescript-indent-level . 2)
   )
