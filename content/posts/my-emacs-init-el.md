@@ -62,6 +62,9 @@ init.elを直接編集するのではなく、init.org経由で管理するよ�
 そのため、起動時にチェックしてinit.orgの方が新しかったら警告する。
 本来は、保存時に自動でこの辺やってくれたほうがよい気はする。
 
+最近、 `org-export-tangle` で完全一致の場合に上書きしてくれなくなった(もともとそうだっけ)ことに気付いたので、
+別の手段でチェックする必要がありそうと思案中。
+
 ```emacs-lisp
 (let ((my-init-org (concat user-emacs-directory "init.org"))
       (my-init-el (concat user-emacs-directory "init.el")))
@@ -397,12 +400,16 @@ unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵
 範囲をしぼっている。
 不都合があれば、都度追加していく必要がある。
 
+doom-modelineで新しいフォントが必要になり、 `nerd-icons-install-fonts` が追加で必要になった。
+<https://github.com/doomemacs/doomemacs/issues/7368>
+
 ```emacs-lisp
 (leaf font
   :config
   ;; 絵文字
   ;; (unicode-fonts-setup) ; 最初に本コマンドの実行が必要
   ;; (all-the-icons-install-fonts)
+  ;; (nerd-icons-install-fonts)
   (leaf unicode-fonts
     :ensure t)
   (leaf all-the-icons
@@ -862,19 +869,6 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
 ```
 
 
-#### quickrun {#quickrun}
-
-```emacs-lisp
-(leaf quickrun
-  :ensure t
-  :leaf-defer t
-  :after bind-key
-  :commands (quickrun)
-  :init
-  (bind-key "C-c C-c" 'quickrun prog-mode-map))
-```
-
-
 #### ファイルツリー {#ファイルツリー}
 
 ファイルツリーの表示にはneotreeを使っている。ほとんど使ってない。
@@ -1008,16 +1002,6 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   :custom
   (typescript-indent-level . 2)
   )
-```
-
-
-#### Jenkinsfile編集 {#jenkinsfile編集}
-
-```emacs-lisp
-(leaf groovy-mode
-  :ensure t
-  :leaf-defer t
-  :mode (("Jenkinsfile" . groovy-mode)))
 ```
 
 
