@@ -1,6 +1,6 @@
 +++
 title = "My Emacs Config"
-date = 2021-04-26
+date = 2023-12-31
 tags = ["emacs", "config"]
 draft = false
 +++
@@ -59,10 +59,8 @@ init.elを直接編集するのではなく、init.org経由で管理するよ�
 
 ```emacs-lisp
 (let ((my-init-org (concat user-emacs-directory "init.org"))
-      (my-init-el (concat user-emacs-directory "init.el"))
-      (my-early-init-el (concat user-emacs-directory "early-init.el")))
-  (when (or (file-newer-than-file-p my-init-org my-init-el)
-            (file-newer-than-file-p my-init-org my-early-init-el))
+      (my-init-el (concat user-emacs-directory "init.el")))
+  (when (file-newer-than-file-p my-init-org my-init-el)
     (message "WARN: init.el is old.\n")))
 ```
 
@@ -91,6 +89,9 @@ Emacs26から登場したネイティブの行番号表示は、ddskkと相性�
 ;; 行番号表示(Emacs26以降)
 (global-display-line-numbers-mode t)
 (custom-set-variables '(display-line-numbers-width-start t))
+
+;; タブ表示
+(tab-bar-mode t)
 
 ;; native-compのワーニング抑制
 (custom-set-variables '(warning-suppress-types '((comp))))
@@ -122,7 +123,7 @@ Emacs26から登場したネイティブの行番号表示は、ddskkと相性�
 ### カスタムファイル {#カスタムファイル}
 
 `custom-set-variables` を利用すると、 `custom-file` に設定内容が書かれる。
-しかしこれをロードしてしまうと、 `custom-file` に残ったゴミのせいで、=init.el= を修正したつもりなのに
+しかしこれをロードしてしまうと、 `custom-file` に残ったゴミのせいで、 `init.el` を修正したつもりなのに
 昔の設定で動いてしまうことがある。
 
 しかし、定義はしておかないと起動時に文句を言われてしまうので設定だけして読まずに捨ててる。
@@ -293,19 +294,6 @@ early-init.elに逃した設定を読みこむために入れていた。
       (gcmh-mode 1))
     ```
 
-<!--list-separator-->
-
--  GC後に利用メモリサイズを出力する
-
-    ```emacs-lisp
-    (defun grugrut/gc-debug-function (str)
-      (let ((sum 0))
-        (dolist (x str)
-          (setq sum (+ sum (* (cl-second x) (cl-third x)))))
-        (message "Used Memory: %d MB" (/ sum (* 1024 1024)))))
-    (advice-add 'garbage-collect :filter-return #'grugrut/gc-debug-function)
-    ```
-
 
 #### popwin {#popwin}
 
@@ -327,7 +315,9 @@ early-init.elに逃した設定を読みこむために入れていた。
   ;; recentf
   (defvar recentf-max-saved-items 1000)
   (defvar recentf-auto-cleanup 'never)
+  (recentf-mode)
   (global-set-key [mouse-2] 'mouse-yank-at-click)
+  (global-unset-key "\C-z") ; C-zでSuspendは暴発して使いにくいので無効化
   (delete-selection-mode t) ; リージョン選択時にリージョンまるごと削除
   (leaf exec-path-from-shell
     :ensure t
@@ -359,6 +349,7 @@ early-init.elに逃した設定を読みこむために入れていた。
   (setq frame-title-format "%f")
   :setq
   `((large-file-warning-threshold	         . ,(* 25 1024 1024))
+    (create-lockfiles . nil)
     (read-file-name-completion-ignore-case . t)
     (use-dialog-box                        . nil)
     (history-length                        . 500)
@@ -485,8 +476,11 @@ unicodeの範囲全体を指定してしまうと、All-the-iconsで入れた絵
       :require t
       :hook (after-init-hook . doom-modeline-mode)
       :custom
+      (doom-modeline-buffer-file-name-style . 'truncate-with-project)
+      (doom-modeline-buffer-state-icon . t)
       (doom-modeline-bar-width . 3)
       (doom-modeline-height . 25)
+      (doom-modeline-icon . t)
       (doom-modeline-major-mode-color-icon . t)
       (doom-modeline-minor-modes . t)
       (doom-modeline-github . nil)
@@ -809,6 +803,14 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
 (setq comment-style 'extra-line)
 ```
 
+```emacs-lisp
+(leaf editorconfig
+  :ensure t
+  :diminish t
+  :config
+  (editorconfig-mode 1))
+```
+
 
 #### imenu-list {#imenu-list}
 
@@ -893,58 +895,19 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
 
 #### lsp {#lsp}
 
-lspには、lsp-modeを使っている。
+もともとLSPはlsp-modeを使っていたが、eglotが標準になったので乗り換えた。
 
 ```emacs-lisp
-
-(leaf lsp-mode
+(leaf eglot
   :ensure t
   :require t
-  :commands lsp
   :hook
-  (go-mode-hook . lsp)
-  (web-mode-hook . lsp)
-  (elixir-mode-hook . lsp)
-  (typescript-mode-hook . lsp)
-  :config
-  (leaf lsp-ui
-    :ensure t
-    :require t
-    :hook
-    (lsp-mode-hook . lsp-ui-mode)
-    :custom
-    (lsp-ui-sideline-enable . nil)
-    (lsp-prefer-flymake . nil)
-    (lsp-print-performance . t)
-    :config
-    (define-key lsp-ui-mode-map [remap xref-find-definitions] 'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] 'lsp-ui-peek-find-references)
-    (define-key lsp-ui-mode-map (kbd "C-c i") 'lsp-ui-imenu)
-    (define-key lsp-ui-mode-map (kbd "s-l") 'hydra-lsp/body)
-    (setq lsp-ui-doc-position 'bottom)
-    :hydra (hydra-lsp (:exit t :hint nil)
-                      "
- Buffer^^               Server^^                   Symbol
--------------------------------------------------------------------------------------
- [_f_] format           [_M-r_] restart            [_d_] declaration  [_i_] implementation  [_o_] documentation
- [_m_] imenu            [_S_]   shutdown           [_D_] definition   [_t_] type            [_r_] rename
- [_x_] execute action   [_M-s_] describe session   [_R_] references   [_s_] signature"
-                      ("d" lsp-find-declaration)
-                      ("D" lsp-ui-peek-find-definitions)
-                      ("R" lsp-ui-peek-find-references)
-                      ("i" lsp-ui-peek-find-implementation)
-                      ("t" lsp-find-type-definition)
-                      ("s" lsp-signature-help)
-                      ("o" lsp-describe-thing-at-point)
-                      ("r" lsp-rename)
-
-                      ("f" lsp-format-buffer)
-                      ("m" lsp-ui-imenu)
-                      ("x" lsp-execute-code-action)
-
-                      ("M-s" lsp-describe-session)
-                      ("M-r" lsp-restart-workspace)
-                      ("S" lsp-shutdown-workspace))))
+  (go-mode-hook . eglot-ensure)
+  (web-mode-hook . eglot-ensure)
+  (js-mode-hook . eglot-ensure)
+  (elixir-mode-hook . eglot-ensure)
+  (typescript-mode-hook . eglot-ensure)
+  )
 ```
 
 
@@ -982,8 +945,7 @@ lspには、lsp-modeを使っている。
          ("\\.scss\\'" . web-mode)
          ("\\.css\\'" . web-mode)
          ("\\.twig\\'" . web-mode)
-         ("\\.vue\\'" . web-mode)
-         ("\\.js\\'" . web-mode))
+         ("\\.vue\\'" . web-mode))
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq web-mode-markup-indent-offset 2
@@ -1014,6 +976,10 @@ lspには、lsp-modeを使っている。
 #### TypeScript {#typescript}
 
 ```emacs-lisp
+(leaf js-mode
+  :mode (("\\.js\\'" . js-mode))
+  :custom
+  (js-indent-level . 2))
 (leaf typescript-mode
   :ensure t
   :custom
@@ -1150,9 +1116,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
     :mode ("\\.md\\'" . gfm-mode)
     :custom
     (markdown-command . "github-markup")
-    (markdown-command-needs-filename . t))
-  (leaf markdown-preview-mode
-    :ensure t))
+    (markdown-command-needs-filename . t)))
 ```
 
 
@@ -1238,6 +1202,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   (leaf company-box
     :ensure t
     :require t
+    :disabled t
     :diminish company-box-mode
     :hook (company-mode-hook . company-box-mode)
     :after all-the-icons
@@ -1324,6 +1289,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   (org-log-done . 'time)
   (org-clock-persist . t)
   (org-clock-out-when-done . t)
+  (org-adapt-indentation . nil)         ;ノードレベルにあわせたインデントをおこなわない
   )
 (leaf org-capture
   :leaf-defer t
@@ -1379,35 +1345,6 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
 ```
 
 
-#### Org Roam {#org-roam}
-
-```emacs-lisp
-(leaf org-roam
-  :ensure t
-  :custom
-  (org-roam-directory . "~/src/github.com/grugrut/til")
-  :bind
-  ((:org-roam-mode-map
-    ("C-c n l" . org-roam)
-    ("C-c n f" . org-roam-find-file)
-    ("C-c n g" . org-roam-graph))
-   (:org-mode-map
-    ("C-c n i" . org-roam-insert)
-    ("C-c n I" . org-roam-insert-immediate)))
-  :config
-  (setq org-roam-capture-template '(
-                                    ("r" " Roam" plain (function org-roam--capture-get-point)
-                                     "%?"
-                                     :file-name "%<%Y%m%d%H%M%S>-${slug}"
-                                     :head "#+title: ${title}\n"
-                                     :unnarrowed t)
-                                    ))
-  :hook
-  (after-init-hook . org-roam-mode))
-
-```
-
-
 ### Git操作 {#git操作}
 
 ```emacs-lisp
@@ -1453,12 +1390,18 @@ Git gutter:
 ```
 
 
-### Ivy {#ivy}
+### ミニバッファ {#ミニバッファ}
+
+
+#### Ivy {#ivy}
 
 ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終了しそうになったこととivyに移行中。
 
+2021/6/23 空前のverticoブームが来たので乗り換えてみてる
+
 ```emacs-lisp
 (leaf counsel
+  :disabled t
   :ensure t
   :require t
   :config
@@ -1520,18 +1463,21 @@ ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終�
 
 ```emacs-lisp
 (leaf all-the-icons-ivy-rich
+  :disabled t
   :ensure t
   :init (all-the-icons-ivy-rich-mode 1))
 ```
 
 ```emacs-lisp
 (leaf ivy-rich
+  :disabled t
   :ensure t
   :init (ivy-rich-mode 1))
 ```
 
 ```emacs-lisp
 (leaf ivy-posframe
+  :disabled t
   :ensure t
   :diminish t
   :custom
@@ -1540,13 +1486,48 @@ ivyに興味がでてきたことと、2020/9/12ごろからHelmの開発が終�
 ```
 
 
-### 外部連携 {#外部連携}
+#### vertico / consult {#vertico-consult}
 
 ```emacs-lisp
-(leaf atomic-chrome
+(leaf vertico
+  :ensure t
+  :global-minor-mode t
+  :bind ((:vertico-map
+          ("C-z" . vertico-insert)
+          ("C-l" . grugrut/up-dir)))
+  :preface
+  (defun grugrut/up-dir ()
+    "一つ上の `/' まで辿って削除する."
+    (interactive)
+    (let* ((orig (minibuffer-contents))
+           (orig-dir (file-name-directory orig))
+           (up-dir (if orig-dir (file-name-directory (directory-file-name orig-dir))))
+           (target (if (and up-dir orig-dir) up-dir orig)))
+      (delete-minibuffer-contents)
+      (insert target)))
+  :custom
+  (vertico-count . 20)
+  (vertico-cycle . t))
+(leaf savehist
+  :global-minor-mode t)
+(leaf orderless
+  :ensure t
+  :custom ((completion-styles . '(orderless))))
+(leaf marginalia
+  :ensure t
+  :global-minor-mode t)
+(leaf consult
+  :ensure t
+  :bind (([remap swith-to-buffer] . consult-buffer)
+         ([remap goto-line] . consult-goto-line)
+         ([remap yank-pop] . consult-yank-pop)
+         ("C-;" . consult-buffer)))
+(leaf embark
   :ensure t
   :config
-  (atomic-chrome-start-server))
+  (leaf embark-consult
+    :ensure t
+    :after consult))
 ```
 
 
