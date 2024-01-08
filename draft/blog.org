@@ -1,6 +1,5 @@
 #+hugo_base_dir: ../
 #+hugo_selection: ./
-#+hugo_auto_set_lastmod: t
 #+options: author:nil
 
 * 2019
@@ -5343,3 +5342,336 @@ AZ単体で想定される負荷をさばく、十分なキャパシティが求
 
 なので、やはりあらゆるシステムでとりあえず入れておこうというものではなく、
 費用と費用対効果と十分そろばんを弾いて、導入する機能なのかなと思います。
+
+* 2024
+** DONE EKSでのMountpoint for Amazon S3を試す                             :aws:eks:
+CLOSED: [2024-01-08 Mon 13:34]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-01\")
+:EXPORT_FILE_NAME: 202401081308
+:END:
+
+この前のRe:Invent中に発表された Mountpoint for Amazon S3 Container Storage Interfaceは、
+EKS向けのCSIでS3をあたかもファイルストレージであるかのようにマウントすることができます。
+
+今回はこれに興味をもったので試してみました。
+
+https://aws.amazon.com/jp/about-aws/whats-new/2023/11/mountpoint-amazon-s3-csi-driver/
+
+*** セットアップ
+
+公式ドキュメントにセットアップ手順があり、これに沿って進めればわりと詰まらずに進めることができるので、細かな手順は省略します。
+
+https://docs.aws.amazon.com/ja_jp/eks/latest/userguide/s3-csi.html
+
+一点だけ。EKSをセットアップするときに、eksctlを使わない場合はIAM OIDCプロバイダの作成の手順を忘れずにやりましょう。
+私はこれをうっかりスルーしていて30分ぐらい悩みました。
+
+https://docs.aws.amazon.com/ja_jp/eks/latest/userguide/enable-iam-roles-for-service-accounts.html
+
+*** 導入後の状態を見てみる
+
+#+begin_src plain
+$ kubectl get all -n kube-system
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/aws-node-qqkfd                 2/2     Running   0          20h
+pod/coredns-58488c5db-25rdz        1/1     Running   0          21h
+pod/coredns-58488c5db-75fd9        1/1     Running   0          21h
+pod/eks-pod-identity-agent-bwmhq   1/1     Running   0          20h
+pod/kube-proxy-pdbzf               1/1     Running   0          20h
+pod/s3-csi-node-mjcmq              3/3     Running   0          2m59s
+
+NAME               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)         AGE
+service/kube-dns   ClusterIP   172.20.0.10   <none>        53/UDP,53/TCP   21h
+
+NAME                                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+daemonset.apps/aws-node                 1         1         1       1            1           <none>                   21h
+daemonset.apps/eks-pod-identity-agent   1         1         1       1            1           <none>                   20h
+daemonset.apps/kube-proxy               1         1         1       1            1           <none>                   21h
+daemonset.apps/s3-csi-node              1         1         1       1            1           kubernetes.io/os=linux   2m59s
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/coredns   2/2     2            2           21h
+
+NAME                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/coredns-58488c5db   2         2         2       21h
+#+end_src
+
+=kube-system= 名前空間に、s3-csi-nodeというpodが起動していることが確認できます。
+
+#+begin_src plain
+  $ kubectl describe sa -n kube-system s3-csi-driver-sa
+Name:                s3-csi-driver-sa
+Namespace:           kube-system
+Labels:              app.kubernetes.io/component=csi-driver
+                     app.kubernetes.io/instance=aws-mountpoint-s3-csi-driver
+                     app.kubernetes.io/managed-by=EKS
+                     app.kubernetes.io/name=aws-mountpoint-s3-csi-driver
+Annotations:         eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/AmazonEKS_S3_CSI_DriverRole
+Image pull secrets:  <none>
+Mountable secrets:   <none>
+Tokens:              <none>
+Events:              <none>
+#+end_src
+
+先ほど作成したIAMロールとリンクしたServiceAccountが作成されていることも確認できます。
+
+#+begin_src plain
+  $ kubectl get sc
+NAME            PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+gp2 (default)   kubernetes.io/aws-ebs   Delete          WaitForFirstConsumer   false                  21h
+
+#+end_src
+特にStorageClassが作成されるわけではないようです。
+
+*** 動作確認
+
+では、S3バケットをマウントするPodを起動してみようと思います。
+はじめに以下のようなPV, PVCを用意します。
+#+begin_src yaml
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: s3-pv
+  spec:
+    capacity:
+      storage: 1Mi
+    accessModes:
+      - ReadWriteMany
+    mountOptions:
+      - allow-delete
+      - region us-east-1
+    csi:
+      driver: s3.csi.aws.com
+      volumeHandle: s3-csi-driver-volume
+      volumeAttributes:
+        bucketName: eks-mount-bucket
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: s3-claim
+  spec:
+    accessModes:
+      - ReadWriteMany
+    storageClassName: ""
+    resources:
+      requests:
+        storage: 1Mi
+    volumeName: s3-pv
+#+end_src
+
+pvc, pvそれぞれにあるストレージサイズの設定は値は設定していますが、実際は無視されるようです。
+今回は、1Miバイトで設定しているので、後程大きいファイルを作成して試してみようと思います。
+
+また、PVCの =spec.storageClassName= は空文字が設定されています。これはk8sのバリデーションでひっかかってしまうので設定があること自体が重要ということですね。
+
+これらのyamlを適用すると、pv, pvcが作成されたことが確認できます。
+なお、事前の権限設定でミスがあってもPVの作成まではうまくいってしまうようなので、要注意です。
+
+#+begin_src plain
+  $ kubectl get pv,pvc -o wide
+  NAME                     CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM              STORAGECLASS   REASON   AGE   VOLUMEMODE
+  persistentvolume/s3-pv   1Mi        RWX            Retain           Bound    default/s3-claim                           13s   Filesystem
+
+  NAME                             STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE   VOLUMEMODE
+  persistentvolumeclaim/s3-claim   Bound    s3-pv    1Mi        RWX                           13s   Filesystem
+#+end_src
+
+次に作成したPVをマウントするPodをデプロイします。
+Pod側は特に通常のPVをマウントするpodとやりかたは変わりません。今回は、適当にAmazonLinuxベースで作成しました。
+
+#+begin_src yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-1
+spec:
+  containers:
+  - image: amazonlinux
+    name: amazonlinux
+    command: ["sh", "-c", "sleep 3600"]
+    volumeMounts:
+      - name: s3
+        mountPath: /data
+  volumes:
+    - name: s3
+      persistentVolumeClaim:
+        claimName: s3-claim  
+#+end_src
+
+**** Podが起動しない場合は？
+
+ここまでの設定(特に権限周り)でミスがあった場合、このPodを起動する時に初めてAWSのAPIがコールされS3をマウントするため、このPod起動のタイミングでエラーとなります。
+
+Podが起動中のまま進まない場合は、k8sのイベントを見てみましょう。
+私もOIDC周りで設定に誤りがあり以下のイベントが出続ける状態でした。
+
+#+begin_src plain
+  2s          Warning   FailedMount   pod/pod-1   MountVolume.SetUp failed for volume "s3-pv" : rpc error: code = Internal desc = Could not mount "eks-mount-bucket" at "/var/lib/kubelet/pods/c954d12a-838c-43d5-91e9-54d4ee773aa2/volumes/kubernetes.io~csi/s3-pv/mount": Mount failed: Failed to launch systemd service mount-s3-1.3.1-5bc63583-08b3-4860-9c80-8b663c98cf17.service output: Error: Failed to create S3 client...
+#+end_src
+
+エラーが出て動かない場合は、これまでの手順を見直して設定を飛ばしてたり、記載内容に誤りがないか落ち着いて確認しましょう。
+
+**** PodからS3にアクセスする
+
+マウントしたら通常のファイルシステム同様にアクセスすることが可能です。
+ファイルの作成をすることもできます。
+
+#+begin_src plain
+  $ kubectl exec -it pod-1 -- /bin/bash
+  bash-5.2# echo "Hello, world" >> /data/hello.txt
+  bash-5.2# exit
+  $ aws s3 ls eks-mount-bucket
+  2024-01-08 02:56:59         13 hello.txt
+  $ aws s3 cp s3://eks-mount-bucket/hello.txt hello.txt
+  download: s3://eks-mount-bucket/hello.txt to ./hello.txt 
+  $ cat hello.txt 
+  Hello, world
+  $
+#+end_src
+
+作成したファイルは特に時間差を感じることなくS3にアップされていることも確認できました。
+また、今回アクセスモードを =ReadWriteMany= で作成していますが、複数のPodで同時にマウントして、他のPodが作成したファイルをシームレスに参照できることも確認できました。
+
+また、上記で書いたとおりPVの設定でストレージサイズは設定するものの、実際には上限がかかるわけではないので、
+設定値(今回は1MiBにしていた)以上のファイルも作成することが可能です。
+
+#+begin_src plain
+    # dd if=/dev/zero of=/data/ddtest bs=1M count=100 
+    100+0 records in
+    100+0 records out
+    104857600 bytes (105 MB, 100 MiB) copied, 0.902866 s, 116 MB/s
+    bash-5.2# ls -l /data/
+    total 102401
+    -rw-r--r-- 1 root root 104857600 Jan  8 03:52 ddtest
+    -rw-r--r-- 1 root root        13 Jan  8 02:56 hello.txt
+    $ aws s3 ls eks-mount-bucket
+    2024-01-08 03:52:47  104857600 ddtest
+    2024-01-08 02:56:59         13 hello.txt
+#+end_src
+
+**** 注意点
+
+本来ブロックストレージであるS3をファイルシステムストレージのようにマウントしているので、
+ちょっと触ってみても、これできないのか、という操作がいくつかありました。
+
+***** ファイルに追記できない
+
+同時作成の排他制御はどうなるのかテストしてみようと思ったのですが、
+そもそもファイルは新規作成のみで追記はできないようです。
+以下のように権限エラーが出てしまいます。
+
+#+begin_src plain
+  # echo "hello" >> /data/hello.txt 
+  bash: /data/hello.txt: Operation not permitted
+#+end_src
+
+S3 マウントポイントドライバの説明にも"既存のファイルの上書きは不可、削除して再作成が必要"と書いてありますね。これはユースケースを考える上で注意が必要そうです。
+
+https://github.com/awslabs/mountpoint-s3/blob/main/doc/CONFIGURATION.md#file-modifications-and-deletions
+
+#+begin_quote
+You cannot currently use Mountpoint to overwrite existing objects. However, if you use the --allow-delete flag, you can first delete the object and then create it again.
+#+end_quote
+
+***** 空のディレクトリ作成は反映されない
+
+AWSコンソールのほうでは空のディレクトリを作成して、それをPodから見ることはできたのですが、
+Podの方で空のディレクトリを作ってもS3には反映されていませんでした。
+ディレクトリの中にファイルを作成するとすぐに反映されたので、PutObject API的に、ファイルを作成することが重要ということですね。
+
+まあ、実際のケースでこれで困ることは少ないと思います。
+
+**** Mountpoint for S3 CSIの挙動を変えてみる
+
+PVのyamlの中に、 =spec.mountOptions= があります。これが実際のドライバの引数になるようで、ここの記述を変えると挙動を変えることができました。
+
+#+begin_src yaml
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: s3-pv
+  spec:
+    capacity:
+      storage: 1Mi
+    accessModes:
+      - ReadWriteMany
+    mountOptions:
+      - allow-delete # この行を削除
+      - region us-east-1
+    csi:
+      driver: s3.csi.aws.com
+      volumeHandle: s3-csi-driver-volume
+      volumeAttributes:
+        bucketName: grugrut-s3-eks-mount-test
+#+end_src
+
+たとえばこのように =allow-delete= を削除すると、以下のようにファイルの作成はできるが削除が許可されないことが確認できました。
+
+#+begin_src plain
+# rm /data/ddtest 
+rm: cannot remove '/data/ddtest': Operation not permitted
+bash-5.2# touch /data/new-file
+bash-5.2# ls /data/
+ddtest  hello.txt  new-file
+bash-5.2#   
+#+end_src
+
+他のオプションも使えるのかまでは試してないですが、これ以外のところはuidなどを除けばそこまで制御するものは無さそうです。
+
+https://github.com/awslabs/mountpoint-s3/blob/main/doc/CONFIGURATION.md#file-system-configuration
+
+*** 考察
+
+**** 他のストレージとの違い
+
+これまでは、エフェメラルストレージを除くと、EKSでファイルを永続化したい場合、
+AWSのマネージドサービスを利用する場合だと、 =EBS= と =EFS= が選択肢としてありました。
+
+今回、新しくS3が追加されてEFSは今後不要になるのでは、とも思ってたのですが実際に触ってみると使いどころが違いますね。
+
+主観がけっこう入っていますが、それぞれ以下のような違いがあります。
+
+|                                | EBS | EFS | S3 |
+|--------------------------------+-----+-----+----|
+| 複数Podでのマウント            | ×   | ○   | ○  |
+| マルチAZでの利用               | ×   | ○   | ○  |
+| ファイルの追記・編集           | ○   | ○   | ×  |
+| バックアップ・リストアの利便性 | ×   | ○   | ○  |
+| 利用する上での手軽さ           | ○   | ×   | ○  |
+| EKS外とのファイル連携          | ×   | ×   | ○  |
+
+これまでだと、基本的にはEBSから考えるもののAZが固定される辛さやリストアの面倒くささから、
+EFSをマウントするか、アプリ側でAPIをたたいてS3にアップするか、などを考える必要があったかと思います。
+
+今回、S3が新たに加わったことでファイルのシステム間連携などには良い選択肢になったと思います。
+その反面、ファイルの追記はできないのでアプリによっては引き続きEFSを考えるか、というところでしょうか。
+
+**** 想定ユースケース
+
+***** システム間ファイル連携
+
+一番、一般的なユースケースかと思います。
+
+システム同士を疎結合にするために直接やりとりするのではなく、データをファイル連携で渡す際にはS3がよく用いられます。
+これを作りこみなくマウントしたフォルダに配置するだけで簡潔するということで、どんなアプリであってもS3が扱いやすくなったと言えるでしょう。
+
+***** 頻繁に更新が入るファイルの外部配置
+
+コンテナに埋めこんでおくと更新のたびにビルドが必要で面倒なのでファイルを外部に配置しておきたい、という場合、
+k8sの機能ではConfigMapを利用することができます。
+しかし、ConfigMapでは1MBまでしか対応できなかったり大量ファイルだと取り回しが面倒というケースもあります。
+
+これまではそういったケースでEFSを用いて実現することがありましたが、EFSってマネコンからファイルの操作ができないのでリリースや中身の確認が面倒なんですよね。
+
+こういったケースではS3は非常によい選択肢かと思います。
+
+他にも今後多くのユースケースがでてきそうですね。
+
+*** まとめ
+
+今回は、Re:Inventで登場した Mountpoint for Amazon S3 CSIを実際に動かしてみて、
+使いどころについてまとめました。
+
+新しい機能がどんどん増えていくので便利なものは活用していきたいですね。
