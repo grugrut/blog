@@ -16,7 +16,7 @@
 どっちかに統一しようかと考え、最近の動向から長年連れそってきたはてなブログのほうをやめて、
 こちらに持ってくるようにします。
 昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
-** emacs on WSLでSuper/Hyperキーを使う                            :emacs:wsl:
+** emacs on WSLでSuper/Hyperキーを使う                            :emacs:wsl:windows:
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910040445
@@ -292,7 +292,7 @@ smartparensの設定は、 =(require 'smartparens-config)= が楽だし確実、
 #+end_src
 
 これは便利なので、今後も積極的に使っていきたい。
-** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :openshift:kubernetes:crc:
+** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :openshift:kubernetes:crc:windows:
    CLOSED: [2019-10-19 Sat 14:03]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -533,7 +533,7 @@ Emacs26までは、行番号の表示をemacs lispで頑張るというアプロ
 今のところ、この設定で困ったことはなく、強いて言えば、
 見比べてみるとわかるが、はじめから行番号のスペースが広めにとられてしまっている。
 そのため、少し画面サイズは小さくなっているものの、これで快適な行番号生活をおくることができる。
-** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :gcp:
+** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :gcp:certification:
    CLOSED: [2019-12-29 Sun 10:11]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-12\")
@@ -572,7 +572,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 
    =org-map-entries= が、条件にあうノードに対してmap関数を適用するための関数。
    =org-entry-properties= が、個々のノードのプロパティの連想リストを取得する関数。てっきりプロパティドロワーにあるものだけ抽出するのかと思ってたらアイテム名とか、TODO状態とか全部取れてるっぽいので、これベースにごにょごにょすればいい感じにいけそう。
-** DONE ergodox ezを購入した                                        :ergodox:
+** DONE ergodox ezを購入した                                        :ergodox:keyboard:
    CLOSED: [2020-05-18 Mon 23:11]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-05\")
@@ -629,7 +629,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
       - 自分、そんなに手も小さいほうじゃないので、いけると思ってたら、意外とつらかった
 
     まあ、これは触りながら、適宜キー配列を変えていって慣らすしかなさそうですね。
-** DONE CKA(Certified kubernetes Administrator)に合格した        :kubernetes:
+** DONE CKA(Certified kubernetes Administrator)に合格した        :kubernetes:certification:
    CLOSED: [2020-07-07 Tue 09:40]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -688,7 +688,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 *** 結果
     93%だった。一応全問問いたものの、7%の問題だけ挙動が怪しかったので、たぶんそれのやりかたが間違ってたのだと思う。
     部屋の綺麗さを保ててるうちに、CKADも取ってしまいたいので、さっそく今日から勉強再開だ。
-** DONE CKAD(Certified Kubernetes Application Developer)に合格した :kubernetes:
+** DONE CKAD(Certified Kubernetes Application Developer)に合格した :kubernetes:certification:
    CLOSED: [2020-07-11 Sat 10:56]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -1391,7 +1391,7 @@ Warningがでているが、IPVSモードでは、kube-proxyの負荷分散方�
 https://kubernetes.io/blog/2018/07/09/ipvs-based-in-cluster-load-balancing-deep-dive/#ipvs-based-kube-proxy
 *** まとめ
 ipvsの場合の負荷分散方式が、いろいろあるってことは知らなかったので、やってみてよかった。
-** DONE Hyper-V上でGitLabサーバを構築する              :hyperv:gitlab:docker:
+** DONE Hyper-V上でGitLabサーバを構築する              :hyper_v:gitlab:docker:
    CLOSED: [2020-07-30 Thu 07:09]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -1511,7 +1511,7 @@ Docker for Windowsのダッシュボードを開いて、SettingsのDocker Engin
 #+end_src
 
 これで、docker loginならびにdocker pushできるはず。
-** DONE Hyper-Vにokd4(OpenShift Origin)をインストールする  :hyperv:openshift:
+** DONE Hyper-Vにokd4(OpenShift Origin)をインストールする  :hyper_v:openshift:
    CLOSED: [2020-08-01 Sat 13:09]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
@@ -2653,7 +2653,7 @@ CKAの勉強をしているときにkubeadmを使ってクラスタをバージ�
 EKSなどのマネージドなものに比べると多少面倒ではあるが、意外と簡単だし詰まりポイントも少ない印象を受けた。
 
 とはいえ、4台構成だからまだやっていけるけど、これが多くなるようだと単純に面倒なので =kubespray= とか使ってansibleで一気に回したい気持ちはある。
-** DONE Ergodox EZをJIS配列で利用して5ヶ月経過したので振り返り      :ergodox:
+** DONE Ergodox EZをJIS配列で利用して5ヶ月経過したので振り返り      :ergodox:keyboard:
    CLOSED: [2020-10-17 Sat 11:33]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-10\")
@@ -3534,7 +3534,7 @@ Podのセキュリティグループは、利用できるインスタンスタ�
     Warning  FailedScheduling  1s (x3 over 46s)    default-scheduler  0/3 nodes are available: 1 Insufficient vpc.amazonaws.com/pod-eni, 2 node(s) were unschedulable
  #+end_src
 * 2022
-** DONE bitboardアルゴリズムでN-Queen問題を解く                   :algorithm:
+** DONE bitboardアルゴリズムでN-Queen問題を解く                   :algorithm:go:
 CLOSED: [2022-01-18 Tue 23:43]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-01\")
@@ -3611,7 +3611,7 @@ uint64でビット演算を考えると意外と思い違いなどもあり、�
 もともとの目的だったオセロのアルゴリズムについても今後ビットボードアルゴリズムで書き直して
 短時間で強い探索ができるオセロAIを作成していきたい。
 
-** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :ecs:springboot:prometheus:cloudwatch:
+** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :aws:ecs:springboot:prometheus:cloudwatch:
 CLOSED: [2022-05-01 Sun 13:07]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-04\")
@@ -4081,7 +4081,7 @@ ECSを使いこなそうという人にはオススメの一冊だ。
 </div>    
 #+end_export
 
-** DONE AWSの資格を全制覇した                                           :aws:
+** DONE AWSの資格を全制覇した                                           :aws:certification:
 CLOSED: [2022-11-19 Sat 12:22]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-11)
@@ -4137,7 +4137,7 @@ AWS以外のことを知らないといけないという点で人によって�
 無事にAWSの資格の全制覇を達成した。
 最近はGoogle Cloudの資格もちょくちょく取ってるので、その辺も記録に残していきたい。
 
-** DONE Google Cloud Database EngineerをはじめGoogle Cloudの資格をいくつか取得しました :gcp:
+** DONE Google Cloud Database EngineerをはじめGoogle Cloudの資格をいくつか取得しました :gcp:certification:
 CLOSED: [2022-11-22 Tue 22:45]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-11)
@@ -4271,7 +4271,7 @@ Emacs-JP Slackで流れててそれ自体も目が点だったのですが、こ
 今回は、Emacs 29の新機能から、本筋ではないちょっと面白系の更新をご紹介しました。
 実はEmacs 29は、linumが撤廃されるとか結構アグレッシブな変更もあるようなので、
 その辺も別途確認していきたいと思います。
-** DONE ECS Service Connectを試す                                       :aws:
+** DONE ECS Service Connectを試す                                       :aws:ecs:
 CLOSED: [2022-12-11 Sun 15:48]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-12)
@@ -5105,7 +5105,7 @@ FISにはCloudWatchと連携して実験が予期しない動作をした場合�
 
 
 * 2023
-** DONE キーボードをMoonLanderに変更した                         :moonlander:
+** DONE キーボードをMoonLanderに変更した                         :moonlander:keyboard:
 CLOSED: [2023-08-04 Fri 11:42]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-08\")
@@ -5205,7 +5205,7 @@ Ergodox EZは無刻印の場合はDCSプロファイルなのですが、Moonlan
 
 Ergodoxが故障してしまったので、Moonlanderに乗り換えてみました。
 気になるところは多少ありますが、慣れの問題ですし、これから使いこなしていきたいと思います。
-** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :aws:
+** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :aws:certification:
 CLOSED: [2023-12-03 Sun 09:21]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
@@ -5347,7 +5347,7 @@ AZ単体で想定される負荷をさばく、十分なキャパシティが求
 費用と費用対効果と十分そろばんを弾いて、導入する機能なのかなと思います。
 
 * 2024
-** DONE EKSでのMountpoint for Amazon S3を試す                             :aws:eks:
+** DONE EKSでのMountpoint for Amazon S3を試す                             :aws:eks:s3:
 CLOSED: [2024-01-08 Mon 13:34]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-01\")
@@ -5678,7 +5678,7 @@ k8sの機能ではConfigMapを利用することができます。
 使いどころについてまとめました。
 
 新しい機能がどんどん増えていくので便利なものは活用していきたいですね。
-** TODO AWS CloudShellのつらみは全部tmuxが解決してくれる
+** TODO AWS CloudShellのつらみは全部tmuxが解決してくれる     :aws:cloudshell:tmux:
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
 :EXPORT_FILE_NAME: 202402132045
