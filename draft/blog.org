@@ -4241,6 +4241,9 @@ emacs lispの手習いで書いたりすると思いますが、まさか公式�
 嬉しいといえば嬉しいのかな……？
 
 *** パッケージの更新 package-update
+
+(追記) こちらリリース前にコマンドが修正されて、 =package-upgrade= になったようです。(追記ここまで)
+
 これまでpackage.elでインストールしたパッケージを更新したい場合は、 =M-x list-packages= して
 アップデートしたいものを選んで実行する必要がありました。
 これが =package-update= コマンドで実現できるようになります。
@@ -5675,3 +5678,8 @@ k8sの機能ではConfigMapを利用することができます。
 使いどころについてまとめました。
 
 新しい機能がどんどん増えていくので便利なものは活用していきたいですね。
+** TODO AWS CloudShellのつらみは全部tmuxが解決してくれる
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
+:EXPORT_FILE_NAME: 202402132045
+:END:
