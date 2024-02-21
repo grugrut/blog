@@ -902,7 +902,7 @@ vimの `f` に相当する。zap-to-char( `M-z` )でもavyインタフェース�
   :require t
   :hook
   (go-mode-hook . eglot-ensure)
-  (web-mode-hook . eglot-ensure)
+  (html-mode-hook . eglot-ensure)
   (js-mode-hook . eglot-ensure)
   (elixir-mode-hook . eglot-ensure)
   (typescript-mode-hook . eglot-ensure)
@@ -1273,6 +1273,7 @@ pythonのモード複数あってなにがよいのかよくわかっていな�
   :leaf-defer t
   :bind (("C-c c" . org-capture)
          ("C-c a" . org-agenda)
+         ("C-c l" . org-store-link)
          (:org-mode-map
           ("C-c C-;" . org-edit-special))
          (:org-src-mode-map
