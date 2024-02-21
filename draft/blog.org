@@ -5678,13 +5678,7 @@ k8sの機能ではConfigMapを利用することができます。
 使いどころについてまとめました。
 
 新しい機能がどんどん増えていくので便利なものは活用していきたいですね。
-** TODO AWS CloudShellのつらみは全部tmuxが解決してくれる     :aws:cloudshell:tmux:
-:PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
-:EXPORT_FILE_NAME: 202402132045
-:END:
 
-AWSを扱うときに、ちょっとした作業をCloudShell上でおこなうことは結構あるかと思います。
 ** DONE AWSの新たな資格 Data Engineer Associate に合格した :aws:certification:
 CLOSED: [2024-02-14 Wed 23:39]
 :PROPERTIES:
@@ -5724,3 +5718,94 @@ https://aws.amazon.com/jp/certification/certified-data-engineer-associate/
 https://aws.amazon.com/jp/certification/policies/before-testing/
 
 というわけで、世界準速Data Engineer Associate合格体験記でした。
+** DONE AWS CloudShellを利用するときのつらみは全部tmuxが解決してくれる :aws:cloudshell:
+CLOSED: [2024-02-22 Thu 00:32]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
+:EXPORT_FILE_NAME: 202402211945
+:END:
+
+AWSでちょっとした操作をおこないたい場合、CloudShell上で作業することもあるかと思います。
+
+ちゃんとした運用用途であればガバナンス等の目的のためにCLI実行サーバをEC2インスタンスとして用意するかなどを検討するべきですが、
+個人の検証や簡単な作業用途であればAWS CLIがすでに導入されていたり便利ですよね。
+
+ですが、CloudShellも万能ではなく、例えば以下のような点で不便さを感じていました。
+
+- セッションがひとつしか同時に存在できない。複数の作業(ログをtailで流しながらコマンドを実行したい等)をするために複数タブでCloudShellを開こうとしても、ひとつのタブでしか動作せず、他も同じ画面になってしまう
+- ちょっとした通信の途切れなどでページのリロードが要求される。リロードすると過去のログをページスクロールして見ることができない
+
+あまりこれまでのCloudShellの活用の記事などでも見たことがなかったのですが、実はCloudShellのセッションはtmux上で動いています。
+これによって、上記の悩みは簡単に解決します。
+
+ちなみに、ちゃんと公式ドキュメントにはtmuxが入っていることは書かれています。さらりと書かれすぎててこれまで気付いてませんでした。。。
+
+#+begin_quote
+With the shell that's created for AWS CloudShell sessions, you can switch seamlessly between your preferred command line shells. More specifically, you can switch between Bash, PowerShell, and Z shell. You also have access to pre-installed tools and utilities. These include git, make, pip, sudo, tar, *tmux* , vim, wget, and zip.
+#+end_quote
+https://docs.aws.amazon.com/cloudshell/latest/userguide/cloudshell-features.html
+
+*** tmuxとは
+=tmux= (読みはティーマックス)はターミナルマルチプレクサの略であり、通常のターミナルの上で動作しターミナルよりも強化されたユーザ体験を提供してくれます。
+例えば、セッションを複数作成して複数ターミナルが動いているように切り替えられたり、セッションを複数のペインに分割したり、ということができます。
+
+https://github.com/tmux/tmux/wiki
+
+人によっては =screen= の方が馴染みがあるかもしれません。かく言う私も「screen使えればこんな悩み解決するんだよなあ……」と思って調べてたら「ってかtmux使えるじゃん！ というかすでにtmux上のセッションじゃん、これ！！」ということで気付きました。
+
+tmuxはプリフィックスキー (デフォルトでは ~Ctrl + b~ 、以下説明では ~<prefix>~ と表記します )に続けてキーを入力することで、tmuxのコマンドを実行することができます。
+
+他にもいろいろな使い道はありますが、今回は私の冒頭の悩みがtmuxでどう解決できるのかを紹介します。
+
+*** 複数画面にして別の作業をしたい
+
+個人的な好みとしては、基本的には別ウィンドウで開いてそれぞれで別の作業をしたいのですが、できないものはしかたがないです。
+
+tmuxではひとつの画面をペインと呼ばれる画面内の独立した区画に区切ることができ、以下の図のように、擬似的に複数ウィンドウを用意することができます。
+
+[[file:images/20240221-cloudshell-1.png]]
+
+CloudShell上で実行できるペイン操作のコマンドの例です。
+
+| 操作内容                               | コマンド           |
+| ペインを上下に二分割                   | ~<prefix> \"~      |
+| ペインを左右に二分割                   | ~<prefix> %~       |
+| 指定した方向のペインをアクティブにする | ~<prefix> <矢印>~  |
+| 次のペインをアクティブにする           | ~<prefix> o~       |
+| ペインのレイアウトを変更する           | ~<prefix> <Space>~ |
+| アクティブなペインを閉じる             | ~<prefix> x~       |
+| アクティブなペイン以外をすべて閉じる   | ~<prefix> !~       |
+
+ターミナルソフトで実行している場合は、マウスでペインをクリックすることでアクティブなペインを切り替えたり、
+ペインのサイズを ~<prefix> <Ctrl>+<矢印>~ で変更できたりするのですが、
+CloudShellはブラウザ上で動いているためか、動作しませんでした。
+
+あと、ちょっと反応がにぶいのは気になります。
+
+とはいえ、ペイン分割できるのは便利ですね。
+
+*** 過去の表示内容を見たい
+
+CloudShellは、ブラウザで表示されるためブラウザのスクロールで過去のコンソール出力内容も見ることができます。
+
+しかし、CloudShellは通信が途切れた場合や一定時間放置すると、すぐにセッションタイムアウトとなってしまいブラウザのページリロードが要求されます。
+ページをリロードすると当然過去の出力内容をスクロールして見ることはできなくなります。
+
+しかし、tmuxは自身の機能として過去のコンソール出力結果を見ることができるので、
+ページをリロードした後でも出力を確認することができます。
+
+~<prefix> [~ により、コピーモードに切り替わるのですが、このときに ~<Page Up>~ ~<Page Down~ によってスクロールして過去の出力内容も確認することができます。
+コピーモードの終了方法は ~q~ です。
+
+なお、これも本来は ~<Ctrl>+u~ ~<Ctrl>+d~ でもスクロールすることができるはずなのですが、CloudShellでは動作しなかったので注意してください。
+
+また、この機能で過去の出力内容を見ることができるのはあくまでtmuxのセッションが残っている間だけなので、1週間前の作業内容を見たい、と思っても遡れないので過信は禁物です。
+
+また、tmuxの機能としてファイルにターミナル出力ログを保存する機能もあるので、興味がある人は調べてみてください。
+
+*** まとめ
+
+CloudShellでデフォルトで入っているtmuxを使って、ちょっとした不便さを解消する方法についてご紹介しました。
+リモートワークが中心になると、ふとしたこういうテクニックが伝承されにくかったりすると思います。
+
+他にも役に立ちそうなTipsがあれば、また紹介していきたいと思います。
