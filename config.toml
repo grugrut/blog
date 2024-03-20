@@ -36,6 +36,11 @@ pygmentsUseClasses = true
   url = "archives"
   weight = 3
 
+[[menu.main]]
+  name = "About"
+  url = "about"
+  weight = 3
+
 [taxonomies]
 tag = "tags"
 archive = "archives"
