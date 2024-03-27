@@ -5903,3 +5903,132 @@ Alpineは遅いと聞いていましたが、結果はむしろ逆という興�
 
 そして最後に、「実際に計測すること、超大事」
 
+** DONE EKSのMountpoint for Amazon S3 CSIにおけるエラー時の挙動の検証 :aws:eks:s3:
+CLOSED: [2024-03-27 Thu 23:26]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
+:EXPORT_FILE_NAME: 202403272326
+:END:
+
+以前、以下の記事でEKSでMountpoint for Amazon S3 CSI driverを用いて、
+実際にS3をマウントして制限事項などを確認しました。
+
+[[*EKSでのMountpoint for Amazon S3を試す][EKSでのMountpoint for Amazon S3を試す]]
+
+今回は、その中であげたユースケースのひとつである、システム間ファイル連携についてさらに考察してみました。
+
+*** ユースケースの詳細
+
+メンテナンスしやすいシステムを作るためには、できるだけシステム間は疎結合にするべきです。
+疎結合のシステム間におけるデータ連携はいくつかやりかたがありますが、
+情報量が大きい場合はファイルに落として連携するやりかたがよくとられます。
+
+その際、低コストで信頼性が高く、利用者側でメンテナンスが不要なS3は、ファイル保管場所としてよく採用されます。
+
+他にも、オンライン処理のデータをバッチに渡したい場合などもS3に保管されますね。
+
+これまで、アプリケーションからS3にデータをアップロードする場合、
+以下の処理が必要でした(下図の左側)。
+
+1. アプリケーションが一時領域(K8sで言えばEmptyDirなど)に格納したいファイルを出力する
+2. AWS SDKなどを用いてアプリケーションからS3にアップロードする
+
+[[file:images/20240327-s3-mount-usecase.png]]
+
+そこまで手間ではないですが、アプリケーション側で対応が必要になるため、
+特にAPチームとインフラチームがわかれている場合に、各種情報のやりとりが必要になったりします。
+また、データを取得する側のシステムもAPIをコールしてファイルをダウンロードする処理が必要です。
+
+それが、Mountpoint for Amazon S3 CSIを利用することで、特定のディレクトリが常にS3と同期された状態になるため、
+アプリケーションは単にファイル出力するだけで、自動でアップロードされますし、ダウンロードも特定のフォルダを見ればすぐにアクセスできます(図の右側)。
+
+*** エラー時の挙動
+
+システムを開発する上では、エラー処理をどうハンドルできるかが検討項目として欠かせません。
+
+上記の図で言えば、これまでは何らかの原因でS3にファイルをアップロードできなかったときに、
+(2)のタイミングでAPIがエラーになるので検知することができました。
+
+一方、Mountpoint S3 for CSIを利用した場合、どこでエラーが検知できるのでしょうか？
+もし、利用者側は知ることができずアップしたはずのファイルが虚空に消えてしまうのであれば、この方式は採用できません。
+
+以前に調査したときは、そこまで調べきれなかったので今回改めて検証してみました。
+
+**** 検証の準備
+
+環境のセットアップは前回の記事を参照ください。
+
+エラーのおこしかたもいろいろとあると思いますが、今回はIAMの権限を後から削ることで
+バケットにあるオブジェクトの一覧は取得できるが、オブジェクトは操作できない状態とし、ファイルの読み書きに失敗する状態をおこしました。
+
+具体的には本来最低でも以下の権限が必要になるところを、 =s3:ListBucket= 以外の権限をあとから落としています。
+
+- s3:ListBucket
+- s3:GetObject
+- s3:PutObject
+- s3:AbortMultipartUpload
+- s3:DeleteObject
+
+**** 検証結果
+
+上記権限が無い状態で、コンテナからS3をマウントしているディレクトリに対してファイルの読み書きを試したところ、
+以下のようにきちんとエラーが発生して検知できることが確認できました。
+
+#+begin_src text
+  # ls /data/
+  hello.txt  new-file test1.txt
+  # cat /data/test1.txt 
+  cat: /data/test1.txt: Input/output error
+  # echo $?
+  1
+  #
+  # echo "hogehoge" >> /data/test2.txt
+  bash: echo: write error: Input/output error
+  # echo $?
+  1  
+#+end_src
+
+きちんとコマンドの戻り値も0以外になっているので、
+何か問題があったことをきちんと検知することができますね。
+
+プログラム上での動作を試すために、Pythonでも確認してみます。
+
+#+begin_src python
+  >>> f = open('/data/myfile.txt', 'w')
+  >>> f.write('hello, world!!')
+  14
+  >>> f.flush()
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+  OSError: [Errno 5] Input/output error
+  >>> f.close()
+  OSError: [Errno 5] Input/output error
+
+  During handling of the above exception, another exception occurred:
+
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+  OSError: [Errno 5] Input/output error
+
+  >>>
+  >>> f = open('/data/hello.txt', 'r')
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+  OSError: [Errno 5] Input/output error: '/data/hello.txt'
+#+end_src
+
+こちらも、 =[Errno 5]= ということで入出力に失敗したことがわかります。
+
+このようにファイルを実際に書込むときや読込むときにエラーが検出できるのであれば、
+安心してシステム間連携の選択肢に選ぶことができそうです。
+
+*** まとめ
+今回は、Mountpoint for Amazon S3 Container Storage Interface Driverにおいて、
+システム間連携に必要なエラーハンドリングができるかどうかを検証し、
+期待する挙動が得られることを確認しました。
+
+あらためてこの機能がサーバレスで使えるようになると、さらに便利になると思われ、
+Fargateでも利用できるようになってほしいですね。
+
+
+
