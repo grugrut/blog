@@ -6,7 +6,7 @@ draft = false
 
 
 ## Author
-grugrut (Masanori Mano)
+Masanori Mano
 
 以前はソフトウェアエンジニアとしてJavaのアプリケーション開発をしていました。
 今はクラウドアーキテクトとして各種クラウドの特にインフラ周りに携わっています。
