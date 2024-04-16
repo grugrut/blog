@@ -6537,4 +6537,252 @@ Emacs30からは、入力中にタブキーを押す、もしくは左端の目�
 Emacs30でちょっと変わった機能を紹介しました。
 
 マジメな変更点として、 =defadvise= がついに非推奨になったり後方互換に関するトピックもあるので、それは別途紹介したいと思います。
+** DONE EKSのVPC CNIでNetwork Policyを利用する                      :aws:eks:
+CLOSED: [2024-04-15 Mon 19:05]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-04\")
+:EXPORT_FILE_NAME: 202404151848
+:END:
+
+EKSでは標準のCNI(Container Network Interface)として、VPC CNIと呼ばれるものが提供されています。
+
+VPC CNIでは、これまでネットワーク通信制御のために、PodのSecurity Groupが提供されていました。
+一方で、Kubernetesで標準的な通信制御として利用されているNetwork Policyはサポートされておらず、
+Network Policyを利用したい場合には、自己責任のもとCalicoなどNetwork PolicyをサポートするCNIを独自導入する必要がありました。
+
+PodのSecurityGroupについては、過去の検証記事があるので、こちらをご覧ください。
+
+[[*EKSのPodのSecurityGroupを試す][EKSのPodのSecurityGroupを試す]]
+
+これまでNetwork Policyに対する要望は非常に多く上がっていましたが、ついに、2023年9月1日にリリースされたv1.14.0にて、
+VPC CNIにNetwork Policyのサポートが追加されました。
+
+https://github.com/aws/amazon-vpc-cni-k8s/releases/tag/v1.14.0
+
+自分たちがNetwork Policyを使いたいケースももちろんありますが、3rd Party製品が要求するケースもあります。
+例えば、異常があったコンテナを隔離するためにNetwork Policyを設定してあらゆる通信を遮断する、という使われ方があります。
+そのような3rd Party製品の例として、トレンドマイクロ社のCloud One Container Securityという製品があります。
+
+https://cloudone.trendmicro.com/docs/jp/container-security/cluster-add/#prerequisites
+
+#+begin_quote
+Trend Micro Cloud One Container Security は、 Kubernetesネットワークポリシー を利用して隔離軽減を実行します。ネットワークポリシーは、 ネットワークプラグインによって実装されます。 Container Securityの継続的コンプライアンス機能を使用するには、NetworkPolicyをサポートするネットワークプラグインが必要です。
+#+end_quote
+
+このような製品を採用したい場合は、「VPC CNIを利用しない」もしくは「該当機能を使用しない」どちらかを選ぶ必要がありました。
+このアップデートで、より標準的な利用方法がとれるようになったことは、とても歓迎すべきことです。
+
+今回の記事では、VPC CNIによるNetwork Policyを実際に検証してみようと思います。
+*** Network Policyを動かしてみる
+**** セットアップ
+VPC CNI環境でNetwork Policyを利用するためには、アドオンのオプションに以下の内容を設定します。
+
+#+begin_src json
+  {
+      "enableNetworkPolicy": "true"
+  }
+#+end_src
+
+デプロイ済のクラスタに対して、あとから設定を加えることも可能です。
+
+[[file:images/20240415-eks-networkpolicy.png]]
+
+**** 環境準備
+nginxとhttpdのふたつのDeploymentを登録し、ClusterIPとしてサービス公開します。
+
+#+begin_src text
+  $ kubectl create deployment nginx --image nginx --replicas 1
+  $ kubectl expose deployment nginx --port 80
+  $ kubectl create deployment httpd --image httpd --replicas 1
+  $ kubectl expose deployment httpd --port 80
+#+end_src
+
+あとは適当に作成した、AmazonLinuxのPodからそれぞれに対して通信できることを確認します。
+
+#+begin_src text
+  $ kubectl exec -it pod-1 -- /bin/bash
+  bash-5.2# curl nginx
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <title>Welcome to nginx!</title>
+  <style>
+  html { color-scheme: light dark; }
+  body { width: 35em; margin: 0 auto;
+  font-family: Tahoma, Verdana, Arial, sans-serif; }
+  </style>
+  </head>
+  <body>
+  <h1>Welcome to nginx!</h1>
+  <p>If you see this page, the nginx web server is successfully installed and
+  working. Further configuration is required.</p>
+
+  <p>For online documentation and support please refer to
+  <a href="http://nginx.org/">nginx.org</a>.<br/>
+  Commercial support is available at
+  <a href="http://nginx.com/">nginx.com</a>.</p>
+
+  <p><em>Thank you for using nginx.</em></p>
+  </body>
+  </html>
+  bash-5.2# curl httpd
+  <html><body><h1>It works!</h1></body></html>
+#+end_src
+**** Network Policyの設定
+
+まずは、以下のようなyamlを用意してみます。
+これは、 =default= namespaceのあらゆる通信を許可しないものになります。
+
+#+begin_src yaml
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: all-deny
+    namespace: default
+  spec:
+    podSelector: {}
+    policyTypes:
+    - Ingress
+    - Egress
+#+end_src
+
+これを適用して、先ほどと同じようにAmazonLinuxのPodからcurlしてみると、
+しばらく待ったあと名前解決が失敗したこと(タイムアウトしている)がわかります。
+
+#+begin_src text
+  bash-5.2# curl nginx
+  curl: (6) Could not resolve host: nginx
+  bash-5.2# curl httpd
+  curl: (6) Could not resolve host: httpd
+  bash-5.2# 
+#+end_src
+
+あらゆる通信を止めたので、kube-dnsへの通信も止まってしまい名前解決ができなくなったということですね。
+
+次に、AmazonLinuxのPod (app=amazonlinuxのラベルがついている) からnginxへの通信ができるように設定を追加してみます。
+そのためには以下の3つのルールが必要になります。
+
+- AmazonLinux -> kube-dns (Egress UDP80)
+- AmazonLinux -> nginx (Egress TCP80)
+- AmazonLinux -> nginx (Ingress TCP80)
+
+#+begin_src yaml
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-amazonlinux-to-nginx
+    namespace: default
+  spec:
+    podSelector: 
+      matchLabels:  
+        app: amazonlinux
+    policyTypes:
+    - Egress
+    egress:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+      - protocol: UDP
+        port: 53
+    - to:
+      - podSelector:
+          matchLabels:
+            app: nginx
+      ports:
+      - protocol: TCP
+        port: 80 
+  ---
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-nginx-from-amazonlinux
+    namespace: default
+  spec:
+    podSelector:
+      matchLabels:
+        app: nginx
+    policyTypes:
+    - Ingress
+    ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: amazonlinux
+      ports:
+      - protocol: TCP
+        port: 80
+#+end_src
+
+これを適用することで、nginxとだけ通信ができることが確認できます。
+httpdはかわらずタイムアウトしていますね。
+
+#+begin_src text
+  bash-5.2# curl nginx
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <title>Welcome to nginx!</title>
+  <style>
+  html { color-scheme: light dark; }
+  body { width: 35em; margin: 0 auto;
+  font-family: Tahoma, Verdana, Arial, sans-serif; }
+  </style>
+  </head>
+  <body>
+  <h1>Welcome to nginx!</h1>
+  <p>If you see this page, the nginx web server is successfully installed and
+  working. Further configuration is required.</p>
+
+  <p>For online documentation and support please refer to
+  <a href="http://nginx.org/">nginx.org</a>.<br/>
+  Commercial support is available at
+  <a href="http://nginx.com/">nginx.com</a>.</p>
+
+  <p><em>Thank you for using nginx.</em></p>
+  </body>
+  </html>
+  bash-5.2# curl httpd
+  curl: (28) Failed to connect to httpd port 80 after 130806 ms: Couldn't connect to server
+  bash-5.2# 
+#+end_src
+
+*** Podのセキュリティポリシーとの使い分け
+
+さて、これまで既存でPodのセキュリティポリシーも使うことができました。
+これらはどのように使いわければよいのでしょうか。
+
+これらの機能には以下のような違いがあります。
+
+|                              | Podのセキュリティポリシー                                            | Network Policy                   |
+|------------------------------+----------------------------------------------------------------------+----------------------------------|
+| 制御方法                     | ホワイトリストの和集合                                               | ホワイトリストの和集合           |
+| 制御対象の通信               | Kubernetesの内部通信 + AWSサービスとの通信                           | Kubernetesの内部通信             |
+| 設定方法                     | Kubernetesの設定 + AWSの設定                                         | Kubernetesの設定                 |
+| インスタンスタイプの制限事項 | T系インスタンスなど、ENIトランキングが利用できないノードでは利用不可 | 特になし                         |
+| ノードの制限事項             | Windowsノードは利用不可。Fargateは一部制限あり。                     | Windowsノード、Fargateは利用不可 |
+
+特に重要なのは、Kubernetesの世界に閉じるかどうかです。
+
+Network PolicyはKubernetesの世界に閉じており、Kubernetesエンジニアだけで設定することができます。
+代わりに基本的にはPod間の通信制御をおこなうもののため、RDSやElastiCacheなど、AWSのサービスに対して通信制御をおこなうことはできません。
+
+Podのセキュリティポリシーは逆に、SecurityGroupと連携する必要があるため、AWSとKubernetesの双方の設定をする必要があります。
+代わりに、AWSサービスに対する通信制御をおこなうこともできます。
+
+また、使い分け、と書いていますが実際には組合せて使うことができます。
+セキュリティの基本は多層防御となりますので、例えばKubernetesの内部通信はNetwork Policyを使い、
+外部通信はPodのセキュリティポリシーを組合せるという形でリスクを低減させることができます。
+
+チームの状況や満たしたい条件に合わせて、どれを選ぶのが最適か決めていきましょう。
+
+** まとめ
+今回は、待望のEKSネイティブのCNIでNetwork Policyを利用する方法と、これまでの機能の使い分けについて紹介しました。
+
+要望が強く上がる機能は、きちんと採用していってもらえるので今後の進化も楽しみです。
+
 
