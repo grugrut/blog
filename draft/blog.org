@@ -6784,5 +6784,496 @@ Podのセキュリティポリシーは逆に、SecurityGroupと連携する必�
 今回は、待望のEKSネイティブのCNIでNetwork Policyを利用する方法と、これまでの機能の使い分けについて紹介しました。
 
 要望が強く上がる機能は、きちんと採用していってもらえるので今後の進化も楽しみです。
+** DONE EKSのネットワーキングにディープダイブ                       :aws:eks:
+CLOSED: [2024-06-11 Tue 22:08]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-06\")
+:EXPORT_FILE_NAME: 202406112207
+:END:
+
+Amazon EKSをはじめとするパブリッククラウドのマネージドKubernetesでは、
+VPC CNIなどパブクラのネットワークの仕組みと密連携したネットワークプラグインが用意されています。
+これは、手軽に利用できて便利な反面、オンプレのKubernetesに慣れている人からすると意外な挙動をすることがあります。
+
+今回はVPC CNIを利用した場合のPod間通信がどのようにおこなわれるか、およびそれによる注意点をご紹介します。
+*** CNIとは
+
+CNIは、 =Container Network Interface= のことで、その名の通りコンテナのネットワークのインタフェースです。
+プログラムにおけるインタフェース同様、環境の実体に依存するネットワークを抽象化することで、
+異なる環境でも同じように操作することができます。
+
+その実装としていろいろなものがあり、例えばオンプレミスのKubernetes向けのCNIで有名なもののひとつに =Calico= がありますし、
+Amazon EKS向けに特化したCNIとして =VPC CNI= があります。
+**** VPC CNIとCalicoの実装の違い
+
+VPC CNIとCalicoではコンテナ間通信を実現するための実装が異なり、
+模式図としては下記のようになります。
+
+[[file:images/20240611-vpccni-calico.png]]
+
+正確にはサブネットが異なれば別のネットワークになるので、もう少し複雑になるのですが、
+あくまでも違いを示すことにフォーカスした図として見てください。
+***** VPC CNIの実装
+
+VPC CNIでは、各コンテナ(Pod)はENIに直接ぶらさがる形になります(上記図の左側)。
+ここで注意するべきポイントは、ノード(EC2インスタンス)のIPアドレスもPodのIPアドレスも、同じネットワークになるということです。
+
+EC2には複数のENIをアタッチでき、各ENIには複数のIPアドレスをアタッチできますが、その上限はEC2のインスタンスタイプに依存します。
+この図のように各PodはENIにぶらさがるため、各ノードで起動できるPodおよびクラスタ全体で起動できるPodの上限が
+ノードのインスタンスタイプやノード数に依存するというわけです。
+***** Calicoの実装
+
+Calicoの場合は、その設定にも依りますが上記図の右側のように、
+ノード間で仮想ネットワークが作られて、そこに各Podがぶらさがります。
+
+VPC CNIの場合と異なり複数のENIをアタッチする必要がありません。
+Podのネットワークは、VPCのネットワークからは切り離された独立したものとなり、ノードのIPアドレスとは異なるネットワークになります。
+*** 実機でその動作を見てみる
+
+ここまでの内容を実際の環境でも確認し、たしかにそのような実装になっていることを確認します。
+**** VPC CNIの場合
+
+まず適当にnginxのPodを複数起動します。
+
+#+begin_src bash
+  $ kubectl get pod -o wide
+  NAME                     READY   STATUS    RESTARTS   AGE   IP            NODE                          NOMINATED NODE   READINESS GATES
+  nginx-7854ff8877-lrhwc   1/1     Running   0          4s    10.0.10.231   ip-10-0-12-177.ec2.internal   <none>           <none>
+  nginx-7854ff8877-nn7c2   1/1     Running   0          4s    10.0.8.245    ip-10-0-7-223.ec2.internal    <none>           <none>
+  nginx-7854ff8877-z5nh5   1/1     Running   0          4s    10.0.3.240    ip-10-0-7-223.ec2.internal    <none>           <none>
+#+end_src
+
+次に、ノードにアタッチされたENIを確認します。確認しているのは、 =ip-10-0-7-223.ec2.internal= のインスタンスです。
+
+#+begin_src json
+  $ aws ec2 describe-instances --instance-id=i-0cc518becfe77b9ab --query 'Reservations[*].Instances[*].NetworkInterfaces[*]'
+  [
+      [
+          [
+              {
+                  "Association": {
+                      "IpOwnerId": "amazon",
+                      "PublicDnsName": "ec2-3-81-76-55.compute-1.amazonaws.com",
+                      "PublicIp": "3.81.76.55"
+                  },
+                  "Attachment": {
+                      "AttachTime": "2024-06-11T11:49:04+00:00",
+                      "AttachmentId": "eni-attach-0ca60e19fe24921c6",
+                      "DeleteOnTermination": true,
+                      "DeviceIndex": 0,
+                      "Status": "attached",
+                      "NetworkCardIndex": 0
+                  },
+                  "Description": "",
+                  "Groups": [
+                      {
+                          "GroupName": "eks-cluster-sg-sandbox-vpccni-378179173",
+                          "GroupId": "sg-05ade1c16a8a2cff7"
+                      }
+                  ],
+                  "Ipv6Addresses": [],
+                  "MacAddress": "0e:69:78:95:1a:25",
+                  "NetworkInterfaceId": "eni-0fbf8c8b4a36d33a9",
+                  "OwnerId": "123456789012",
+                  "PrivateDnsName": "ip-10-0-7-223.ec2.internal",
+                  "PrivateIpAddress": "10.0.7.223",
+                  "PrivateIpAddresses": [
+                      {
+                          "Association": {
+                              "IpOwnerId": "amazon",
+                              "PublicDnsName": "ec2-3-81-76-55.compute-1.amazonaws.com",
+                              "PublicIp": "3.81.76.55"
+                          },
+                          "Primary": true,
+                          "PrivateDnsName": "ip-10-0-7-223.ec2.internal",
+                          "PrivateIpAddress": "10.0.7.223"
+                      },
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-3-240.ec2.internal",
+                          "PrivateIpAddress": "10.0.3.240"
+                      },
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-8-245.ec2.internal",
+                          "PrivateIpAddress": "10.0.8.245"
+                      },
+                      (中略)
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-4-11.ec2.internal",
+                          "PrivateIpAddress": "10.0.4.11"
+                      },
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-10-174.ec2.internal",
+                          "PrivateIpAddress": "10.0.10.174"
+                      }
+                  ],
+                  "SourceDestCheck": true,
+                  "Status": "in-use",
+                  "SubnetId": "subnet-0a01ca6849de85a91",
+                  "VpcId": "vpc-08ec752dda481a986",
+                  "InterfaceType": "interface"
+              },
+              {
+                  "Attachment": {
+                      "AttachTime": "2024-06-11T12:25:37+00:00",
+                      "AttachmentId": "eni-attach-042b27c504764ef2c",
+                      "DeleteOnTermination": true,
+                      "DeviceIndex": 1,
+                      "Status": "attached",
+                      "NetworkCardIndex": 0
+                  },
+                  "Description": "aws-K8S-i-0cc518becfe77b9ab",
+                  "Groups": [
+                      {
+                          "GroupName": "eks-cluster-sg-sandbox-vpccni-378179173",
+                          "GroupId": "sg-05ade1c16a8a2cff7"
+                      }
+                  ],
+                  "Ipv6Addresses": [],
+                  "MacAddress": "0e:a3:96:c0:cb:dd",
+                  "NetworkInterfaceId": "eni-0c049de006a80a2c9",
+                  "OwnerId": "123456789012",
+                  "PrivateDnsName": "ip-10-0-15-193.ec2.internal",
+                  "PrivateIpAddress": "10.0.15.193",
+                  "PrivateIpAddresses": [
+                      {
+                          "Primary": true,
+                          "PrivateDnsName": "ip-10-0-15-193.ec2.internal",
+                          "PrivateIpAddress": "10.0.15.193"
+                      },
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-3-148.ec2.internal",
+                          "PrivateIpAddress": "10.0.3.148"
+                      },
+                      (中略)
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-9-155.ec2.internal",
+                          "PrivateIpAddress": "10.0.9.155"
+                      },
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-9-239.ec2.internal",
+                          "PrivateIpAddress": "10.0.9.239"
+                      },
+                      {
+                          "Primary": false,
+                          "PrivateDnsName": "ip-10-0-4-95.ec2.internal",
+                          "PrivateIpAddress": "10.0.4.95"
+                      }
+                  ],
+                  "SourceDestCheck": true,
+                  "Status": "in-use",
+                  "SubnetId": "subnet-0a01ca6849de85a91",
+                  "VpcId": "vpc-08ec752dda481a986",
+                  "InterfaceType": "interface"
+              }
+          ]
+      ]
+  ]
+#+end_src
+
+この結果を見ると、ENIが複数アタッチされていることと、上記で確認したものを含むPodのIPアドレスがSecondary IPとして登録されていることが確認できます。
+
+次にこのノードのネットワークデバイスとルーティングテーブルを確認します。
+
+#+begin_src bash
+  # ip a
+  1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+      inet 127.0.0.1/8 scope host lo
+         valid_lft forever preferred_lft forever
+      inet6 ::1/128 scope host
+         valid_lft forever preferred_lft forever
+  2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc mq state UP group default qlen 1000
+      link/ether 0e:69:78:95:1a:25 brd ff:ff:ff:ff:ff:ff
+      inet 10.0.7.223/20 brd 10.0.15.255 scope global dynamic eth0
+         valid_lft 2892sec preferred_lft 2892sec
+      inet6 fe80::c69:78ff:fe95:1a25/64 scope link
+         valid_lft forever preferred_lft forever
+  3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default qlen 1000
+      link/ether 12:e0:68:3d:69:79 brd ff:ff:ff:ff:ff:ff
+  4: pod-id-link0: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN group default qlen 1000
+      link/ether e6:db:53:a7:dc:75 brd ff:ff:ff:ff:ff:ff
+      inet 169.254.170.23/32 scope global pod-id-link0
+         valid_lft forever preferred_lft forever
+      inet6 fd00:ec2::23/128 scope global
+         valid_lft forever preferred_lft forever
+      inet6 fe80::e4db:53ff:fea7:dc75/64 scope link
+         valid_lft forever preferred_lft forever
+  5: eni5e0af5c1cbe@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc noqueue state UP group default
+      link/ether 2a:25:ce:d4:f7:ed brd ff:ff:ff:ff:ff:ff link-netns cni-a7f118d2-cce3-0e94-fec1-725f072ce341
+      inet6 fe80::2825:ceff:fed4:f7ed/64 scope link
+         valid_lft forever preferred_lft forever
+  6: eni9397facaed1@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc noqueue state UP group default
+      link/ether 1a:17:28:8b:86:92 brd ff:ff:ff:ff:ff:ff link-netns cni-45738e8a-476f-ea8d-93c2-992a57cc4c6e
+      inet6 fe80::1817:28ff:fe8b:8692/64 scope link
+         valid_lft forever preferred_lft forever
+  7: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc mq state UP group default qlen 1000
+      link/ether 0e:a3:96:c0:cb:dd brd ff:ff:ff:ff:ff:ff
+      inet 10.0.15.193/20 brd 10.0.15.255 scope global eth1
+         valid_lft forever preferred_lft forever
+      inet6 fe80::ca3:96ff:fec0:cbdd/64 scope link
+      valid_lft forever preferred_lft forever
+
+  [ssm-user@ip-10-0-7-223 bin]$ ip r
+  default via 10.0.0.1 dev eth0
+  10.0.0.0/20 dev eth0 proto kernel scope link src 10.0.7.223
+  10.0.3.240 dev eni9397facaed1 scope link
+  10.0.8.245 dev eni5e0af5c1cbe scope link
+  169.254.169.254 dev eth0
+  169.254.170.23 dev pod-id-link0
+  [ssm-user@ip-10-0-7-223 bin]$
+#+end_src
+
+Podへの通信経路から、ノード外部のPodへの通信経路は他の外部通信と区別がないことが確認できます。
+
+最後に、Podから別のPodに対して通信をしてみると、上記で確認したルーティング通りにアクセスがおこなわれることが確認できます。
+
+#+begin_src bash
+  $ kubectl debug nginx-7854ff8877-nn7c2 -it --image busybox -- sh
+  # traceroute 10.0.3.240
+  traceroute to 10.0.3.240 (10.0.3.240), 30 hops max, 46 byte packets
+   1  ip-10-0-7-223.ec2.internal (10.0.7.223)  0.006 ms  0.004 ms  0.003 ms
+   2  ip-10-0-3-240.ec2.internal (10.0.3.240)  0.002 ms  0.004 ms  0.003 ms
+  # traceroute 10.0.10.231 
+  traceroute to 10.0.10.231 (10.0.10.231), 30 hops max, 46 byte packets
+   1  ip-10-0-7-223.ec2.internal (10.0.7.223)  0.008 ms  0.004 ms  0.004 ms
+   2  ip-10-0-12-177.ec2.internal (10.0.12.177)  0.288 ms  0.152 ms  0.218 ms
+   3  ip-10-0-10-231.ec2.internal (10.0.10.231)  0.211 ms  0.160 ms  0.175 ms
+  # 
+#+end_src
+
+**** Calicoの場合
+まず適当にnginxのPodを複数起動します。
+
+#+begin_src bash
+  $ kubectl get pod -o wide
+  NAME                     READY   STATUS    RESTARTS   AGE   IP             NODE                         NOMINATED NODE   READINESS GATES
+  nginx-7854ff8877-2nx5m   1/1     Running   0          6s    172.16.72.69   ip-10-0-6-190.ec2.internal   <none>           <none>
+  nginx-7854ff8877-cz99r   1/1     Running   0          6s    172.16.30.3    ip-10-0-13-0.ec2.internal    <none>           <none>
+  nginx-7854ff8877-wxmrp   1/1     Running   0          6s    172.16.30.2    ip-10-0-13-0.ec2.internal    <none>           <none>
+#+end_src
+
+次に、ノードにアタッチされたENIを確認します。確認しているのは、 =ip-10-0-13-0.ec2.internal= のインスタンスです。
+
+#+begin_src json
+  $ aws ec2 describe-instances --instance-id=i-08cb97c3c9fa74945 --query 'Reservations[*].Instances[*].NetworkInterfaces[*]'
+  [
+      [
+          [
+              {
+                  "Association": {
+                      "IpOwnerId": "amazon",
+                      "PublicDnsName": "ec2-3-94-93-107.compute-1.amazonaws.com",
+                      "PublicIp": "3.94.93.107"
+                  },
+                  "Attachment": {
+                      "AttachTime": "2024-06-11T11:47:12+00:00",
+                      "AttachmentId": "eni-attach-045003e66a716a220",
+                      "DeleteOnTermination": true,
+                      "DeviceIndex": 0,
+                      "Status": "attached",
+                      "NetworkCardIndex": 0
+                  },
+                  "Description": "",
+                  "Groups": [
+                      {
+                          "GroupName": "eks-cluster-sg-sandbox-calico-935712307",
+                          "GroupId": "sg-0110278b204a16645"
+                      }
+                  ],
+                  "Ipv6Addresses": [],
+                  "MacAddress": "0e:5e:83:4b:eb:59",
+                  "NetworkInterfaceId": "eni-0cc4848a8c678adf6",
+                  "OwnerId": "123456789012",
+                  "PrivateDnsName": "ip-10-0-13-0.ec2.internal",
+                  "PrivateIpAddress": "10.0.13.0",
+                  "PrivateIpAddresses": [
+                      {
+                          "Association": {
+                              "IpOwnerId": "amazon",
+                              "PublicDnsName": "ec2-3-94-93-107.compute-1.amazonaws.com",
+                              "PublicIp": "3.94.93.107"
+                          },
+                          "Primary": true,
+                          "PrivateDnsName": "ip-10-0-13-0.ec2.internal",
+                          "PrivateIpAddress": "10.0.13.0"
+                      }
+                  ],
+                  "SourceDestCheck": true,
+                  "Status": "in-use",
+                  "SubnetId": "subnet-0a01ca6849de85a91",
+                  "VpcId": "vpc-08ec752dda481a986",
+                  "InterfaceType": "interface"
+              }
+          ]
+      ]
+  ]
+#+end_src
+
+この結果から、想定通り、ENIが1つだけアタッチされていること、プライベートIPアドレスがひとつだけアタッチされていることが確認できます。
+これは、VPC CNIとの大きな差異となりますね。
+
+次に、このノードのネットワークデバイスとルーティングテーブルを確認します。
+
+#+begin_src bash
+  [ssm-user@ip-10-0-13-0 bin]$ ip a
+  1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+      inet 127.0.0.1/8 scope host lo
+         valid_lft forever preferred_lft forever
+      inet6 ::1/128 scope host
+         valid_lft forever preferred_lft forever
+  2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc mq state UP group default qlen 1000
+      link/ether 0e:5e:83:4b:eb:59 brd ff:ff:ff:ff:ff:ff
+      inet 10.0.13.0/20 brd 10.0.15.255 scope global dynamic eth0
+         valid_lft 3121sec preferred_lft 3121sec
+      inet6 fe80::c5e:83ff:fe4b:eb59/64 scope link
+         valid_lft forever preferred_lft forever
+  3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default qlen 1000
+      link/ether 6e:76:01:ac:b5:a4 brd ff:ff:ff:ff:ff:ff
+  4: pod-id-link0: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN group default qlen 1000
+      link/ether 7a:8d:26:32:76:f0 brd ff:ff:ff:ff:ff:ff
+      inet 169.254.170.23/32 scope global pod-id-link0
+         valid_lft forever preferred_lft forever
+      inet6 fd00:ec2::23/128 scope global
+         valid_lft forever preferred_lft forever
+      inet6 fe80::788d:26ff:fe32:76f0/64 scope link
+         valid_lft forever preferred_lft forever
+  5: vxlan.calico: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc noqueue state UNKNOWN group default qlen 1000
+      link/ether 66:3d:e3:a6:45:31 brd ff:ff:ff:ff:ff:ff
+      inet 172.16.30.0/32 scope global vxlan.calico
+         valid_lft forever preferred_lft forever
+      inet6 fe80::643d:e3ff:fea6:4531/64 scope link
+         valid_lft forever preferred_lft forever
+  8: calic09168731f7@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc noqueue state UP group default qlen 1000
+      link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-ca542f88-846b-b27b-834f-b04c478ed058
+      inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+         valid_lft forever preferred_lft forever
+  9: calidfe83332386@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc noqueue state UP group default qlen 1000
+      link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-05d32003-1faa-becf-c536-7eff9b7adcf5
+      inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+         valid_lft forever preferred_lft forever
+  10: calibe254a7a7ea@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8951 qdisc noqueue state UP group default qlen 1000
+      link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-9b581ddf-0251-18bd-7164-fd2bfe1f33a9
+      inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+         valid_lft forever preferred_lft forever
+
+  
+  [ssm-user@ip-10-0-13-0 bin]$ ip r
+  default via 10.0.0.1 dev eth0
+  10.0.0.0/20 dev eth0 proto kernel scope link src 10.0.13.0
+  169.254.169.254 dev eth0
+  169.254.170.23 dev pod-id-link0
+  blackhole 172.16.30.0/26 proto 80
+  172.16.30.1 dev calic09168731f7 scope link
+  172.16.30.2 dev calidfe83332386 scope link
+  172.16.30.3 dev calibe254a7a7ea scope link
+  172.16.72.64/26 via 172.16.72.64 dev vxlan.calico onlink
+#+end_src
+
+vxlanが構築されていることと、172.16系である各Podのルーティングにおいて別のノード上のPodへはvxlan経由でアクセスすることが確認できます。
+
+最後に、Podから別のPodに対して通信をしてみると、上記で確認したルーティング通りにアクセスがおこなわれることが確認できます。
+
+#+begin_src bash
+# traceroute 172.16.30.3
+traceroute to 172.16.30.3 (172.16.30.3), 30 hops max, 46 byte packets
+ 1  ip-10-0-13-0.ec2.internal (10.0.13.0)  0.006 ms  0.005 ms  0.004 ms
+ 2  ip-172-16-30-3.ec2.internal (172.16.30.3)  0.004 ms  0.005 ms  0.004 ms
+# traceroute 172.16.72.69 
+traceroute to 172.16.72.69 (172.16.72.69), 30 hops max, 46 byte packets
+ 1  ip-10-0-13-0.ec2.internal (10.0.13.0)  0.008 ms  0.005 ms  0.004 ms
+ 2  ip-172-16-72-64.ec2.internal (172.16.72.64)  0.158 ms  0.159 ms  0.115 ms
+ 3  ip-172-16-72-69.ec2.internal (172.16.72.69)  0.167 ms  0.218 ms  0.134 ms
+# 
+#+end_src
+
+*** VPC CNIの注意点
+
+ここまででCalicoとVPC CNIでコンテナ間ネットワークの実装が異なることを見てきました。
+これが、果たして何か影響をおよぼすのでしょうか？
+
+ひとつは、VPC CNIはその実装上、リソースに余裕があってもIPアドレスが枯渇することでPodが起動できなくなる、ということがあります。
+これはスケールの設計をするときに、それを念頭に置いて設計するようにしましょう。
+
+もうひとつの注意点が、クラスタの外から予期せぬ通信が発生する可能性があるということです。
+
+特にオンプレKubernetesで育ってきた人は、クラスタの外からはPodに直接アクセスすることはできず、
+それがやりたい場合は、NodePortなどを利用してServiceとして外部公開する必要があると思っているでしょう。
+
+ただ、VPC CNIを利用した場合、Podとノードが同じネットワーク上にいるため、
+セキュリティグループでノードに対して通信を許可していれば、その上で動作しているPodへの通信も許可されてしまいます。
+
+以下は、クラスタの外のEC2インスタンスから、Calico、VPC CNIそれぞれのクラスタ上のPodに対して通信をこころみた結果です。
+#+begin_src bash
+  # Calicoのクラスタ
+  # ノードに対してはリクエストが到達する
+  [ssm-user@ip-10-0-6-245 bin]$ tracepath 10.0.13.0
+   1?: [LOCALHOST]                      pmtu 9001
+   1:  ip-10-0-13-0.ec2.internal                             0.419ms reached
+   1:  ip-10-0-13-0.ec2.internal                             0.371ms reached
+       Resume: pmtu 9001 hops 1 back 1
+  # Podに対してはリクエストは到達しない
+  [ssm-user@ip-10-0-6-245 bin]$ tracepath 172.16.30.3
+   1?: [LOCALHOST]                      pmtu 9001
+   1:  no reply
+
+  # VPC CNIのクラスタ
+  # Podに対してもリクエストが到達してしまう
+  [ssm-user@ip-10-0-6-245 bin]$ traceroute 10.0.3.240
+  traceroute to 10.0.3.240 (10.0.3.240), 30 hops max, 60 byte packets
+   1  ip-10-0-7-223.ec2.internal (10.0.7.223)  1.301 ms  1.093 ms  1.008 ms
+   2  * * *
+   3  ip-10-0-3-240.ec2.internal (10.0.3.240)  1.117 ms *  0.933 ms
+  # curlすればnginxにもアクセスできる
+  [ssm-user@ip-10-0-6-245 bin]$ curl 10.0.3.240
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <title>Welcome to nginx!</title>
+  <style>
+  html { color-scheme: light dark; }
+  body { width: 35em; margin: 0 auto;
+  font-family: Tahoma, Verdana, Arial, sans-serif; }
+  </style>
+  </head>
+  <body>
+  <h1>Welcome to nginx!</h1>
+  <p>If you see this page, the nginx web server is successfully installed and
+  working. Further configuration is required.</p>
+
+  <p>For online documentation and support please refer to
+  <a href="http://nginx.org/">nginx.org</a>.<br/>
+  Commercial support is available at
+  <a href="http://nginx.com/">nginx.com</a>.</p>
+
+  <p><em>Thank you for using nginx.</em></p>
+  </body>
+  </html>
+#+end_src
+
+通常、マネージドノードグループを作った場合は、ワーカーノード間の通信のみ許容するようになっているため、
+勝手にVPC内に全公開されてしまうわけではもちろんありません。
+
+ただ、特にサードパーティ製品を導入したい場合などに、ワーカーノードに対して他のインスタンスなどから通信をおこないたいケースも中にはあると思います。
+そのような場合に、ゆるいセキュリティ設計をしてしまうと意図しない通信や、場合によってはセキュリティホールにつながるおそれもあります。
+基本動作ですが、最小権限の原則にそって不要な通信を許容しないように注意して設計しましょう。
+
+また、Podのセキュリティグループを使えば、この挙動からもっとPod単位で細かく通信制御をすることもできます。
+これらの機能も活用することで、より詳細な通信制御をおこなうことができます。
+
+*** まとめ
+
+今回は、EKSの代表的なネットワークプラグインの実装にディープダイブして、挙動の違いやそこから来る注意点をご紹介しました。
+
+ネットワークはオンプレミスとクラウドで違いが出やすいところです。
+設計の際は思い込みに注意するとともに、提供される便利な機能も活用していきましょう。
+
 
 
