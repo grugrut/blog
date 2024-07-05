@@ -1,6 +1,7 @@
 #+hugo_base_dir: ../
 #+hugo_selection: ./
 #+options: author:nil
+#+options: broken-links:mark
 
 * 2019
 ** blogのお引越し                                                      :hugo:
@@ -533,7 +534,7 @@ Emacs26までは、行番号の表示をemacs lispで頑張るというアプロ
 今のところ、この設定で困ったことはなく、強いて言えば、
 見比べてみるとわかるが、はじめから行番号のスペースが広めにとられてしまっている。
 そのため、少し画面サイズは小さくなっているものの、これで快適な行番号生活をおくることができる。
-** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :gcp:certification:
+** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:certification:
    CLOSED: [2019-12-29 Sun 10:11]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-12\")
@@ -2312,7 +2313,7 @@ https://github.com/grugrut/todo-springboot/blob/5017ac9b720b8d1d7e6462a4ff439db0
 *** まとめ
 フロントエンドをNuxtJS、バックエンドをSpringBootとするシンプルなTODOアプリができた。
 このあとは、コンテナ化してkubernetesなどで動かす予定。
-** DONE ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する :springboot:aws:ecs:fargate:cloudwatch:
+** DONE ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する :springboot:AWS:ECS:fargate:cloudwatch:
    CLOSED: [2020-09-06 Sun 23:59]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-09\")
@@ -3141,7 +3142,7 @@ GCされてしまうと時間にブレが生じるので、GCされてないこ�
 
 
 バイトコンパイルが苦手なものとかがあれば、それでも試してみたいけど、何がいいんだろうか。
-** DONE 手元でECSが動く ECS Anywhereを試してみた                    :aws:ecs:
+** DONE 手元でECSが動く ECS Anywhereを試してみた                    :AWS:ECS:
    CLOSED: [2021-05-29 Sat 09:25]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-05\")
@@ -3234,7 +3235,7 @@ Hello, World! My name is a371576de001
 
     タスクへのインバウンド通信の手段が無いといろいろ不便な気がするので、
     その辺は今後に期待なのかと思う。
-** DONE EKSのPodのSecurityGroupを試す                               :aws:eks:
+** DONE EKSのPodのSecurityGroupを試す                               :AWS:EKS:
    CLOSED: [2021-07-26 Mon 23:50]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-07\")
@@ -3611,7 +3612,7 @@ uint64でビット演算を考えると意外と思い違いなどもあり、�
 もともとの目的だったオセロのアルゴリズムについても今後ビットボードアルゴリズムで書き直して
 短時間で強い探索ができるオセロAIを作成していきたい。
 
-** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :aws:ecs:springboot:prometheus:cloudwatch:
+** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :AWS:ECS:springboot:prometheus:cloudwatch:
 CLOSED: [2022-05-01 Sun 13:07]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-04\")
@@ -3665,7 +3666,7 @@ VPC内部のプライベートIPアドレスレンジからしかアクセスで
 
 #+begin_src json
   {
-  "executionRoleArn": "arn:aws:iam::0123456789012:role/EcsExecutionRole",
+  "executionRoleArn": "arn:AWS:iam::0123456789012:role/EcsExecutionRole",
   "containerDefinitions": [
     {
       "dnsSearchDomains": null,
@@ -3844,7 +3845,7 @@ CloudWatch Agentで監視することができた。
 設定してみての所感だが、CloudWatchだけでメトリクスを収集できるのは非常に便利。
 ただ、いちいちどのメトリクスを収集するか、とか、収集の時点でディメンションを気にしないといけないといった
 面倒さはあるので、Prometheusでそのまま収集してしまったほうが楽なのではないか、と思った。
-** DONE ECSでfirelensを利用したログ収集で、標準出力と標準エラー出力の転送先を分ける :aws:ecs:firelens:
+** DONE ECSでfirelensを利用したログ収集で、標準出力と標準エラー出力の転送先を分ける :AWS:ECS:firelens:
 CLOSED: [2022-05-07 Sat 13:14]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-05\")
@@ -4081,7 +4082,7 @@ ECSを使いこなそうという人にはオススメの一冊だ。
 </div>    
 #+end_export
 
-** DONE AWSの資格を全制覇した                             :aws:certification:
+** DONE AWSの資格を全制覇した                             :AWS:certification:
 CLOSED: [2022-11-19 Sat 12:22]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-11)
@@ -4137,7 +4138,7 @@ AWS以外のことを知らないといけないという点で人によって�
 無事にAWSの資格の全制覇を達成した。
 最近はGoogle Cloudの資格もちょくちょく取ってるので、その辺も記録に残していきたい。
 
-** DONE Google Cloud Database EngineerをはじめGoogle Cloudの資格をいくつか取得しました :gcp:certification:
+** DONE Google Cloud Database EngineerをはじめGoogle Cloudの資格をいくつか取得しました :GCP:certification:
 CLOSED: [2022-11-22 Tue 22:45]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-11)
@@ -4271,7 +4272,7 @@ Emacs-JP Slackで流れててそれ自体も目が点だったのですが、こ
 今回は、Emacs 29の新機能から、本筋ではないちょっと面白系の更新をご紹介しました。
 実はEmacs 29は、linumが撤廃されるとか結構アグレッシブな変更もあるようなので、
 その辺も別途確認していきたいと思います。
-** DONE ECS Service Connectを試す                                   :aws:ecs:
+** DONE ECS Service Connectを試す                                   :AWS:ecs:
 CLOSED: [2022-12-11 Sun 15:48]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-12)
@@ -4486,7 +4487,7 @@ Cloud Mapの設定を見てもAPIコールのみのサービスが作成され�
 ヘルスチェック周りなど、細かいところの挙動までみれてないので、
 もう少しその辺を掘り下げてみていきたいと思います。
 
-** DONE FISからChaosMeshを呼び出しEKSのカオスエンジニアリングをおこなう :aws:eks:fis:chaosmesh:
+** DONE FISからChaosMeshを呼び出しEKSのカオスエンジニアリングをおこなう :AWS:EKS:fis:chaosmesh:
 CLOSED: [2022-12-20 Tue 00:00]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-12)
@@ -5103,7 +5104,6 @@ FISにはCloudWatchと連携して実験が予期しない動作をした場合�
 今は、まずはFISで実施できるアクションを増やしてみた、という段階だと思いますので、
 これからよりマネージドに便利に扱えるようになることに期待したいと思います。
 
-
 * 2023
 ** DONE キーボードをMoonLanderに変更した                :moonlander:keyboard:
 CLOSED: [2023-08-04 Fri 11:42]
@@ -5205,7 +5205,7 @@ Ergodox EZは無刻印の場合はDCSプロファイルなのですが、Moonlan
 
 Ergodoxが故障してしまったので、Moonlanderに乗り換えてみました。
 気になるところは多少ありますが、慣れの問題ですし、これから使いこなしていきたいと思います。
-** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :aws:certification:
+** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :AWS:certification:
 CLOSED: [2023-12-03 Sun 09:21]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
@@ -5276,7 +5276,7 @@ Associateなので問題のレベルはそれなりとは言え、普段は雰�
   </div>
 </div>    
 #+end_export
-** DONE ゾーンシフトも出現したしクロスゾーン負荷分散を再考察する :aws:route53:elb:
+** DONE ゾーンシフトも出現したしクロスゾーン負荷分散を再考察する :AWS:route53:elb:
 CLOSED: [2023-12-19 Tue 22:25]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
@@ -5347,7 +5347,7 @@ AZ単体で想定される負荷をさばく、十分なキャパシティが求
 費用と費用対効果と十分そろばんを弾いて、導入する機能なのかなと思います。
 
 * 2024
-** DONE EKSでのMountpoint for Amazon S3を試す                    :aws:eks:s3:
+** DONE EKSでのMountpoint for Amazon S3を試す                    :AWS:EKS:S3:
 CLOSED: [2024-01-08 Mon 13:34]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-01\")
@@ -5679,7 +5679,7 @@ k8sの機能ではConfigMapを利用することができます。
 
 新しい機能がどんどん増えていくので便利なものは活用していきたいですね。
 
-** DONE AWSの新たな資格 Data Engineer Associate に合格した :aws:certification:
+** DONE AWSの新たな資格 Data Engineer Associate に合格した :AWS:certification:
 CLOSED: [2024-02-14 Wed 23:39]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
@@ -5718,7 +5718,7 @@ https://aws.amazon.com/jp/certification/certified-data-engineer-associate/
 https://aws.amazon.com/jp/certification/policies/before-testing/
 
 というわけで、世界準速Data Engineer Associate合格体験記でした。
-** DONE AWS CloudShellを利用するときのつらみは全部tmuxが解決してくれる :aws:cloudshell:
+** DONE AWS CloudShellを利用するときのつらみは全部tmuxが解決してくれる :AWS:cloudshell:
 CLOSED: [2024-02-22 Thu 00:32]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
@@ -5810,7 +5810,7 @@ CloudShellでデフォルトで入っているtmuxを使って、ちょっとし
 リモートワークが中心になると、ふとしたこういうテクニックが伝承されにくかったりすると思います。
 
 他にも役に立ちそうなTipsがあれば、また紹介していきたいと思います。
-** DONE AWSのコンテナのベースイメージ何がいいのか         :aws:ecs:container:
+** DONE AWSのコンテナのベースイメージ何がいいのか         :AWS:ecs:container:
 CLOSED: [2024-03-20 Wed 12:59]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -5903,7 +5903,7 @@ Alpineは遅いと聞いていましたが、結果はむしろ逆という興�
 
 そして最後に、「実際に計測すること、超大事」
 
-** DONE EKSのMountpoint for Amazon S3 CSIにおけるエラー時の挙動の検証 :aws:eks:s3:
+** DONE EKSのMountpoint for Amazon S3 CSIにおけるエラー時の挙動の検証 :AWS:EKS:S3:
 CLOSED: [2024-03-27 Thu 23:26]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -6029,7 +6029,7 @@ CLOSED: [2024-03-27 Thu 23:26]
 
 あらためてこの機能がサーバレスで使えるようになると、さらに便利になると思われ、
 Fargateでも利用できるようになってほしいですね。
-** DONE EKSのpodへのIAMアクセス付与はPod Identityにおまかせ         :aws:eks:
+** DONE EKSのpodへのIAMアクセス付与はPod Identityにおまかせ         :AWS:EKS:
 CLOSED: [2024-03-29 Fri 10:55]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -6248,7 +6248,7 @@ https://docs.aws.amazon.com/eks/latest/userguide/pod-id-abac.html
 今回は、Re:Invent2023で導入された Pod Identityについて使い方や既存のIRSAとの違いについて紹介しました。
 
 使ってみて、これまでのつらかったところが一気によくなった機能アップデートだと思いますので、是非使ってみてはいかがでしょうか。
-** DONE コンテナイメージサイズ削減はがんばりすぎなくてよい。Seekable OCIがあればね :aws:container:ecs:fargate:
+** DONE コンテナイメージサイズ削減はがんばりすぎなくてよい。Seekable OCIがあればね :AWS:container:ecs:fargate:
 CLOSED: [2024-03-30 Sat 07:43]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -6373,7 +6373,7 @@ SOCIを積極的に活用することで、スケールアウトやリリース�
 今回は、Fargateのタスク起動を高速化するSeekable OCIについて、その効果を検証しました。
 実際、イメージサイズが大きいコンテナの場合、起動速度の大幅な貢献につながると思いますので、
 タスク起動の時間に悩んでいる人は、ぜひ使ってみてください。
-** DONE CloudFormationの新しい機能を使って簡単にIaCに移行する :aws:cloudformation:
+** DONE CloudFormationの新しい機能を使って簡単にIaCに移行する :AWS:cloudformation:
 CLOSED: [2024-03-31 Sun 08:26]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -6537,8 +6537,8 @@ Emacs30からは、入力中にタブキーを押す、もしくは左端の目�
 Emacs30でちょっと変わった機能を紹介しました。
 
 マジメな変更点として、 =defadvise= がついに非推奨になったり後方互換に関するトピックもあるので、それは別途紹介したいと思います。
-** DONE EKSのVPC CNIでNetwork Policyを利用する                      :aws:eks:
-CLOSED: [2024-04-15 Mon 19:05]
+** DONE EKSのVPC CNIでNetwork Policyを利用する                      :AWS:EKS:
+    CLOSED: [2024-04-15 Mon 19:05]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-04\")
 :EXPORT_FILE_NAME: 202404151848
@@ -6552,7 +6552,8 @@ Network Policyを利用したい場合には、自己責任のもとCalicoなど
 
 PodのSecurityGroupについては、過去の検証記事があるので、こちらをご覧ください。
 
-[[*EKSのPodのSecurityGroupを試す][EKSのPodのSecurityGroupを試す]]
+[[*EKSのPodのSecurityGroupを試す
+][EKSのPodのSecurityGroupを試す]]
 
 これまでNetwork Policyに対する要望は非常に多く上がっていましたが、ついに、2023年9月1日にリリースされたv1.14.0にて、
 VPC CNIにNetwork Policyのサポートが追加されました。
@@ -6784,7 +6785,7 @@ Podのセキュリティポリシーは逆に、SecurityGroupと連携する必�
 今回は、待望のEKSネイティブのCNIでNetwork Policyを利用する方法と、これまでの機能の使い分けについて紹介しました。
 
 要望が強く上がる機能は、きちんと採用していってもらえるので今後の進化も楽しみです。
-** DONE EKSのネットワーキングにディープダイブ                       :aws:eks:
+** DONE EKSのネットワーキングにディープダイブ                       :AWS:EKS:
 CLOSED: [2024-06-11 Tue 22:08]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-06\")
