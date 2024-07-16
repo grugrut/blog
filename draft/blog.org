@@ -1,7 +1,6 @@
 #+hugo_base_dir: ../
-#+hugo_selection: ./
 #+options: author:nil
-#+options: broken-links:mark
+#+options: broken-links:nil
 
 * 2019
 ** blogのお引越し                                                      :hugo:
@@ -6552,8 +6551,7 @@ Network Policyを利用したい場合には、自己責任のもとCalicoなど
 
 PodのSecurityGroupについては、過去の検証記事があるので、こちらをご覧ください。
 
-[[*EKSのPodのSecurityGroupを試す
-][EKSのPodのSecurityGroupを試す]]
+[[*EKSのPodのSecurityGroupを試す][EKSのPodのSecurityGroupを試す]]
 
 これまでNetwork Policyに対する要望は非常に多く上がっていましたが、ついに、2023年9月1日にリリースされたv1.14.0にて、
 VPC CNIにNetwork Policyのサポートが追加されました。
@@ -7319,3 +7317,57 @@ URLっぽい文字列や、アフィリエイトが使えるが設定がされ�
 
 今回、Disqusの設定を見直した際に、ゲスト投稿を有効に切り替えたので、
 もしお気付きの点などありましたら、是非コメントにお寄せください。
+** DONE [調査中] Org 9.7になってox-hugoの内部リンクが動かなくなっている :hugo:org:
+CLOSED: [2024-07-16 Tue 22:16]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-07\")
+:EXPORT_FILE_NAME: 202407162106
+:END:
+
+このブログはOrg Modeで書いて、ox-hugoでmarkdownにエクスポートして、hugoで静的サイトに変換して作っているのですが、
+気付いたら、他の記事へのリンクを含むエントリがエクスポートできなくなっていました。
+*** 症状
+Org Modeでは以下のフォーマットで、他のHeadingへのリンクを作成することができ、
+ox-hugoでエクスポートするときはサイト内リンクに変換されます。
+
+#+begin_src org
+  [[*<Heading>][表示テキスト]]
+#+end_src
+
+これを含むエントリをエクスポートするときに、以下のエラーが出てエクスポートできなくなるようになりました。
+
+#+begin_quote
+org-export-data: Org export aborted. Unable to resolve link: "xxxxxx.pre-processed.org"
+See ‘org-export-with-broken-links’.
+#+end_quote
+
+pre-processed.orgというのは自分は作成していないのですが、
+リンクを解決するために、一時的にox-hugoが作成するバッファ名のようです。
+
+エラーメッセージに書かれているとおり、
+org-export-with-broken-linksを =t= に設定するか、 =mark= に設定してあげるとエクスポートは動くのですが、
+=t= にするとリンクが無視される、 =mark= にすると、ここには無効なリンクがありましたと出力されるので、
+期待するリンクが貼られるような動作ではありません。
+*** 原因の発生バージョン
+EmacsにOrg Modeが同梱されるようになり、HEADビルドをしているとOrgがどんどんバージョンアップしていくのですが、
+手動でバージョンを下げながら確認していったところ、
+どうやらOrg 9.6.xでは発生せず、9.7.0から発生するようになったようです。
+
+メジャーバージョンアップでは破壊的変更もおこなわれるので、他の周辺機能に予期せぬ問題が出ることは十分考えられます。
+
+ox-hugoにも、Org 9.7にすることで問題が発生するようになったとのissueも報告されています。
+
+https://github.com/kaushalmodi/ox-hugo/issues/740
+
+ただ、9.7.7でこの問題は解決したそうですが、自分はまだ解決していません。
+*** 今後
+エラーまわりを解析していたところ、org-element.elという、Org Modeのプロパティやノードなどを扱うAPI周りに
+リリースノートには書かれていない変更点が入り、それがox-hugoの意図しない挙動につながってるように見えています。
+
+issue報告してもお任せするのもありなのですが、あまりOrg Modeの内部機能などは知らずに生きてきたので、
+せっかくならもう少し原因追求をしてからissueを上げようと思います。
+
+ということで、今回の調査はここまで。
+
+真相が分かり次第、追って報告する。
+
