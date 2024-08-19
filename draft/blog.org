@@ -2939,7 +2939,7 @@ Cron的に定期実行したいとか、やりたいことはもっとたくさ�
 
 https://www.openfaas.com/blog/introduction-to-serverless-linuxfoundation/
 * 2021
-** DONE Emacsで現在利用しているメモリを確認する                       :emacs:
+** DONE Emacsで現在利用しているメモリを確認する                       :Emacs:
    CLOSED: [2021-01-11 Mon 23:00]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-01\")
@@ -3022,7 +3022,7 @@ https://www.openfaas.com/blog/introduction-to-serverless-linuxfoundation/
 
     28のリリースが近付けばもっと情報が出てくるかもしれないので楽しみ。
     例えば、GCMHと組み合わせることで、いいかんじに裏でGCしてくれると嬉しい。
-** DONE Emacsに来たnative compileを試す                               :emacs:
+** DONE Emacsに来たnative compileを試す                               :Emacs:
    CLOSED: [2021-04-26 Mon 23:20]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-04\")
@@ -3079,7 +3079,7 @@ $ file ~/.emacs.d/elpa/all-the-icons-20210425.1035/all-the-icons.elc
 $ file ~/.emacs.d/eln-cache/28.0.50-0e028d40/all-the-icons-e248ace1-2752b37c.eln
 /home/grugrut/.emacs.d/eln-cache/28.0.50-0e028d40/all-the-icons-e248ace1-2752b37c.eln: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=305839e28b83cfac289c5e04a54cd2c92c318029, not stripped
 #+end_src
-** DONE EmacsのNative Compilationの性能を測定する                     :emacs:
+** DONE EmacsのNative Compilationの性能を測定する                     :Emacs:
    CLOSED: [2021-04-27 Tue 23:01]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-04\")
@@ -3535,7 +3535,7 @@ Podのセキュリティグループは、利用できるインスタンスタ�
     Warning  FailedScheduling  1s (x3 over 46s)    default-scheduler  0/3 nodes are available: 1 Insufficient vpc.amazonaws.com/pod-eni, 2 node(s) were unschedulable
  #+end_src
 * 2022
-** DONE bitboardアルゴリズムでN-Queen問題を解く                :algorithm:go:
+** DONE bitboardアルゴリズムでN-Queen問題を解く                :Algorithm:GoLang:
 CLOSED: [2022-01-18 Tue 23:43]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-01\")
@@ -3612,7 +3612,7 @@ uint64でビット演算を考えると意外と思い違いなどもあり、�
 もともとの目的だったオセロのアルゴリズムについても今後ビットボードアルゴリズムで書き直して
 短時間で強い探索ができるオセロAIを作成していきたい。
 
-** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :AWS:ECS:springboot:prometheus:cloudwatch:
+** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :AWS:ECS:SpringBoot:Prometheus:CloudWatch:
 CLOSED: [2022-05-01 Sun 13:07]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-04\")
@@ -3845,7 +3845,7 @@ CloudWatch Agentで監視することができた。
 設定してみての所感だが、CloudWatchだけでメトリクスを収集できるのは非常に便利。
 ただ、いちいちどのメトリクスを収集するか、とか、収集の時点でディメンションを気にしないといけないといった
 面倒さはあるので、Prometheusでそのまま収集してしまったほうが楽なのではないか、と思った。
-** DONE ECSでfirelensを利用したログ収集で、標準出力と標準エラー出力の転送先を分ける :AWS:ECS:firelens:
+** DONE ECSでfirelensを利用したログ収集で、標準出力と標準エラー出力の転送先を分ける :AWS:ECS:FireLens:
 CLOSED: [2022-05-07 Sat 13:14]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-05\")
@@ -4082,7 +4082,7 @@ ECSを使いこなそうという人にはオススメの一冊だ。
 </div>    
 #+end_export
 
-** DONE AWSの資格を全制覇した                             :AWS:certification:
+** DONE AWSの資格を全制覇した                             :AWS:Certification:
 CLOSED: [2022-11-19 Sat 12:22]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-11)
@@ -4138,7 +4138,7 @@ AWS以外のことを知らないといけないという点で人によって�
 無事にAWSの資格の全制覇を達成した。
 最近はGoogle Cloudの資格もちょくちょく取ってるので、その辺も記録に残していきたい。
 
-** DONE Google Cloud Database EngineerをはじめGoogle Cloudの資格をいくつか取得しました :GCP:certification:
+** DONE Google Cloud Database EngineerをはじめGoogle Cloudの資格をいくつか取得しました :GCP:Certification:
 CLOSED: [2022-11-22 Tue 22:45]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-11)
@@ -4191,7 +4191,7 @@ AWSの資格と比べ、学習教材の量だと圧倒的に少ないGoogle Clou
 めぼしい資格は取ってしまったのでしばらくお休みかなと思いますが、おもしろそうなのがあれば取りにいきたいですね。
 これで失効までの期間が2年ではなくもっと伸びてくれれば最高なのですが、なんとかならないですかね。
 
-** DONE Emacs 29で導入される予定のおもしろい機能の紹介                :emacs:
+** DONE Emacs 29で導入される予定のおもしろい機能の紹介                :Emacs:
 CLOSED: [2022-11-24 Thu 23:03]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-11)
@@ -4272,7 +4272,7 @@ Emacs-JP Slackで流れててそれ自体も目が点だったのですが、こ
 今回は、Emacs 29の新機能から、本筋ではないちょっと面白系の更新をご紹介しました。
 実はEmacs 29は、linumが撤廃されるとか結構アグレッシブな変更もあるようなので、
 その辺も別途確認していきたいと思います。
-** DONE ECS Service Connectを試す                                   :AWS:ecs:
+** DONE ECS Service Connectを試す                                   :AWS:ECS:
 CLOSED: [2022-12-11 Sun 15:48]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-12)
@@ -4487,7 +4487,7 @@ Cloud Mapの設定を見てもAPIコールのみのサービスが作成され�
 ヘルスチェック周りなど、細かいところの挙動までみれてないので、
 もう少しその辺を掘り下げてみていきたいと思います。
 
-** DONE FISからChaosMeshを呼び出しEKSのカオスエンジニアリングをおこなう :AWS:EKS:fis:chaosmesh:
+** DONE FISからChaosMeshを呼び出しEKSのカオスエンジニアリングをおこなう :AWS:EKS:FIS:ChaosMesh:
 CLOSED: [2022-12-20 Tue 00:00]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(2022 2022-12)
@@ -5105,7 +5105,7 @@ FISにはCloudWatchと連携して実験が予期しない動作をした場合�
 これからよりマネージドに便利に扱えるようになることに期待したいと思います。
 
 * 2023
-** DONE キーボードをMoonLanderに変更した                :moonlander:keyboard:
+** DONE キーボードをMoonLanderに変更した                :MoonLander:Keyboard:
 CLOSED: [2023-08-04 Fri 11:42]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-08\")
@@ -5205,7 +5205,7 @@ Ergodox EZは無刻印の場合はDCSプロファイルなのですが、Moonlan
 
 Ergodoxが故障してしまったので、Moonlanderに乗り換えてみました。
 気になるところは多少ありますが、慣れの問題ですし、これから使いこなしていきたいと思います。
-** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :AWS:certification:
+** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :AWS:Certification:
 CLOSED: [2023-12-03 Sun 09:21]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
@@ -5276,7 +5276,7 @@ Associateなので問題のレベルはそれなりとは言え、普段は雰�
   </div>
 </div>    
 #+end_export
-** DONE ゾーンシフトも出現したしクロスゾーン負荷分散を再考察する :AWS:route53:elb:
+** DONE ゾーンシフトも出現したしクロスゾーン負荷分散を再考察する :AWS:Route53:ELB:
 CLOSED: [2023-12-19 Tue 22:25]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
@@ -5679,7 +5679,7 @@ k8sの機能ではConfigMapを利用することができます。
 
 新しい機能がどんどん増えていくので便利なものは活用していきたいですね。
 
-** DONE AWSの新たな資格 Data Engineer Associate に合格した :AWS:certification:
+** DONE AWSの新たな資格 Data Engineer Associate に合格した :AWS:Certification:
 CLOSED: [2024-02-14 Wed 23:39]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
@@ -5718,7 +5718,7 @@ https://aws.amazon.com/jp/certification/certified-data-engineer-associate/
 https://aws.amazon.com/jp/certification/policies/before-testing/
 
 というわけで、世界準速Data Engineer Associate合格体験記でした。
-** DONE AWS CloudShellを利用するときのつらみは全部tmuxが解決してくれる :AWS:cloudshell:
+** DONE AWS CloudShellを利用するときのつらみは全部tmuxが解決してくれる :AWS:CloudShell:
 CLOSED: [2024-02-22 Thu 00:32]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
@@ -5810,7 +5810,7 @@ CloudShellでデフォルトで入っているtmuxを使って、ちょっとし
 リモートワークが中心になると、ふとしたこういうテクニックが伝承されにくかったりすると思います。
 
 他にも役に立ちそうなTipsがあれば、また紹介していきたいと思います。
-** DONE AWSのコンテナのベースイメージ何がいいのか         :AWS:ecs:container:
+** DONE AWSのコンテナのベースイメージ何がいいのか         :AWS:ECS:Container:
 CLOSED: [2024-03-20 Wed 12:59]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -6248,7 +6248,7 @@ https://docs.aws.amazon.com/eks/latest/userguide/pod-id-abac.html
 今回は、Re:Invent2023で導入された Pod Identityについて使い方や既存のIRSAとの違いについて紹介しました。
 
 使ってみて、これまでのつらかったところが一気によくなった機能アップデートだと思いますので、是非使ってみてはいかがでしょうか。
-** DONE コンテナイメージサイズ削減はがんばりすぎなくてよい。Seekable OCIがあればね :AWS:container:ecs:fargate:
+** DONE コンテナイメージサイズ削減はがんばりすぎなくてよい。Seekable OCIがあればね :AWS:Container:ECS:Fargate:
 CLOSED: [2024-03-30 Sat 07:43]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -6373,7 +6373,7 @@ SOCIを積極的に活用することで、スケールアウトやリリース�
 今回は、Fargateのタスク起動を高速化するSeekable OCIについて、その効果を検証しました。
 実際、イメージサイズが大きいコンテナの場合、起動速度の大幅な貢献につながると思いますので、
 タスク起動の時間に悩んでいる人は、ぜひ使ってみてください。
-** DONE CloudFormationの新しい機能を使って簡単にIaCに移行する :AWS:cloudformation:
+** DONE CloudFormationの新しい機能を使って簡単にIaCに移行する :AWS:CloudFormation:
 CLOSED: [2024-03-31 Sun 08:26]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
@@ -6472,7 +6472,7 @@ IaCジェネレータは非常に便利ですが、注意点もいくつかあ�
 
 開発の初期段階からIaC化することは難しく試行錯誤しながら構成を決めて、それをテンプレ化したいというケースはよくあるので、
 その際に活用して効率よく進めていきましょう。
-** DONE Emacs 30で導入される予定のおもしろい機能の紹介                :emacs:
+** DONE Emacs 30で導入される予定のおもしろい機能の紹介                :Emacs:
 CLOSED: [2024-04-12 Fri 23:25]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-04\")
@@ -7371,7 +7371,7 @@ issue報告してもお任せするのもありなのですが、あまりOrg Mo
 ということで、今回の調査はここまで。
 
 真相が分かり次第、追って報告する。
-** DONE Emacsサマーフェスで登壇してきた                         :emacs:event:
+** DONE Emacsサマーフェスで登壇してきた                         :Emacs:Event:
 CLOSED: [2024-08-04 Sun 22:40]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
@@ -7427,7 +7427,7 @@ EmacsユーザとVimユーザがそれぞれの得意分野を駆使して、解
 発表とか怖いわ〜と言ってる人ほど、是非一度登壇してみてほしいです。
 
 では、次回Emacsオクトーバーフェスで御会いしましょう。
-** TODO Corfuでispellのエラーが出たので対処                     :emacs:Corfu:
+** TODO Corfuでispellのエラーが出たので対処                     :Emacs:Corfu:
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
 :EXPORT_FILE_NAME: 202408192021
