@@ -1,6 +1,7 @@
 #+hugo_base_dir: ../
 #+options: author:nil
 #+options: broken-links:nil
+#+STARTUP: fold
 
 * 2019
 ** blogのお引越し                                                      :hugo:
@@ -16,7 +17,7 @@
 どっちかに統一しようかと考え、最近の動向から長年連れそってきたはてなブログのほうをやめて、
 こちらに持ってくるようにします。
 昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
-** emacs on WSLでSuper/Hyperキーを使う                    :emacs:wsl:windows:
+** emacs on WSLでSuper/Hyperキーを使う                    :Emacs:wsl:Windows:
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
 :EXPORT_FILE_NAME: 201910040445
@@ -154,7 +155,7 @@ ubuntu.exe run "DISPLAY=127.0.0.1:0.0 xmodmap ~/.Xmodmap"
 
 [fn:modifier] たぶん =w32-lwindow-modifier= とかが使えるはず
 [fn:emacs-on-wsl] https://speakerdeck.com/grugrut/emacs-on-wsldefalsekun-rigoto
-** DONE skk-azikで「っ」が誤爆しやすい問題                        :emacs:skk:
+** DONE skk-azikで「っ」が誤爆しやすい問題                        :Emacs:skk:
    CLOSED: [2019-10-22 Tue 22:05]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -218,7 +219,7 @@ skk-azikの中で最後に呼ばれる =skk-azik-load-hook= を使って、自�
 printデバッグしてみたら、 =:config= がそもそも呼ばれてなかったようにも見えたので
 もうすこし上手いやりかたがあるのかもしれない。
 
-** DONE leaf-expandでleafのデバッグをする            :emacs:smartparens:leaf:
+** DONE leaf-expandでleafのデバッグをする            :Emacs:SmartParens:leaf:
    CLOSED: [2019-10-14 Mon 22:18]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -292,7 +293,7 @@ smartparensの設定は、 =(require 'smartparens-config)= が楽だし確実、
 #+end_src
 
 これは便利なので、今後も積極的に使っていきたい。
-** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :openshift:kubernetes:crc:windows:
+** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :OpenShift:Kubernetes:crc:Windows:
    CLOSED: [2019-10-19 Sat 14:03]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -501,7 +502,7 @@ kubeadminユーザを削除することによって、Webコンソールへの�
 今のところバグで、30日で証明書が期限切れになり、起動できなくなってしまうらしい。
 解決策はなく、一度削除して(当然作成したものも消える)、作りなおす必要があるとか。
 おそろしい話である。
-** DONE emacs26からの行番号表示がddskk入力時にガタつくのを防ぐ    :emacs:skk:
+** DONE emacs26からの行番号表示がddskk入力時にガタつくのを防ぐ    :Emacs:skk:
    CLOSED: [2019-10-20 Sun 23:51]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
@@ -533,7 +534,7 @@ Emacs26までは、行番号の表示をemacs lispで頑張るというアプロ
 今のところ、この設定で困ったことはなく、強いて言えば、
 見比べてみるとわかるが、はじめから行番号のスペースが広めにとられてしまっている。
 そのため、少し画面サイズは小さくなっているものの、これで快適な行番号生活をおくることができる。
-** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:certification:
+** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:Certification:
    CLOSED: [2019-12-29 Sun 10:11]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-12\")
@@ -555,7 +556,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 今後も公私ともにもっと活用していきたいですね。
 
 * 2020
-** DONE org modeのファイルをパースする                            :emacs:org:
+** DONE org modeのファイルをパースする                            :Emacs:org:
    CLOSED: [2020-01-10 Fri 08:56]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-01\")
@@ -572,7 +573,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 
    =org-map-entries= が、条件にあうノードに対してmap関数を適用するための関数。
    =org-entry-properties= が、個々のノードのプロパティの連想リストを取得する関数。てっきりプロパティドロワーにあるものだけ抽出するのかと思ってたらアイテム名とか、TODO状態とか全部取れてるっぽいので、これベースにごにょごにょすればいい感じにいけそう。
-** DONE ergodox ezを購入した                               :ergodox:keyboard:
+** DONE ergodox ezを購入した                               :ErgoDox:Keyboard:
    CLOSED: [2020-05-18 Mon 23:11]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-05\")
@@ -629,7 +630,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
       - 自分、そんなに手も小さいほうじゃないので、いけると思ってたら、意外とつらかった
 
     まあ、これは触りながら、適宜キー配列を変えていって慣らすしかなさそうですね。
-** DONE CKA(Certified kubernetes Administrator)に合格した :kubernetes:certification:
+** DONE CKA(Certified kubernetes Administrator)に合格した :Kubernetes:Certification:
    CLOSED: [2020-07-07 Tue 09:40]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -688,12 +689,12 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 *** 結果
     93%だった。一応全問問いたものの、7%の問題だけ挙動が怪しかったので、たぶんそれのやりかたが間違ってたのだと思う。
     部屋の綺麗さを保ててるうちに、CKADも取ってしまいたいので、さっそく今日から勉強再開だ。
-** DONE CKAD(Certified Kubernetes Application Developer)に合格した :kubernetes:certification:
-   CLOSED: [2020-07-11 Sat 10:56]
-   :PROPERTIES:
-   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
-   :EXPORT_FILE_NAME: 202007111027
-   :END:
+** DONE CKAD(Certified Kubernetes Application Developer)に合格した :Kubernetes:Certification:
+CLOSED: [2020-07-11 Sat 10:56]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_FILE_NAME: 202007111027
+:END:
 
    [[CKA(Certified kubernetes Administrator)に合格した]] の勢いで、4日後にCKADも受験し、
    無事に合格したのでメモ
@@ -731,7 +732,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
     96%だった。おそらく何聞かれてるんだか明確でない問題が1問あり、ま、こんなもんだろで回答したものが1つあったので、それだと思う。
     CKA、CKAD両方受けてみて、これまでの知識の棚卸しができてよかったと思う。
     これ取ったから何というわけではないので、これをステップにより知識を高めていきましょう。
-** DONE CRI-O + Kata containers + Weavenetでkubernetesをインストールする :kubernetes:
+** DONE CRI-O + Kata containers + Weavenetでkubernetesをインストールする :Kubernetes:
    CLOSED: [2020-07-12 Sun 09:33]
    :PROPERTIES:
    :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -1008,7 +1009,7 @@ Kata Containersは、これまで安全にコンテナ実行するために使�
 構築も、ドキュメントによって書いてあること違ったりでいくつかトラブルところもあったが、
 だいたいログ見たらどこがあやしいかわかるし、それほど苦労することはなかった。
 1枚噛んでるレイヤが増えるので、性能面とリソースのオーバーヘッドが気になるので、今後その辺見てみたい。
-** DONE Tektonをさわってみた                              :kubernetes:tekton:
+** DONE Tektonをさわってみた                              :Kubernetes:Tekton:
    CLOSED: [2020-07-19 Sun 12:25]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -1086,7 +1087,7 @@ kubectl tkn taskrun logs echo-hello-world-task-run
 
 やりました。 [[Tektonでパイプラインを動かす]]
 
-** DONE Tektonでパイプラインを動かす                      :tekton:kubernetes:
+** DONE Tektonでパイプラインを動かす                      :Tekton:Kubernetes:
    CLOSED: [2020-07-24 Fri 15:47]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -1342,7 +1343,7 @@ STARTED       DURATION     STATUS
 
 Tektonを使ってパイプラインを実行することができた。CI/CDというには、実行のトリガーのところとか、デプロイのところができてないので、
 次はそのへんを見ていく予定。(コンテナイメージもlatestタグになってて、超微妙だし。。。)
-** DONE インストール後にkube-proxyの動作モードをIPVSモードに変更する :kubernetes:
+** DONE インストール後にkube-proxyの動作モードをIPVSモードに変更する :Kubernetes:
    CLOSED: [2020-07-27 Mon 23:25]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -1391,7 +1392,7 @@ Warningがでているが、IPVSモードでは、kube-proxyの負荷分散方�
 https://kubernetes.io/blog/2018/07/09/ipvs-based-in-cluster-load-balancing-deep-dive/#ipvs-based-kube-proxy
 *** まとめ
 ipvsの場合の負荷分散方式が、いろいろあるってことは知らなかったので、やってみてよかった。
-** DONE Hyper-V上でGitLabサーバを構築する             :hyper_v:gitlab:docker:
+** DONE Hyper-V上でGitLabサーバを構築する             :hyper_v:GitLab:Docker:
    CLOSED: [2020-07-30 Thu 07:09]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
@@ -1511,7 +1512,7 @@ Docker for Windowsのダッシュボードを開いて、SettingsのDocker Engin
 #+end_src
 
 これで、docker loginならびにdocker pushできるはず。
-** DONE Hyper-Vにokd4(OpenShift Origin)をインストールする :hyper_v:openshift:
+** DONE Hyper-Vにokd4(OpenShift Origin)をインストールする :hyper_v:OpenShift:
    CLOSED: [2020-08-01 Sat 13:09]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
@@ -1817,7 +1818,7 @@ CodeReady Containersのころは、OpenShift 4.2相当だったと思うので�
 [[file:images/20200801-okd-dashboard.png]]
 
 インストールが無事にできたので、今度はなんか適当にアプリケーションを動かしてみよう。
-** DONE kubernetes-mixinのダッシュボードでgrafanaダッシュボードを簡単に構築する :kubernetes:grafana:
+** DONE kubernetes-mixinのダッシュボードでgrafanaダッシュボードを簡単に構築する :Kubernetes:Grafana:
    CLOSED: [2020-08-10 Mon 12:56]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
@@ -2030,7 +2031,7 @@ kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-pass
 #+end_src
 
 これでしばらくすれば、prometheusに収集されたデータをgrafanaで確認することができるはず。
-** DONE SpringBootとNuxtJSでTODOアプリを作る             :springboot:nuxstjs:
+** DONE SpringBootとNuxtJSでTODOアプリを作る             :SpringBoot:NuxtJS:
    CLOSED: [2020-08-25 Tue 23:28]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
@@ -2312,7 +2313,7 @@ https://github.com/grugrut/todo-springboot/blob/5017ac9b720b8d1d7e6462a4ff439db0
 *** まとめ
 フロントエンドをNuxtJS、バックエンドをSpringBootとするシンプルなTODOアプリができた。
 このあとは、コンテナ化してkubernetesなどで動かす予定。
-** DONE ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する :springboot:AWS:ECS:fargate:cloudwatch:
+** DONE ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する :SpringBoot:AWS:ECS:Fargate:CloudWatch:
    CLOSED: [2020-09-06 Sun 23:59]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-09\")
@@ -2394,7 +2395,7 @@ Fargateの場合は、直接設定を書けないので、 =SSM= のパラメー
 ECSの場合、同じタスクの中のコンテナは、 =localhost= でポートを共有しており、
 =localhost:8125= にメトリクスを送信するようにSpring Boot側で設定をしているので、
 ヒープ使用率などのメトリクスをCloudWatchに送信することができる。
-** DONE HelmからIvyに差分小さく移行する                      :emacs:helm:ivy:
+** DONE HelmからIvyに差分小さく移行する                      :Emacs:helm:ivy:
    CLOSED: [2020-09-16 Wed 06:54]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-09\")
@@ -2514,7 +2515,7 @@ ivyはhydraとの連携がやりやすいなど、ivyの良さがいろいろあ
      (t
       (ivy-call)))))
 #+end_src
-** DONE kubernetesを1.17から1.18にバージョンアップする           :kubernetes:
+** DONE kubernetesを1.17から1.18にバージョンアップする           :Kubernetes:
    CLOSED: [2020-10-10 Sat 09:33]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-10\")
@@ -2653,7 +2654,7 @@ CKAの勉強をしているときにkubeadmを使ってクラスタをバージ�
 EKSなどのマネージドなものに比べると多少面倒ではあるが、意外と簡単だし詰まりポイントも少ない印象を受けた。
 
 とはいえ、4台構成だからまだやっていけるけど、これが多くなるようだと単純に面倒なので =kubespray= とか使ってansibleで一気に回したい気持ちはある。
-** DONE Ergodox EZをJIS配列で利用して5ヶ月経過したので振り返り :ergodox:keyboard:
+** DONE Ergodox EZをJIS配列で利用して5ヶ月経過したので振り返り :ErgoDox:Keyboard:
    CLOSED: [2020-10-17 Sat 11:33]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-10\")
@@ -2767,7 +2768,7 @@ ergodox ezに親指用にキーたくさんあっても結局押せないじゃ�
 キーを減らしてコンパクトになる感じで対応されていて、結構よさそう。
 
 blankモデルがでたら欲しい、が、ergodox ezを使い続けるんだろうな。
-** DONE OpenFaaSでお手軽API環境を手にいれる             :kubernetes:openfaas:
+** DONE OpenFaaSでお手軽API環境を手にいれる             :Kubernetes:OpenFaas:
    CLOSED: [2020-12-06 Sun 23:50]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-12\")
@@ -7426,3 +7427,8 @@ EmacsユーザとVimユーザがそれぞれの得意分野を駆使して、解
 発表とか怖いわ〜と言ってる人ほど、是非一度登壇してみてほしいです。
 
 では、次回Emacsオクトーバーフェスで御会いしましょう。
+** TODO Corfuでispellのエラーが出たので対処                     :emacs:Corfu:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
+:EXPORT_FILE_NAME: 202408192021
+:END:
