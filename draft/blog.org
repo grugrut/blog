@@ -7481,3 +7481,277 @@ https://github.com/minad/corfu?tab=readme-ov-file#configuration
     (corfu-auto . t)
     (text-mode-ispell-word-completion . nil))  
 #+end_src
+** DONE DistrolessコンテナでもEKSでのデバッグを諦めない   :AWS:EKS:Container:
+CLOSED: [2024-08-21 Wed 08:54]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
+:EXPORT_FILE_NAME: 202408210800
+:END:
+
+結構前にStableになっている機能ですが、最近話していて意外と知られていないのかしら？と思ったのでまとめておきます。
+
+一般的に、起動速度を速くするため、そしてセキュリティのために余計なものはコンテナに含めないことが推奨されます。
+そして、究極的にはシェルもコンテナの中に含めない軽量コンテナの採用が検討されることも多くなってきました。
+
+過去の記事としては、このあたりにも記載しています。
+
+[[*AWSのコンテナのベースイメージ何がいいのか][AWSのコンテナのベースイメージ何がいいのか]]
+
+軽量コンテナで心配になるのが動作中のデバッグをどうするか、です。
+もちろん実行中のコンテナの中に入っていろいろとデバッグを頑張ることは推奨されず、
+ログなどから解明できるようにしておくようにするべき、があるべき論としてはわかりますが、
+実際には、そうは言ってもいざというときなんとかなるのか、というのは論点として出てきます。
+
+今回は、EKS独自の機能ではなく、Kubernetesの機能としてこれを解決する手法をご紹介します。
+
+*** これまでのやりかた
+これまでは、そのような場合は、 =kubectl exec= を使って、
+該当のコンテナ自体でシェルを追加で起動して、なんやかんやすることが多かったと思います。
+
+#+begin_src text
+  $ kubectl run nginx --image nginx
+  pod/nginx created
+  $ kubectl get pod
+  NAME    READY   STATUS    RESTARTS   AGE
+  nginx   1/1     Running   0          47s
+  $ kubectl exec -it nginx -- sh
+  # hostname
+  nginx
+  # 
+#+end_src
+
+しかし、これはコンテナに元々含まれているコマンドを実行しているため、
+シェルが含まれないコンテナイメージではこの手段を取ることができません。
+
+#+begin_src text
+  $ kubectl run pause --image registry.k8s.io/pause
+  pod/pause created
+  $ kubectl get pod 
+  NAME    READY   STATUS    RESTARTS   AGE
+  pause   1/1     Running   0          10s
+  $ kubectl exec -it pause -- sh
+  error: Internal error occurred: Internal error occurred: error executing command in container: failed to exec in container: failed to start exec "2ca36f2f8d376f65b2497c4c461311fd4c95dfb694d1a785edf1c54dceef591d": OCI runtime exec failed: exec failed: unable to start container process: exec: "sh": executable file not found in $PATH: unknown
+  $ 
+#+end_src
+
+*** エフェメラルコンテナを使ったデバッグ
+そこで、Kubernetes 1.25から、 =kubectl debug= というコマンドで追加のデバッグ用コンテナをアタッチしてデバッグする機能がStableになりました。
+EKSでKubernetes 1.25が利用できるようになったのは、2023年の2月なので、もう自由に活用することができます。
+
+基本的には以下の通り、追加でアタッチしたいコンテナのイメージと接続先のコンテナを指定するだけです。
+
+#+begin_src text
+  $ kubectl debug pause -it --image busybox --target pause -- sh
+  Targeting container "pause". If you don't see processes from this container it may be because the container runtime doesn't support this feature.
+  Defaulting debug container name to debugger-h8t8m.
+  If you don't see a command prompt, try pressing enter.
+  / # 
+  / # 
+  / # hostname
+  pause
+  / # ps -ef
+  PID   USER     TIME  COMMAND
+      1 root      0:00 /pause
+     17 root      0:00 sh
+     25 root      0:00 ps -ef
+  / # 
+#+end_src
+
+このとき、 =kubectl describe= で見てみると、たしかにEphemeral Containersとして、
+追加したbusyboxのコンテナ =debugger-h8t8m= が追加されていることが確認できます。
+
+#+begin_src text
+  $ kubectl describe pod pause
+  Name:             pause
+  Namespace:        default
+  Priority:         0
+  Service Account:  default
+  Node:             ip-10-0-10-183.ec2.internal/10.0.10.183
+  Start Time:       Tue, 20 Aug 2024 22:33:53 +0000
+  Labels:           run=pause
+  Annotations:      <none>
+  Status:           Running
+  IP:               10.0.14.182
+  IPs:
+    IP:  10.0.14.182
+  Containers:
+    pause:
+      Container ID:   containerd://1a431387bef8bf4b48369a102be20c6db2cc4448b2b22fc081ca62bfaafb6cc7
+      Image:          registry.k8s.io/pause
+      Image ID:       registry.k8s.io/pause@sha256:a78c2d6208eff9b672de43f880093100050983047b7b0afe0217d3656e1b0d5f
+      Port:           <none>
+      Host Port:      <none>
+      State:          Running
+	Started:      Tue, 20 Aug 2024 22:33:53 +0000
+      Ready:          True
+      Restart Count:  0
+      Environment:    <none>
+      Mounts:
+	/var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-gb9j2 (ro)
+  Ephemeral Containers:
+    debugger-h8t8m:
+      Container ID:  containerd://679895be13487d7d3ea902489201492eea36c99a2deea937c044b0fe6e5d1103
+      Image:         busybox
+      Image ID:      docker.io/library/busybox@sha256:9ae97d36d26566ff84e8893c64a6dc4fe8ca6d1144bf5b87b2b85a32def253c7
+      Port:          <none>
+      Host Port:     <none>
+      Command:
+	sh
+      State:          Running
+	Started:      Tue, 20 Aug 2024 22:35:33 +0000
+      Ready:          False
+      Restart Count:  0
+      Environment:    <none>
+      Mounts:         <none>
+#+end_src
+
+**** targetを忘れないように注意
+
+さて、上の =kubectl debug= を利用するときには、 =--target= というオプションを追加していました。
+これは、どのコンテナの名前空間を利用するかを指定します。
+
+これを付けないと、単にコンテナが起動するだけで見たかったPodのプロセス情報も何も見ることができません。
+
+#+begin_src text
+  $ kubectl debug pause -it --image busybox -- sh
+  Defaulting debug container name to debugger-m9g5q.
+  If you don't see a command prompt, try pressing enter.
+  / # 
+  / # 
+  / # hostname
+  pause
+  / # ps ef
+  PID   USER     TIME  COMMAND
+      1 root      0:00 sh
+      7 root      0:00 ps ef
+  / # 
+#+end_src
+
+targetオプションは基本的に忘れずにつけるようにしましょう
+
+*** ファイルシステムを確認する
+さて、デバッグ用に追加されたコンテナはあくまでも別のコンテナとして動いています。
+そのため、ファイルシステムは別のものでありそのままだと見ることができません。
+
+以下では、 =ls= を実行していますが、これはもともとのpauseコンテナではなくて、
+デバッグ用に追加したbusyboxのコンテナのファイルシステムです。
+
+#+begin_src text
+  / # ls /
+  bin    dev    etc    home   lib    lib64  proc   root   sys    tmp    usr    var
+  / # 
+#+end_src
+
+これではデバッグしようにも元のコンテナにアクセスできないじゃないかと思われるかもしれません。
+ですが、ご安心ください。
+
+Linuxの仕組みとして、proc配下にその実行コマンドの情報や、実行コマンドの見ているルートディレクトリなどを参照することができます。
+あらためて先ほど実行したpsの結果を見てみると、PID 1でpauseコマンドは動いていました。
+
+なので、 =/proc/1/= 配下に、pauseコマンドに関する情報はあります。
+以下のようにして、pauseコマンド側のファイルシステムも参照することができるというわけです。
+
+#+begin_src text
+  / # ps -ef
+  PID   USER     TIME  COMMAND
+      1 root      0:00 /pause
+     17 root      0:00 sh
+     30 root      0:00 ps -ef
+  / # ls /proc/1/root/
+  dev    etc    pause  proc   sys    var
+  / #
+#+end_src
+
+**** root以外で動くコンテナには注意
+
+ここまでで、kubectl debugって、これまでkubectl execのためにシェルを入れなくてすむので便利!!
+と思われたかと思いますが、まだ注意が必要な点があります。
+
+上の例では、pauseコマンドはrootユーザで動いていました。
+しかし、世間にあるコンテナはrootユーザで動かしているものはそれほど多くありません。
+
+そのような場合は、コンテナ上の実行ユーザが異なってしまうので、権限の問題でファイルシステムを見ることができません。
+
+#+begin_src text
+  $ kubectl run hello --image gcr.io/google-samples/hello-app:1.0
+  pod/hello created
+  $ kubectl get pod
+  NAME    READY   STATUS    RESTARTS   AGE
+  hello   1/1     Running   0          5s
+  $ kubectl debug -it hello --image busybox --target hello -- sh
+  Targeting container "hello". If you don't see processes from this container it may be because the container runtime doesn't support this feature.
+  Defaulting debug container name to debugger-vbns9.
+  If you don't see a command prompt, try pressing enter.
+  / # 
+  / # 
+  / # ps -ef
+  PID   USER     TIME  COMMAND
+      1 65532     0:00 /hello-app
+     10 root      0:00 sh
+     16 root      0:00 ps -ef
+  / # ls /proc/1/root
+  ls: /proc/1/root: Permission denied
+  / # 
+#+end_src
+
+上記の実行結果でも、psコマンドにおいて、hello-appとbusyboxのPIDが異なること、
+結果proc配下を見にいこうとしてPermission deniedになっていることが確認できます。
+
+
+
+これを解決するには、ちょっと綺麗な手段ではないですが、UIDを揃えたデバッグ用のコンテナイメージを用意しておき、
+それを利用する方法があります。
+
+#+begin_src Dockerfile
+FROM busybox
+RUN echo "nonroot:x:65532:65532:nonroot:/:/bin/sh" >> /etc/passwd
+RUN echo "nonroot:x:65532:" >> /etc/group
+#+end_src
+
+このコンテナイメージを使ってデバッグ用のエフェメラルコンテナに使えば、以下のようにファイルシステムを参照することが可能です。
+
+#+begin_src text
+$ kubectl debug -it hello --image nonroot-busybox --target hello -- sh
+Targeting container "hello". If you don't see processes from this container it may be because the container runtime doesn't support this feature.
+Defaulting debug container name to debugger-6f44q.
+If you don't see a command prompt, try pressing enter.
+/ # 
+/ # 
+/ # id
+uid=0(root) gid=0(root) groups=0(root),10(wheel)
+/ # su nonroot
+~ $ id
+uid=65532(nonroot) gid=65532(nonroot) groups=65532(nonroot)
+~ $ ps -ef
+PID   USER     TIME  COMMAND
+    1 nonroot   0:00 /hello-app
+   11 root      0:00 sh
+   19 nonroot   0:00 sh
+   21 nonroot   0:00 ps -ef
+~ $ ls /proc/1/root
+bin        boot       dev        etc        hello-app  home       lib        lib64      proc       root       run        sbin       sys        tmp        usr        var
+~ $ 	  
+#+end_src
+
+*** まとめ
+
+今回は、 =kubectl debug= を利用してシェルが含まれないコンテナイメージをEKSで使う場合にデバッグする方法をご紹介しました。
+
+Non Rootで動くコンテナの場合には少しハックが必要だったり、あくまでも別のコンテナで動く都合上、
+=kubectl exec= に比べると癖はありますが、使いこなすと非常に便利な機能です。
+
+今回は基本的な機能だけ紹介しましたが、他にも起動中のコンテナをコピーしてデバッグ用に立ち上げるなど、
+非常に便利な機能が多いので、軽量コンテナのデバッグにお困りのかたは是非公式のドキュメントも確認してみてください。
+
+https://kubernetes.io/ja/docs/tasks/debug/debug-application/debug-running-pod/
+
+なお、エフェメラルコンテナの設定を =kubectl debug= 実行時に指定する手段として、Customオプションの追加が議論されており、
+Kubernetes 1.30でアルファとして追加され、1.31ではベータになりました。
+
+https://github.com/kubernetes/enhancements/issues/4292
+
+残念ながらEKSには1.31は執筆時点で来ておらず、EKSではアルファの機能を有効化することができないため、
+上記のNon Rootの課題をうまく解決することができるかまで確認ができませんでしたが、
+この機能がStableに昇格すればより便利にデバッグができると思っています。
+
+今後の動向が楽しみです。
