@@ -7755,3 +7755,91 @@ https://github.com/kubernetes/enhancements/issues/4292
 この機能がStableに昇格すればより便利にデバッグができると思っています。
 
 今後の動向が楽しみです。
+** DONE init.elの大掃除                                        :Emacs:config:
+CLOSED: [2024-08-26 Mon 22:40]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
+:EXPORT_FILE_NAME: 202408241612
+:END:
+
+Emacsは日々進化しているので、設定を定期的に見直すと新しい発見やモチベーションの維持につながります。
+
+いつも年末に大掃除と称して見直しをすることが多いのですが、
+最近年末にできていなかったのと、やっても小手先の修正だったのでがらっと見直してみました。
+
+具体的な設定値については、以下を常に更新しているので、こちらを参照してください。
+
+[My Emacs Config](/posts/my-emacs-init-el)
+*** 今回見直したもの
+今回の見直しでは大きなところでは以下を見直しました。
+
+**** Makefileでビルドする
+やろうやろうと思って全然できていなかったのですが、
+Org-babel-tangleやバイトコンパイルを手動で走らせていたのを、ちゃんとMakefileを用意してコマンド一発で実行できるようにしました。
+
+https://github.com/grugrut/dotfiles/commit/4019086e3e50fc40cbd206d90a7c7bbd20daaae4
+
+Gitリポジトリがプロジェクトと認識されるため、リポジトリ直下にMakefileを置いておくことで、
+=project-shell-command= ~C-x p ! make dotemacs~ で簡単にビルドを走らせれて便利。
+
+もっと早めにやってればよかったです。
+
+**** Leaf.elのキーワードの見直し
+
+作者が身近にいることがとても大きいので、パッケージ管理には =leaf.el= を使っています。
+
+先日の、Emacsサマーフェスで、leaf.elの作者の @conao3 の発表の中で、
+=global-minor-mode= というキーワードを使用しているのに気付きました。
+
+https://a.conao3.com/blog/2024/7c7c265/
+
+
+これを使うと、これまでだと、
+#+begin_src emacs-lisp
+  (leaf hogehoge
+    :defun
+    (hogehoge-mode)
+    :config
+    (hogehoge-mode))
+#+end_src
+のように設定していたものが、
+#+begin_src emacs-lisp
+  (leaf hogehoge
+    :global-minor-mode t)
+#+end_src
+
+だけで済むようになり、記述量の削減とわかりやすさの向上の両方が実現できます。
+
+https://github.com/conao3/leaf.el?tab=readme-ov-file#global-minor-mode-keyword
+
+また、これまでMelpaに登録されていないパッケージを直接リポジトリから参照するのに、
+=el-get= を =:el-get= キーワードを使って利用していましたが、
+Emacs29から標準の =package.el= がリポジトリ参照に対応しました。
+
+https://github.com/emacs-mirror/emacs/blob/master/etc/NEWS.29#L1718-L1720
+
+そのため、 =el-get= を使うのをやめ、 leafの =:vc= キーワードを使うように変更しました。
+
+**** 新しいパッケージを導入
+これまでのEmacs勉強会や忘年会などで、話には聞いていて使ってみようかなと思っていたのを、
+ちょうどよい機会だったので導入しました。
+
+以下箇条書きです。
+
+- undo-tree-mode
+  - undo/redoを直感的にしたり、履歴を可視化してくれる
+  - 古くからあるものの、標準のundo/C-g undoで困ってなかったのだけど入れてみた
+- Companyの代わりに、Corfu/Capeを使う
+  - 入力補完用のパッケージ
+  - 正直、Companyで困ってることは無いのだけど、なんとなく乗り換えてみる。都合が悪そうだったらCompanyに戻そうと思う
+  - 乗り換えてすぐに、HEADビルド環境でエラーが出て困ったので以下の記事を書きました
+    - [[*Corfuでispellのエラーが出たので対処][Corfuでispellのエラーが出たので対処]]
+- Puni
+  - これまでSmartparensとか使っていたが、そこまで使いこなしてなかったので、Puniはいいぞ、と色々な人に言われたので乗り換えてみた
+  - たしかに削除が意識せずとも賢くなっていいかもしれない
+  - 無駄なカッコが消えない! とあせることになるので、 =puni-force-delete= ~C-c <DEL>~ は覚えておきましょう
+    
+*** まとめと今後
+今回は、init.elの大掃除ということで、大きく見直したポイントをまとめました。
+正直、まだ書き換え完了していないし、言語周りのところを消して書き直せていないので、
+そのあたりはおいおい必要に迫られながらやっていきたいところです。
