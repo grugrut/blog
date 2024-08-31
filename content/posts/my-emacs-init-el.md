@@ -231,12 +231,10 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 ```emacs-lisp
 (leaf gcmh
   :ensure t
-  :defun
-  (gcmh-mode)
+  :global-minor-mode t
   :custom
   (gcmh-verbose . t)
-  :init
-  (gcmh-mode 1))
+  )
 ```
 
 
@@ -315,10 +313,7 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 ```emacs-lisp
 (leaf doom-modeline
   :ensure t
-  :defun
-  (doom-modeline-mode)
-  :init
-  (doom-modeline-mode 1)
+  :global-minor-mode t
   :custom
   (doom-modeline-bar-width . 4)
   (doom-modeline-hud . t))
@@ -340,10 +335,7 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 ```emacs-lisp
 (leaf beacon
   :ensure t
-  :defun
-  (beacon-mode)
-  :config
-  (beacon-mode 1))
+  :global-minor-mode t)
 ```
 
 
@@ -352,8 +344,6 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 ```emacs-lisp
 (leaf volatile-highlights
   :ensure t
-  :defun
-  (volatile-highlithgs-mode)
   :global-minor-mode t)
 ```
 
@@ -401,10 +391,8 @@ smartparensなどの後継として、Puniがよいとお勧めされたので�
 ```emacs-lisp
 (leaf puni
   :ensure t
-  :defun
-  (puni-global-mode)
-  :config
-  (puni-global-mode))
+  :global-minor-mode puni-global-mode
+  )
 ```
 
 
@@ -574,12 +562,10 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```emacs-lisp
 (leaf anzu
   :ensure t
-  :defun
-  (global-anzu-mode)
+  :global-minor-mode global-anzu-mode
   :bind
   (("M-%" . anzu-query-replace))
-  :config
-  (global-anzu-mode +1))
+  )
 ```
 
 
@@ -643,10 +629,7 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```emacs-lisp
 (leaf corfu
   :ensure t
-  :defun
-  (global-corfu-mode)
-  :config
-  (global-corfu-mode)
+  :global-minor-mode global-corfu-mode
   :custom
   (corfu-cycle . t)
   (corfu-auto . t)
