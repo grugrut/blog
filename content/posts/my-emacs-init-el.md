@@ -348,6 +348,41 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 ```
 
 
+### 検索 {#検索}
+
+
+#### 置換 {#置換}
+
+```emacs-lisp
+(leaf anzu
+  :ensure t
+  :global-minor-mode global-anzu-mode
+  :bind
+  (("M-%" . anzu-query-replace))
+  )
+```
+
+
+#### Migemo {#migemo}
+
+```emacs-lisp
+(leaf migemo
+  :ensure t
+  :require t
+  :defun
+  (migemo-init)
+  :custom
+  (migemo-command . "cmigemo")
+  (migemo-options . '("-q" "--emacs"))
+  (migemo-dictionary . "/usr/share/cmigemo/utf-8/migemo-dict")
+  (migemo-user-dictionary . nil)
+  (migemo-regex-dictionary . nil)
+  (migemo-coding-system . 'utf-8-unix)
+  :config
+  (migemo-init))
+```
+
+
 ### 編集 {#編集}
 
 
@@ -435,7 +470,10 @@ smartparensなどの後継として、Puniがよいとお勧めされたので�
 ```emacs-lisp
 (leaf undo-tree
   :ensure t
-  :global-minor-mode global-undo-tree-mode)
+  :global-minor-mode global-undo-tree-mode
+  :custom
+  (undo-tree-auto-save-history . nil)
+)
 ```
 
 
@@ -513,12 +551,18 @@ smartparensなどの後継として、Puniがよいとお勧めされたので�
 (leaf indent-bars
   :vc (:url "https://github.com/jdtsmith/indent-bars")
   :hook
-  ((prog-mode) . indent-bars-mode)
+  (prog-mode . indent-bars-mode)
   :config
   (require 'indent-bars-ts)
   :custom
   (indent-bars-treesit-support . t)
-  (indent-bars-treesit-ignore-blank-lines-types . '("module")))
+  (indent-bars-treesit-ignore-blank-lines-types . '("module"))
+  (indent-bars-pattern . ". . . . ")
+  (indent-bars-width-frac . 0.25)
+  (indent-bars-pad-frac . 0.2)
+  (indent-bars-zigzag . 0.1)
+  (indent-bars-color-by-depth . '(:regexp "outline-\\([0-9]+\\)" :blend 1))
+  (indent-bars-highlight-current-depth . '(:pattern "." :pad 0.1 :width 0.45)))
 ```
 
 
@@ -557,36 +601,15 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```
 
 
-#### 検索 {#検索}
+#### キー表示 {#キー表示}
 
 ```emacs-lisp
-(leaf anzu
-  :ensure t
-  :global-minor-mode global-anzu-mode
-  :bind
-  (("M-%" . anzu-query-replace))
-  )
+(leaf which-key
+  :global-minor-mode t)
 ```
 
 
-#### Migemo {#migemo}
-
-```emacs-lisp
-(leaf migemo
-  :ensure t
-  :require t
-  :defun
-  (migemo-init)
-  :custom
-  (migemo-command . "cmigemo")
-  (migemo-options . '("-q" "--emacs"))
-  (migemo-dictionary . "/usr/share/cmigemo/utf-8/migemo-dict")
-  (migemo-user-dictionary . nil)
-  (migemo-regex-dictionary . nil)
-  (migemo-coding-system . 'utf-8-unix)
-  :config
-  (migemo-init))
-```
+### コーディング {#コーディング}
 
 
 #### Tree Sitter {#tree-sitter}
@@ -653,7 +676,28 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```
 
 
+#### プロジェクト {#プロジェクト}
+
+```emacs-lisp
+(leaf project
+  :custom
+  (project-vc-merge-submodules . nil) ; Git Submoduleは別のプロジェクトとして扱う
+  )
+```
+
+
+#### Editor Config {#editor-config}
+
+```emacs-lisp
+(leaf editorconfig
+  :global-minor-mode t)
+```
+
+
 ### Org Mode {#org-mode}
+
+
+#### Org {#org}
 
 Org Modeの設定。そこまで特殊な設定はいれていないが、
 ソースコードブロックの編集に入る、編集を完了するキーバインドがデフォルトの `C-c C-'` が日本語キーボードだと入力しづらいので、
