@@ -1,6 +1,6 @@
 +++
 title = "My Emacs Config"
-date = 2024-08-24
+date = 2024-09-08
 tags = ["emacs", "config"]
 draft = false
 +++
@@ -244,18 +244,19 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 (leaf general-settings
   :config
   (prefer-coding-system 'utf-8-unix)
-  (setq read-answer-short t)
   (global-set-key [mouse-2] 'mouse-yank-at-click)
   (global-unset-key "\C-z")
   (delete-selection-mode t)
-  (setq large-file-warning-threshold (* 25 1024 1024))
-  (setq create-lockfiles nil)
-  (setq history-length 500)
-  (setq history-delete-duplicates t)
-  (setq line-move-visual nil)
-  (setq mouse-drag-copy-region t)
-  (setq backup-inhibited t)
-  (setq require-final-newline t)
+  :setq
+  (read-answer-short . t)
+  ;(large-file-warning-threshold . '(* 25 1024 1024))
+  (create-lockfiles . nil)
+  (history-length . 500)
+  (history-delete-duplicates . t)
+  (line-move-visual . nil)
+  (mouse-drag-copy-region . t)
+  (backup-inhibited . t)
+  (require-final-newline . t)
   )
 ```
 
@@ -320,17 +321,35 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 ```
 
 
-#### popwin {#popwin}
+#### ポップアップ {#ポップアップ}
 
 ```emacs-lisp
-(leaf popwin
+(leaf shackle
   :ensure t
+  :global-minor-mode t
   :custom
-  (popwin:popup-window-position . 'bottom))
+  (shackle-rules . '(("*Backtrace*" :popup t)
+                     ("*Leaf Expand*" :popup t)
+                     ("*Shell Command Output*" :popup t)
+                     ))
+  )
 ```
 
 
-#### beacon {#beacon}
+#### Window表示 {#window表示}
+
+```emacs-lisp
+(leaf winner
+  :global-minor-mode t
+  :bind
+  ("C-z" . winner-undo))
+```
+
+
+#### 操作をハイライトしてわかりやすく {#操作をハイライトしてわかりやすく}
+
+Beaconを使うと、バッファを切り替えたときに一瞬カーソルがハイライトされる。
+バッファを切り替えたことや、カーソルの位置がわかりやすくなる。
 
 ```emacs-lisp
 (leaf beacon
@@ -338,8 +357,7 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
   :global-minor-mode t)
 ```
 
-
-#### volatile-highlights {#volatile-highlights}
+ヤンクした内容を一瞬ハイライトして、追加部分をわかりやすくしてくれる。
 
 ```emacs-lisp
 (leaf volatile-highlights
@@ -521,51 +539,6 @@ smartparensなどの後継として、Puniがよいとお勧めされたので�
 ```
 
 
-#### Magit {#magit}
-
-```emacs-lisp
-(leaf magit
-  :ensure t
-  :bind
-  (("C-x g" . magit-status)))
-```
-
-
-#### recentf {#recentf}
-
-```emacs-lisp
-(leaf recentf
-  :init
-  (recentf-mode)
-  :config
-  (setopt recentf-max-saved-items 5000)
-  (setopt recentf-auto-cleanup 'never))
-```
-
-
-#### インデント表示 {#インデント表示}
-
-もともと `highlight-indent-guide` を使っていたが、 `indent-bars` に乗り換えてみる。
-
-```emacs-lisp
-(leaf indent-bars
-  :vc (:url "https://github.com/jdtsmith/indent-bars")
-  :hook
-  (prog-mode . indent-bars-mode)
-  :config
-  (require 'indent-bars-ts)
-  :custom
-  (indent-bars-treesit-support . t)
-  (indent-bars-treesit-ignore-blank-lines-types . '("module"))
-  (indent-bars-pattern . ". . . . ")
-  (indent-bars-width-frac . 0.25)
-  (indent-bars-pad-frac . 0.2)
-  (indent-bars-zigzag . 0.1)
-  (indent-bars-color-by-depth . '(:regexp "outline-\\([0-9]+\\)" :blend 1))
-  (indent-bars-highlight-current-depth . '(:pattern "." :pad 0.1 :width 0.45)))
-```
-
-
 #### avy {#avy}
 
 Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェースで削除位置を指定する。
@@ -610,6 +583,25 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 
 
 ### コーディング {#コーディング}
+
+
+#### Magit {#magit}
+
+```emacs-lisp
+(leaf magit
+  :ensure t
+  :bind
+  (("C-x g" . magit-status)))
+```
+
+```emacs-lisp
+(leaf recentf
+  :init
+  (recentf-mode)
+  :config
+  (setopt recentf-max-saved-items 5000)
+  (setopt recentf-auto-cleanup 'never))
+```
 
 
 #### Tree Sitter {#tree-sitter}
@@ -691,6 +683,28 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```emacs-lisp
 (leaf editorconfig
   :global-minor-mode t)
+```
+
+
+#### インデント表示 {#インデント表示}
+
+もともと `highlight-indent-guide` を使っていたが、 `indent-bars` に乗り換えてみる。
+
+```emacs-lisp
+(leaf indent-bars
+  :vc (:url "https://github.com/jdtsmith/indent-bars")
+  :hook
+  prog-mode-hook cc-mode-hook org-mode-hook
+  :config
+  (require 'indent-bars-ts)
+  :custom
+  (indent-bars-treesit-support . t)
+  (indent-bars-treesit-ignore-blank-lines-types . '("module"))
+  (indent-bars-pattern . ".")
+  (indent-bars-width-frac . 0.2)
+  (indent-bars-pad-frac . 0.2)
+  (indent-bars-color-by-depth . '(:regexp "outline-\\([0-9]+\\)" :blend 1))
+  (indent-bars-highlight-current-depth . '(:pattern "." :pad 0.1 :width 0.45)))
 ```
 
 
@@ -782,6 +796,17 @@ Orgが9.7でexportがうまくうごかないので、9.6にダウングレー�
   :mode
   (("\\.ts\\'" . typescript-mode)
    ("\\.tsx\\'" . tsx-ts-mode)))
+```
+
+
+#### markdown {#markdown}
+
+```emacs-lisp
+(leaf markdown-mode
+  :ensure t
+  :mode
+  (("\\.md\\'" . gfm-mode))
+  )
 ```
 
 
