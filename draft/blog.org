@@ -7857,7 +7857,8 @@ https://github.com/emacs-mirror/emacs/blob/master/etc/NEWS.29#L1718-L1720
 今回は、init.elの大掃除ということで、大きく見直したポイントをまとめました。
 正直、まだ書き換え完了していないし、言語周りのところを消して書き直せていないので、
 そのあたりはおいおい必要に迫られながらやっていきたいところです。
-** TODO 続・DistrolessコンテナでもEKSのデバッグを諦めない (EKS1.31対応版) :AWS:EKS:Kubernetes:
+** DONE 続・DistrolessコンテナでもEKSのデバッグを諦めない (EKS1.31対応版) :AWS:EKS:Kubernetes:
+CLOSED: [2024-10-20 Sun 13:46]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-10\")
 :EXPORT_FILE_NAME: 202410201211
