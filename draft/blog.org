@@ -7698,6 +7698,13 @@ Linuxの仕組みとして、proc配下にその実行コマンドの情報や�
 結果proc配下を見にいこうとしてPermission deniedになっていることが確認できます。
 
 
+#+begin_info
+この問題に関して、以下ではデバッグ用のコンテナイメージを用意して解決する方法を紹介していますが、
+実はそんなことをしなくても対策がありました。
+
+詳細はこの記事の末尾に続編へのリンクがあるので、そちらをご参照ください。
+#+end_info
+
 
 これを解決するには、ちょっと綺麗な手段ではないですが、UIDを揃えたデバッグ用のコンテナイメージを用意しておき、
 それを利用する方法があります。
@@ -7755,6 +7762,13 @@ https://github.com/kubernetes/enhancements/issues/4292
 この機能がStableに昇格すればより便利にデバッグができると思っています。
 
 今後の動向が楽しみです。
+
+*** 追記(2024/10/20)
+
+1.31がEKSにも来たので追記しました。Non Rootの課題をより簡単に解決できるようになってるので、こちらもぜひ読んでください。
+
+[[*続・DistrolessコンテナでもEKSのデバッグを諦めない (EKS1.31対応版)][続・DistrolessコンテナでもEKSのデバッグを諦めない (EKS1.31対応版)]]
+
 ** DONE init.elの大掃除                                        :Emacs:config:
 CLOSED: [2024-08-26 Mon 22:40]
 :PROPERTIES:
@@ -7843,3 +7857,132 @@ https://github.com/emacs-mirror/emacs/blob/master/etc/NEWS.29#L1718-L1720
 今回は、init.elの大掃除ということで、大きく見直したポイントをまとめました。
 正直、まだ書き換え完了していないし、言語周りのところを消して書き直せていないので、
 そのあたりはおいおい必要に迫られながらやっていきたいところです。
+** TODO 続・DistrolessコンテナでもEKSのデバッグを諦めない (EKS1.31対応版) :AWS:EKS:Kubernetes:
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-10\")
+:EXPORT_FILE_NAME: 202410201211
+:END:
+
+先日以下の記事を書きました。
+
+[[*DistrolessコンテナでもEKSでのデバッグを諦めない][DistrolessコンテナでもEKSでのデバッグを諦めない]]
+
+この記事を書いたときには、EKSの最新Kubernetesバージョンが1.30だったので、
+一部のやりたい機能ができなかったのですが、
+先月末についにEKSにも1.31がやってきたので、1.31でできるようになったことを紹介します。
+
+やりたいことは前回と同じく、root以外のユーザで動作するコンテナ対してデバッグコマンドでファイルシステムにアクセスすることです。
+
+#+begin_src text
+    $ kubectl run hello --image gcr.io/google-samples/hello-app:1.0
+    pod/hello created
+    $ kubectl get pod
+    NAME    READY   STATUS    RESTARTS   AGE
+    hello   1/1     Running   0          5s
+    $ kubectl debug -it hello --image busybox --target hello -- sh
+    Targeting container "hello". If you don't see processes from this container it may be because the container runtime doesn't support this feature.
+    Defaulting debug container name to debugger-vbns9.
+    If you don't see a command prompt, try pressing enter.
+    / #
+    / # id
+    uid=0(root) gid=0(root) groups=0(root),10(wheel)
+    / #
+    / # ps -ef
+    PID   USER     TIME  COMMAND
+	1 65532     0:00 /hello-app
+       10 root      0:00 sh
+       16 root      0:00 ps -ef
+    / # ls /proc/1/root
+    ls: /proc/1/root: Permission denied
+    / #
+    / # ls -l /proc/1/root
+    ls: /proc/1/root: cannot read link: Permission denied
+    lrwxrwxrwx    1 65532    65532            0 Oct 20 04:27 /proc/1/root
+#+end_src
+
+前回同様、デバッグしたい先のコンテナがuid 65532で動作していて、
+不一致のためファイルシステムにアクセスできないことが確認できます。
+
+*** デバッグ用のコンテナイメージを作らずに、プロファイル指定でデバッグする
+
+これは、前回の記事を公開後に教えてもらったのですが、実は1.30の時点でできます。
+
+=kubectl debug= の際に、 =--profile= オプションを使うことでデバッグコンテナのプロファイルを修正することができ、
+これを利用することでユーザが異なるコンテナイメージに対しても、強い権限でアクセスすることが可能になります。
+
+#+begin_src text
+  $ kubectl debug -it hello --image busybox --target hello --profile sysadmin -- sh
+  Targeting container "hello". If you don't see processes from this container it may be because the container runtime doesn't support this feature.
+  Defaulting debug container name to debugger-5trdh.
+  If you don't see a command prompt, try pressing enter.
+  / #
+  / # id
+  uid=0(root) gid=0(root) groups=0(root),10(wheel)
+  / #
+  / # ps -ef
+  PID   USER     TIME  COMMAND
+      1 65532     0:00 /hello-app
+     45 65532     0:00 sh
+     82 root      0:00 sh
+     89 root      0:00 ps -ef
+  / #
+  / # ls /proc/1/root
+  bin        boot       dev        etc        hello-app  home       lib        lib64      proc       root       run        sbin       sys        tmp        usr        var
+  / #
+  / # 
+#+end_src
+
+コマンド引数に =--profile sysadmin= がついたことに注意してください。
+そして、実行時のuidは同じでありながら、ファイルシステムにアクセスできることが確認できます。
+
+プロファイルの詳細は以下を参照してください。
+
+https://kubernetes.io/ja/docs/tasks/debug/debug-application/debug-running-pod/#debugging-profiles
+
+*** カスタムプロファイルを設定する
+
+そして、Kubernetes 1.31からベータに昇格したのが、カスタムプロファイルをいう機能です。
+これは上記プロファイルをプリセットのものではなく自由に設定することができる機能となります。
+
+これを実行するには、あらかじめPodの設定のうち、 =.spec= 配下の上書きしたい部分を抜きだしたyamlファイルを作成しておきます。
+今回は、uid、gidを変更したいので、以下のような簡単なyamlファイルをcustom.yamlという名前で作成しました。
+
+#+begin_src yaml
+securityContext:
+  runAsUser: 65532
+  runAsGroup: 65532
+#+end_src
+
+そして、kubectl debugを実行する際に、 =--custom= オプションの引数にこのファイル名を指定することで、
+デバッグ用コンテナの設定を上書きして動作させることが可能です。
+
+#+begin_src text
+  $ kubectl debug -it hello --image busybox --target hello --custom custom.yaml -- sh 
+  Targeting container "hello". If you don't see processes from this container it may be because the container runtime doesn't support this feature.
+  Defaulting debug container name to debugger-jssb4.
+  If you don't see a command prompt, try pressing enter.
+  ~ $
+  ~ $ id
+  uid=65532 gid=65532 groups=65532
+  ~ $
+  ~ $ ps -ef
+  PID   USER     TIME  COMMAND
+      1 65532     0:00 /hello-app
+     45 65532     0:00 sh
+     91 65532     0:00 sh
+     98 65532     0:00 ps -ef
+  ~ $
+  ~ $ ls /proc/1/root/
+  bin        boot       dev        etc        hello-app  home       lib        lib64      proc       root       run        sbin       sys        tmp        usr        var
+  ~ $ 
+#+end_src
+
+このように、デバッグ用のコンテナの実行ユーザを変更することができ、
+期待通り動かすことができました。
+
+*** まとめ
+今回は、EKSに1.31が来てできるようになった、デバッグ時のカスタムプロファイルの設定について紹介しました。
+
+前回内容とあわせて、Kubernetesでデバッグが必要になったときの頼りになる機能ですので、
+もしデバッグのためにメインのコンテナにシェルやツールをいれようか迷っているかたは、この機能で代替できないか検討してみてください。
+
