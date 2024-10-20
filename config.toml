@@ -2,7 +2,6 @@ baseURL = "https://www.grugrut.net"
 DefaultContentLanguage = "ja"
 title = "ぐるっとぐりっど"
 theme = "sauvignon"
-disqusShortname = "grugrut"
 googleAnalytics = "UA-41607666-9"
 enableGitInfo = true
 hasCJKLanguage = true
@@ -20,6 +19,11 @@ pygmentsUseClasses = true
   delayDisqus = false
   showRelatedPosts = true
   comments = true
+
+[Config]
+  [Config.Services]
+    [Config.Services.Disqus]
+      shortname = "grugrut"
 
 [Author]
   name = "Masanori Mano"
