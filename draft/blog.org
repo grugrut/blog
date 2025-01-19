@@ -6,7 +6,7 @@
 * 2019
 ** blogのお引越し                                                      :hugo:
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2019" "2019-10")
 :EXPORT_FILE_NAME: 201910030745
 :EXPORT_DATE: 2019-10-03
 :END:
@@ -19,7 +19,7 @@
 昔のはてなブログの記事も、今でも有用なものはこっちに持ってこようかしら。
 ** emacs on WSLでSuper/Hyperキーを使う                    :Emacs:wsl:Windows:
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2019" "2019-10")
 :EXPORT_FILE_NAME: 201910040445
 :EXPORT_DATE: 2019-10-04
 :END:
@@ -158,7 +158,7 @@ ubuntu.exe run "DISPLAY=127.0.0.1:0.0 xmodmap ~/.Xmodmap"
 ** DONE skk-azikで「っ」が誤爆しやすい問題                        :Emacs:skk:
    CLOSED: [2019-10-22 Tue 22:05]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2019" "2019-10")
 :EXPORT_FILE_NAME: 201910222100
 :END:
 
@@ -222,7 +222,7 @@ printデバッグしてみたら、 =:config= がそもそも呼ばれてなか�
 ** DONE leaf-expandでleafのデバッグをする            :Emacs:SmartParens:leaf:
    CLOSED: [2019-10-14 Mon 22:18]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2019" "2019-10")
 :EXPORT_FILE_NAME: 201910141028
 :END:
 
@@ -296,7 +296,7 @@ smartparensの設定は、 =(require 'smartparens-config)= が楽だし確実、
 ** DONE CodeReady ContainersでWindows上にOpenShift環境を構築する :OpenShift:Kubernetes:crc:Windows:
    CLOSED: [2019-10-19 Sat 14:03]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2019" "2019-10")
 :EXPORT_FILE_NAME: 201910191042
 :END:
 OpenShift4.2がリリースされたので、家で使ってみようと、 =CodeReady Containers(crc)= をインストールしてみた。
@@ -505,7 +505,7 @@ kubeadminユーザを削除することによって、Webコンソールへの�
 ** DONE emacs26からの行番号表示がddskk入力時にガタつくのを防ぐ    :Emacs:skk:
    CLOSED: [2019-10-20 Sun 23:51]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2019" "2019-10")
 :EXPORT_FILE_NAME: 201910202227
 :END:
 Emacs26までは、行番号の表示をemacs lispで頑張るというアプローチがために、
@@ -537,7 +537,7 @@ Emacs26までは、行番号の表示をemacs lispで頑張るというアプロ
 ** DONE Google Cloud Certified - Professional Cloud Architect 認定試験に合格した :GCP:Certification:
    CLOSED: [2019-12-29 Sun 10:11]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2019\" \"2019-12\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2019" "2019-12")
 :EXPORT_FILE_NAME: 201912290846
 :END:
 タイトルの通りですが、12月の中旬ぐらいにGCPのProfessional Cloud Architectの試験を受け、無事に一発で合格しました。
@@ -559,7 +559,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 ** DONE org modeのファイルをパースする                            :Emacs:org:
    CLOSED: [2020-01-10 Fri 08:56]
    :PROPERTIES:
-   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-01\")
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-01")
    :EXPORT_FILE_NAME: 202001100849
    :END:
 
@@ -576,7 +576,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 ** DONE ergodox ezを購入した                               :ErgoDox:Keyboard:
    CLOSED: [2020-05-18 Mon 23:11]
    :PROPERTIES:
-   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-05\")
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-05")
    :EXPORT_FILE_NAME: 202005182209
    :END:
    今さらながら、分割キーボード界ではおなじみの、ergodox ezを購入してみた。
@@ -633,7 +633,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 ** DONE CKA(Certified kubernetes Administrator)に合格した :Kubernetes:Certification:
    CLOSED: [2020-07-07 Tue 09:40]
    :PROPERTIES:
-   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-07")
    :EXPORT_FILE_NAME: 202007070839
 
    :END:
@@ -692,7 +692,7 @@ AWSとかAzureの試験も受けたことなく体験記を見る限り、GCPは
 ** DONE CKAD(Certified Kubernetes Application Developer)に合格した :Kubernetes:Certification:
 CLOSED: [2020-07-11 Sat 10:56]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-07")
 :EXPORT_FILE_NAME: 202007111027
 :END:
 
@@ -735,7 +735,7 @@ CLOSED: [2020-07-11 Sat 10:56]
 ** DONE CRI-O + Kata containers + Weavenetでkubernetesをインストールする :Kubernetes:
    CLOSED: [2020-07-12 Sun 09:33]
    :PROPERTIES:
-   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+   :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-07")
    :EXPORT_FILE_NAME: 202007111344
    :ID:       bfbf1ff9-e413-4c60-875d-e9851efbe2ef
    :END:
@@ -1012,7 +1012,7 @@ Kata Containersは、これまで安全にコンテナ実行するために使�
 ** DONE Tektonをさわってみた                              :Kubernetes:Tekton:
    CLOSED: [2020-07-19 Sun 12:25]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-07")
 :EXPORT_FILE_NAME: 202007191122
 :END:
 
@@ -1090,7 +1090,7 @@ kubectl tkn taskrun logs echo-hello-world-task-run
 ** DONE Tektonでパイプラインを動かす                      :Tekton:Kubernetes:
    CLOSED: [2020-07-24 Fri 15:47]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-07")
 :EXPORT_FILE_NAME: 202007231454
 :END:
 
@@ -1346,7 +1346,7 @@ Tektonを使ってパイプラインを実行することができた。CI/CDと
 ** DONE インストール後にkube-proxyの動作モードをIPVSモードに変更する :Kubernetes:
    CLOSED: [2020-07-27 Mon 23:25]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-07")
 :EXPORT_FILE_NAME: 202007272308
 :END:
 
@@ -1395,7 +1395,7 @@ ipvsの場合の負荷分散方式が、いろいろあるってことは知ら�
 ** DONE Hyper-V上でGitLabサーバを構築する             :hyper_v:GitLab:Docker:
    CLOSED: [2020-07-30 Thu 07:09]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-07\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-07")
 :EXPORT_FILE_NAME: 202007292345
 :END:
 
@@ -1515,7 +1515,7 @@ Docker for Windowsのダッシュボードを開いて、SettingsのDocker Engin
 ** DONE Hyper-Vにokd4(OpenShift Origin)をインストールする :hyper_v:OpenShift:
    CLOSED: [2020-08-01 Sat 13:09]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-08")
 :EXPORT_FILE_NAME: 202008011309
 :END:
 最近出たというOpenShiftのupstream版である =okd= をインストールしようとしたら結構てこずったのでメモ。
@@ -1821,7 +1821,7 @@ CodeReady Containersのころは、OpenShift 4.2相当だったと思うので�
 ** DONE kubernetes-mixinのダッシュボードでgrafanaダッシュボードを簡単に構築する :Kubernetes:Grafana:
    CLOSED: [2020-08-10 Mon 12:56]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-08")
 :EXPORT_FILE_NAME: 202008032123
 :END:
 kubernetesのメトリクスモニタリングを、SaaSではなく手元でやろうとしたらPrometheusがおそらく最大の候補であろう。
@@ -2034,7 +2034,7 @@ kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-pass
 ** DONE SpringBootとNuxtJSでTODOアプリを作る             :SpringBoot:NuxtJS:
    CLOSED: [2020-08-25 Tue 23:28]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-08")
 :EXPORT_FILE_NAME: 202008221329
 :END:
 
@@ -2316,7 +2316,7 @@ https://github.com/grugrut/todo-springboot/blob/5017ac9b720b8d1d7e6462a4ff439db0
 ** DONE ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する :SpringBoot:AWS:ECS:Fargate:CloudWatch:
    CLOSED: [2020-09-06 Sun 23:59]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-09\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-09")
 :EXPORT_FILE_NAME: 202009061723
 :END:
 
@@ -2398,7 +2398,7 @@ ECSの場合、同じタスクの中のコンテナは、 =localhost= でポー�
 ** DONE HelmからIvyに差分小さく移行する                      :Emacs:helm:ivy:
    CLOSED: [2020-09-16 Wed 06:54]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-09\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-09")
 :EXPORT_FILE_NAME: 202009160653
 :END:
 
@@ -2518,7 +2518,7 @@ ivyはhydraとの連携がやりやすいなど、ivyの良さがいろいろあ
 ** DONE kubernetesを1.17から1.18にバージョンアップする           :Kubernetes:
    CLOSED: [2020-10-10 Sat 09:33]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-10")
 :EXPORT_FILE_NAME: 202010072237
 :END:
 [[CRI-O + Kata containers + Weavenetでkubernetesをインストールする]] で作成したクラスタが
@@ -2657,7 +2657,7 @@ EKSなどのマネージドなものに比べると多少面倒ではあるが�
 ** DONE Ergodox EZをJIS配列で利用して5ヶ月経過したので振り返り :ErgoDox:Keyboard:
    CLOSED: [2020-10-17 Sat 11:33]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-10")
 :EXPORT_FILE_NAME: 202010140032
 :END:
 
@@ -2771,7 +2771,7 @@ blankモデルがでたら欲しい、が、ergodox ezを使い続けるんだ�
 ** DONE OpenFaaSでお手軽API環境を手にいれる             :Kubernetes:OpenFaas:
    CLOSED: [2020-12-06 Sun 23:50]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2020\" \"2020-12\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2020" "2020-12")
 :EXPORT_FILE_NAME: 202012060916
 :END:
 
@@ -2942,7 +2942,7 @@ https://www.openfaas.com/blog/introduction-to-serverless-linuxfoundation/
 ** DONE Emacsで現在利用しているメモリを確認する                       :Emacs:
    CLOSED: [2021-01-11 Mon 23:00]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-01\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2021" "2021-01")
 :EXPORT_FILE_NAME: 202101032247
 :END:
 
@@ -3025,7 +3025,7 @@ https://www.openfaas.com/blog/introduction-to-serverless-linuxfoundation/
 ** DONE Emacsに来たnative compileを試す                               :Emacs:
    CLOSED: [2021-04-26 Mon 23:20]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-04\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2021" "2021-04")
 :EXPORT_FILE_NAME: 202104262248
 :END:
 
@@ -3082,7 +3082,7 @@ $ file ~/.emacs.d/eln-cache/28.0.50-0e028d40/all-the-icons-e248ace1-2752b37c.eln
 ** DONE EmacsのNative Compilationの性能を測定する                     :Emacs:
    CLOSED: [2021-04-27 Tue 23:01]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-04\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2021" "2021-04")
 :EXPORT_FILE_NAME: 202104272222
 :END:
 
@@ -3145,7 +3145,7 @@ GCされてしまうと時間にブレが生じるので、GCされてないこ�
 ** DONE 手元でECSが動く ECS Anywhereを試してみた                    :AWS:ECS:
    CLOSED: [2021-05-29 Sat 09:25]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-05\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2021" "2021-05")
 :EXPORT_FILE_NAME: 202105290925
 :END:
 
@@ -3238,7 +3238,7 @@ Hello, World! My name is a371576de001
 ** DONE EKSのPodのSecurityGroupを試す                               :AWS:EKS:
    CLOSED: [2021-07-26 Mon 23:50]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2021\" \"2021-07\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2021" "2021-07")
 :EXPORT_FILE_NAME: 202107250958
 :END:
 
@@ -3538,7 +3538,7 @@ Podのセキュリティグループは、利用できるインスタンスタ�
 ** DONE bitboardアルゴリズムでN-Queen問題を解く                :Algorithm:GoLang:
 CLOSED: [2022-01-18 Tue 23:43]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-01\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2022" "2022-01")
 :EXPORT_FILE_NAME: 202201142319
 :END:
 *** はじめに
@@ -3615,7 +3615,7 @@ uint64でビット演算を考えると意外と思い違いなどもあり、�
 ** DONE ECS上のSpringBootのPrometheusメトリクスをCloudWatchで収集する :AWS:ECS:SpringBoot:Prometheus:CloudWatch:
 CLOSED: [2022-05-01 Sun 13:07]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-04\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2022" "2022-04")
 :EXPORT_FILE_NAME: 202204241336
 :END:
 [[*ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する][ECS上のSpring Boot ActuatorのメトリクスをCloudWatchに送信する]]
@@ -3848,7 +3848,7 @@ CloudWatch Agentで監視することができた。
 ** DONE ECSでfirelensを利用したログ収集で、標準出力と標準エラー出力の転送先を分ける :AWS:ECS:FireLens:
 CLOSED: [2022-05-07 Sat 13:14]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2022\" \"2022-05\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2022" "2022-05")
 :EXPORT_FILE_NAME: 202205071017
 :END:
 
@@ -5108,7 +5108,7 @@ FISにはCloudWatchと連携して実験が予期しない動作をした場合�
 ** DONE キーボードをMoonLanderに変更した                :MoonLander:Keyboard:
 CLOSED: [2023-08-04 Fri 11:42]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2023" "2023-08")
 :EXPORT_FILE_NAME: 202308041041
 :END:
 
@@ -5208,7 +5208,7 @@ Ergodoxが故障してしまったので、Moonlanderに乗り換えてみまし
 ** DONE AWSの新しい資格 Data Engineer Associateのベータ版を受験してきた :AWS:Certification:
 CLOSED: [2023-12-03 Sun 09:21]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2023" "2023-12")
 :EXPORT_FILE_NAME: 202312030921
 :END:
 
@@ -5279,7 +5279,7 @@ Associateなので問題のレベルはそれなりとは言え、普段は雰�
 ** DONE ゾーンシフトも出現したしクロスゾーン負荷分散を再考察する :AWS:Route53:ELB:
 CLOSED: [2023-12-19 Tue 22:25]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2023\" \"2023-12\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2023" "2023-12")
 :EXPORT_FILE_NAME: 202312192224
 :END:
 
@@ -5350,7 +5350,7 @@ AZ単体で想定される負荷をさばく、十分なキャパシティが求
 ** DONE EKSでのMountpoint for Amazon S3を試す                    :AWS:EKS:S3:
 CLOSED: [2024-01-08 Mon 13:34]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-01\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-01")
 :EXPORT_FILE_NAME: 202401081308
 :END:
 
@@ -5682,7 +5682,7 @@ k8sの機能ではConfigMapを利用することができます。
 ** DONE AWSの新たな資格 Data Engineer Associate に合格した :AWS:Certification:
 CLOSED: [2024-02-14 Wed 23:39]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-02")
 :EXPORT_FILE_NAME: 202402142338
 :END:
 
@@ -5721,7 +5721,7 @@ https://aws.amazon.com/jp/certification/policies/before-testing/
 ** DONE AWS CloudShellを利用するときのつらみは全部tmuxが解決してくれる :AWS:CloudShell:
 CLOSED: [2024-02-22 Thu 00:32]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-02\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-02")
 :EXPORT_FILE_NAME: 202402211945
 :END:
 
@@ -5813,7 +5813,7 @@ CloudShellでデフォルトで入っているtmuxを使って、ちょっとし
 ** DONE AWSのコンテナのベースイメージ何がいいのか         :AWS:ECS:Container:
 CLOSED: [2024-03-20 Wed 12:59]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-03")
 :EXPORT_FILE_NAME: 202403201209
 :END:
 
@@ -5906,7 +5906,7 @@ Alpineは遅いと聞いていましたが、結果はむしろ逆という興�
 ** DONE EKSのMountpoint for Amazon S3 CSIにおけるエラー時の挙動の検証 :AWS:EKS:S3:
 CLOSED: [2024-03-27 Thu 23:26]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-03")
 :EXPORT_FILE_NAME: 202403272326
 :END:
 
@@ -6032,7 +6032,7 @@ Fargateでも利用できるようになってほしいですね。
 ** DONE EKSのpodへのIAMアクセス付与はPod Identityにおまかせ         :AWS:EKS:
 CLOSED: [2024-03-29 Fri 10:55]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-03")
 :EXPORT_FILE_NAME: 202403291043
 :END:
 
@@ -6251,7 +6251,7 @@ https://docs.aws.amazon.com/eks/latest/userguide/pod-id-abac.html
 ** DONE コンテナイメージサイズ削減はがんばりすぎなくてよい。Seekable OCIがあればね :AWS:Container:ECS:Fargate:
 CLOSED: [2024-03-30 Sat 07:43]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-03")
 :EXPORT_FILE_NAME: 202403300725
 :END:
 
@@ -6376,7 +6376,7 @@ SOCIを積極的に活用することで、スケールアウトやリリース�
 ** DONE CloudFormationの新しい機能を使って簡単にIaCに移行する :AWS:CloudFormation:
 CLOSED: [2024-03-31 Sun 08:26]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-03\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-03")
 :EXPORT_FILE_NAME: 202403310825
 :END:
 
@@ -6475,7 +6475,7 @@ IaCジェネレータは非常に便利ですが、注意点もいくつかあ�
 ** DONE Emacs 30で導入される予定のおもしろい機能の紹介                :Emacs:
 CLOSED: [2024-04-12 Fri 23:25]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-04\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-04")
 :EXPORT_FILE_NAME: 202404122318
 :END:
 
@@ -6540,7 +6540,7 @@ Emacs30でちょっと変わった機能を紹介しました。
 ** DONE EKSのVPC CNIでNetwork Policyを利用する                      :AWS:EKS:
     CLOSED: [2024-04-15 Mon 19:05]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-04\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-04")
 :EXPORT_FILE_NAME: 202404151848
 :END:
 
@@ -6787,7 +6787,7 @@ Podのセキュリティポリシーは逆に、SecurityGroupと連携する必�
 ** DONE EKSのネットワーキングにディープダイブ                       :AWS:EKS:
 CLOSED: [2024-06-11 Tue 22:08]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-06\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-06")
 :EXPORT_FILE_NAME: 202406112207
 :END:
 
@@ -7277,7 +7277,7 @@ traceroute to 172.16.72.69 (172.16.72.69), 30 hops max, 46 byte packets
 ** DONE Disqusが勝手にテキストをリンク化するのを防ぐ           :general:hugo:
 CLOSED: [2024-06-12 Wed 23:32]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-06\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-06")
 :EXPORT_FILE_NAME: 202406122314
 :END:
 
@@ -7321,7 +7321,7 @@ URLっぽい文字列や、アフィリエイトが使えるが設定がされ�
 ** DONE [調査中] Org 9.7になってox-hugoの内部リンクが動かなくなっている :hugo:org:
 CLOSED: [2024-07-16 Tue 22:16]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-07\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-07")
 :EXPORT_FILE_NAME: 202407162106
 :END:
 
@@ -7374,7 +7374,7 @@ issue報告してもお任せするのもありなのですが、あまりOrg Mo
 ** DONE Emacsサマーフェスで登壇してきた                         :Emacs:Event:
 CLOSED: [2024-08-04 Sun 22:40]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-08")
 :EXPORT_FILE_NAME: 202408042239
 :END:
 
@@ -7430,7 +7430,7 @@ EmacsユーザとVimユーザがそれぞれの得意分野を駆使して、解
 ** DONE Corfuでispellのエラーが出たので対処                     :Emacs:Corfu:
 CLOSED: [2024-08-20 Tue 12:35]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-08")
 :EXPORT_FILE_NAME: 202408192021
 :END:
 
@@ -7484,7 +7484,7 @@ https://github.com/minad/corfu?tab=readme-ov-file#configuration
 ** DONE DistrolessコンテナでもEKSでのデバッグを諦めない   :AWS:EKS:Container:
 CLOSED: [2024-08-21 Wed 08:54]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-08")
 :EXPORT_FILE_NAME: 202408210800
 :END:
 
@@ -7772,7 +7772,7 @@ https://github.com/kubernetes/enhancements/issues/4292
 ** DONE init.elの大掃除                                        :Emacs:config:
 CLOSED: [2024-08-26 Mon 22:40]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-08\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-08")
 :EXPORT_FILE_NAME: 202408241612
 :END:
 
@@ -7860,7 +7860,7 @@ https://github.com/emacs-mirror/emacs/blob/master/etc/NEWS.29#L1718-L1720
 ** DONE 続・DistrolessコンテナでもEKSのデバッグを諦めない (EKS1.31対応版) :AWS:EKS:Kubernetes:
 CLOSED: [2024-10-20 Sun 13:46]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-10\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-10")
 :EXPORT_FILE_NAME: 202410201211
 :END:
 
@@ -7989,7 +7989,7 @@ securityContext:
 ** DONE ついに来た ECSでタスクのリバランスを自動化                  :AWS:ECS:
 CLOSED: [2024-11-26 Tue 23:06]
 :PROPERTIES:
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"2024\" \"2024-11\")
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2024" "2024-11")
 :EXPORT_FILE_NAME: 202411260730
 :END:
 
