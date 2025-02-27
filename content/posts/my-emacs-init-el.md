@@ -338,6 +338,8 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 
 #### Window表示 {#window表示}
 
+Windowの構成を記憶してくれる。いろいろ機能はあるが、メインはポップアップ表示されたバッファをそのまま消去する(1つ前の状態に戻す)ために使っている。
+
 ```emacs-lisp
 (leaf winner
   :global-minor-mode t
@@ -604,6 +606,19 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```
 
 
+#### Git Gutter {#git-gutter}
+
+```emacs-lisp
+(leaf git-gutter
+  :ensure t
+  :global-minor-mode global-git-gutter-mode
+  :custom
+  ((git-gutter:added-sign . "++")
+   (git-gutter:deleted-sign . "--")
+   (git-gutter:modified-sign . "==")))
+```
+
+
 #### Tree Sitter {#tree-sitter}
 
 ```emacs-lisp
@@ -768,7 +783,7 @@ Orgが9.7でexportがうまくうごかないので、9.6にダウングレー�
                                  "* %<%H:%M> %?")
                                 ("b" " blog" entry
                                  (file+headline "~/src/github.com/grugrut/blog/draft/blog.org" ,(format-time-string "%Y"))
-                                 "** TODO %?\n:PROPERTIES:\n:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\\\"%(format-time-string \"%Y\")\\\" \\\"%(format-time-string \"%Y-%m\")\\\")\n:EXPORT_FILE_NAME: %(format-time-string \"%Y%m%d%H%M\")\n:END:\n\n")
+                                 "** TODO %?\n:PROPERTIES:\n:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '(\"%(format-time-string \"%Y\")\" \"%(format-time-string \"%Y-%m\")\")\n:EXPORT_FILE_NAME: draft\n:END:\n\n")
                                 )))
 ```
 
