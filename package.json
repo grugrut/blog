@@ -5,18 +5,18 @@
   "main": "index.js",
   "dependencies": {
     "pagefind": "^1.3.0",
-    "textlint": "^13.4.1"
+    "textlint": "^14.4.2"
   },
   "devDependencies": {
     "@textlint-ja/textlint-rule-no-synonyms": "^1.3.0",
-    "sudachi-synonyms-dictionary": "^12.0.0",
+    "sudachi-synonyms-dictionary": "^14.0.0",
     "textlint-rule-ja-hiragana-fukushi": "^1.3.0",
     "textlint-rule-ja-hiragana-hojodoushi": "^1.1.0",
     "textlint-rule-ja-hiragana-keishikimeishi": "^1.1.0",
     "textlint-rule-ja-unnatural-alphabet": "^2.0.1",
     "textlint-rule-max-kanji-continuous-len": "^1.1.1",
     "textlint-rule-max-ten": "^5.0.0",
-    "textlint-rule-no-mix-dearu-desumasu": "^6.0.2",
+    "textlint-rule-no-mix-dearu-desumasu": "^6.0.4",
     "textlint-rule-no-nfd": "^2.0.2"
   },
   "scripts": {
