@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "pagefind": "^1.3.0",
     "textlint": "^13.4.1"
   },
   "devDependencies": {
@@ -20,7 +21,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "textlint -f pretty-error content"
+    "lint": "textlint -f pretty-error content",
+    "index": "pagefind --site public",
+    "build": "hugo -F --gc --minify && npm run index"
   },
   "repository": {
     "type": "git",
