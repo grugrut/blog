@@ -1,6 +1,6 @@
 +++
 title = "My Emacs Config"
-date = 2024-09-08
+date = 2025-03-05
 tags = ["emacs", "config"]
 draft = false
 +++
@@ -723,6 +723,21 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```
 
 
+#### GitHub Copilot {#github-copilot}
+
+```emacs-lisp
+(leaf copilot
+  :vc (:url "https://github.com/copilot-emacs/copilot.el")
+  :hook prog-mode-hook
+  :bind
+  (:copilot-completion-map
+   ("<tab>" . copilot-accept-completion)
+   ("M-n" . copilot-next-completion)
+   ("M-p" . copilot-previous-completion)
+))
+```
+
+
 ### Org Mode {#org-mode}
 
 
@@ -838,7 +853,7 @@ Orgが9.7でexportがうまくうごかないので、9.6にダウングレー�
   (interactive)
   (require 'ox-hugo)
   (declare-function org-hugo-export-as-md "ox-hugo")
-  (let ((file "~/src/github.com/grugrut/blog/content/posts/my-emacs-init-el.md"))
+  (let ((file "~/src/github.com/grugrut/blog/content/dotfiles/emacs.md"))
     (org-hugo-export-as-md)
     (write-file file t)))
 ```
