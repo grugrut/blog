@@ -31,7 +31,7 @@ pygmentsUseClasses = true
 [[menu.main]]
   name = "Tags"
   url = "tags"
-  weight = 3
+  weight = 4
 
 [[menu.main]]
   name = "Archives"
@@ -39,9 +39,14 @@ pygmentsUseClasses = true
   weight = 3
 
 [[menu.main]]
+  name = "dotfiles"
+  url = "dotfiles"
+  weight = 2
+
+[[menu.main]]
   name = "About"
   url = "about"
-  weight = 3
+  weight = 1
 
 [taxonomies]
 tag = "tags"
