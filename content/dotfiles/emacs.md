@@ -2,6 +2,7 @@
 title = "My Emacs Config"
 date = 2025-03-05
 tags = ["emacs", "config"]
+type = "posts"
 draft = false
 +++
 
