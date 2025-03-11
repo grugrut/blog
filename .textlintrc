@@ -19,5 +19,8 @@
         "ja-hiragana-hojodoushi": true,
         "ja-unnatural-alphabet": true,
         "@textlint-ja/no-synonyms": true,
-    }
+    },
+    "plugins": [
+        "org"
+    ]
 }
