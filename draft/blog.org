@@ -8332,4 +8332,200 @@ Ubuntuの場合はサイトにも載っている以下のインストールコ�
 まだ出てきたばかりのOSSということで、正直荒削りのところもありますが、これから使い方含めこなれてくると考えられます。
 
 今回の検証では触れなかったところを含め、引き続き私も見ていきたいと思います。
+** TODO 作業ダミー
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2025" "2025-02")
+:EXPORT_FILE_NAME: sandbox
+:END:
 
+#+begin_info
+これはインフォメーションです。
+
+情報を伝える文章です。あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん。
+#+end_info
+
+#+begin_warn
+これはワーニングです
+
+警告を伝える文章です。あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん。
+#+end_warn
+
+#+attr_html: :caption test.el
+#+begin_src emacs-lisp
+  (prog1
+      (message "Hello, world!"))
+#+end_src
+
+#+name: test.el
+#+begin_src emacs-lisp
+  (prog1
+      (message "Hello, world!"))
+#+end_src
+
+#+caption: test.el
+#+begin_src emacs-lisp
+  (prog1
+      (message "Hello, world!"))
+#+end_src
+
+
+
+** DONE Org Modeとox-hugoでもコードブロックにファイル名を表示したい :hugo:org:
+CLOSED: [2025-03-15 Sat 08:26]
+:PROPERTIES:
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2025" "2025-03")
+:EXPORT_FILE_NAME: 202503150826
+:END:
+
+このブログはEmacsの =Org Mode= で原稿を書き、 =ox-hugo= を用いてmarkdownに変換、 =hugo= で静的HTMLに変換という形で生成しています。
+
+ところで、qiitaやzennではコードブロックを書くときに、
+以下のようなフォーマットで書くことでファイル名を表記することができます。
+
+#+begin_src markdown
+  ```emacs-lisp:hello.el
+  (defun hello-world ()
+    (message "Hello, world!"))
+  ```
+#+end_src
+
+参考:
+- https://qiita.com/Qiita/items/c686397e4a0f4f11683d#code-blocks---%E3%82%B3%E3%83%BC%E3%83%89%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF
+- https://zenn.dev/zenn/articles/markdown-guide#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%90%8D%E3%82%92%E8%A1%A8%E7%A4%BA%E3%81%99%E3%82%8B
+
+これに近い形で、Hugoでも以下のようにコードブロックに指定したファイル名を表示したく、やってみました。
+
+#+attr_html: :caption hello.el
+#+begin_src emacs-lisp
+  (defun hello-world ()
+    (message "Hello, world!"))
+#+end_src
+*** やったこと
+以下のようにコードブロックの前に、 =#+attr_html: :caption キャプション= を記載することで、
+生成されるHTMLに =caption= 属性を追加することができました。
+
+#+attr_html: :caption Orgでの記載例
+#+begin_src org
+  ,#+attr_html: :caption hello.el
+  ,#+begin_src emacs-lisp
+    (defun hello-world ()
+      (message "Hello, world!"))
+  ,#+end_src
+#+end_src
+
+#+attr_html: :caption 出力されるHTML
+#+begin_src html
+  <div class="highlight" caption="hello.el">
+    <pre tabindex="0" class="chroma">
+      <code class="language-emacs-lisp" data-lang="emacs-lisp">
+	(コード部分省略)
+      </code>
+    </pre>
+  </div>
+#+end_src
+
+あとは適当にCSSを設定してあげれば、caption属性がある場合に表示させられます。
+私は、以下のようなSCSSを作りました。今後、調整していこうと思います。
+
+#+begin_src scss
+  // コードスニペット
+  .highlight {
+    position: relative;
+
+    &[caption]::before {
+      content: attr(caption);
+      position: absolute;
+      top: 0;
+      left: 1rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0 0 4px 4px;
+      font-size: 0.9rem;
+    }
+
+    &[caption] > pre {
+      padding-top: 2rem;
+    }
+  }
+#+end_src
+*** 検討したこと
+冒頭のコロンでファイル名を付与できると、移行性を考えると良さそうでしたが、
+これはマークダウンの派生記法として一般的なものではないようでした。
+そもそも、ファイル名をメタデータとして持たせるデファクトなマークダウンの記法が無いようで、
+どのようなパターンでもox-hugoでは出力できませんでした。
+
+ox-hugoでは、以下のような内容であればコードブロックに対して追加のhtmlを出力することができます。
+しかし、いずれも取り回しがしずらそうなので、他のやりかたを調べてみて、冒頭の属性を追加する方法で実現できることに気付きました。
+
+**** #+name: を利用するパターン
+
+#+attr_html: :caption Orgの書き方
+#+begin_src org
+  ,#+name: test.el
+  ,#+begin_src emacs-lisp
+    (prog1
+	(message "Hello, world!"))
+  ,#+end_src
+#+end_src
+
+#+attr_html: :caption 中間成果物のmarkdown
+#+begin_src markdown
+  <a id="code-snippet--test.el"></a>
+  ```emacs-lisp
+  (prog1
+      (message "Hello, world!"))
+  ```
+#+end_src
+
+#+attr_html: :caption 生成されるhtml
+#+begin_src html
+  <p>
+    <a id="code-snippet--test.el"></a>
+  </p>
+  <div class="highlight">
+    <pre tabindex="0" class="chroma">
+      <code class="language-emacs-lisp" data-lang="emacs-lisp">(略)</code>
+    </pre>
+  </div>
+#+end_src
+
+**** #+caption: を利用するパターン
+#+attr_html: Orgの書き方
+#+begin_src org
+  ,#+caption: test.el
+  ,#+begin_src emacs-lisp
+    (prog1
+	(message "Hello, world!"))
+  ,#+end_src
+#+end_src
+
+#+attr_html: :caption 中間成果物のmarkdown
+#+begin_src markdown
+  ```emacs-lisp
+  (prog1
+	  (message "Hello, world!"))
+  ```
+  <div class="src-block-caption">
+    <span class="src-block-number">Code Snippet 1:</span>
+    test.el
+  </div>
+#+end_src
+
+#+attr_html: :caption 生成されるhtml
+#+begin_src html
+  <div class="highlight">
+    <pre tabindex="0" class="chroma">
+      <code class="language-emacs-lisp" data-lang="emacs-lisp">(略)</code>
+    </pre>
+  </div>
+  <div class="src-block-caption">
+    <span class="src-block-number">Code Snippet 1:</span>
+    test.el
+  </div>
+#+end_src
+
+*** まとめ
+今回は、Org Modeでもコードブロックをわかりやすく表記する方法を検討したので、
+そのやり方を紹介しました。
+
+もうちょっと、おしゃれに解決する方法もありそうなので、
+良いやりかたがあれば教えていただけると嬉しいです。
