@@ -1,6 +1,6 @@
 +++
 title = "My Emacs Config"
-date = 2025-03-05
+date = 2025-04-30
 tags = ["emacs", "config"]
 type = "posts"
 draft = false
@@ -76,14 +76,24 @@ init.elを直接編集するのではなく、init.org経由で管理するよ�
 そのため、起動時にチェックしてinit.orgの方が新しかったら警告する。
 本来は、保存時に自動でこの辺やってくれたほうがよい気はする。
 
-最近、 `org-export-tangle` で完全一致の場合に上書きしてくれなくなった(もともとそうだっけ)ことに気付いたので、
-別の手段でチェックする必要がありそうと思案中。
-
 ```emacs-lisp
 (let ((my-init-org (concat user-emacs-directory "init.org"))
       (my-init-el (concat user-emacs-directory "init.el")))
   (when (file-newer-than-file-p my-init-org my-init-el)
     (message "WARN: init.el is old.\n")))
+```
+
+なお、init.orgからの変換は、以下のMakefileを作成している。
+`project.el` を使っているので、 <kbd>C-x p !</kbd> でプロジェクトルートでコマンドを実行できるので、
+Emacsから簡単にビルドすることができる。
+
+```makefile
+all: init.el
+        emacs -batch -f batch-byte-compile *init.el
+
+init.el: init.org
+        emacs -batch --eval "(progn (require 'ob-tangle) (org-babel-tangle-file \"init.org\"))"
+
 ```
 
 
@@ -146,8 +156,9 @@ Emacs26から登場したネイティブの行番号表示は、ddskkと相性�
 これをロードしてしまうと、 `custom-ser-variables` よりも優先されて先に設定されてしまうため、
 `init.el` を修正したつもりなのに昔の設定で動いてしまうことがある。
 
-単なる優先順位の問題だが、そもそも読みこむ必要がないので不要なのだが、
+そもそも読みこむ必要がないので不要なのだが、
 定義はしておかないと起動時に文句を言われてしまうので設定だけして読まずに捨ててる。
+どこかのバージョンで、このハックをしなくてもよくなったはずだが、害も無いので残している。
 
 ```emacs-lisp
 (custom-set-variables '(custom-file (expand-file-name "custom.el" user-emacs-directory)))
@@ -190,7 +201,7 @@ Emacs26から登場したネイティブの行番号表示は、ddskkと相性�
 パッケージ取得に失敗してしまうことが多くあきらめた。
 
 現在は、 `leaf.el` を使っている。
-`leaf.el` はuse-package経由で入れることでインストール部分がシンプルになるので修正
+`leaf.el` はuse-package経由で入れることでインストール部分がシンプルになる。
 
 <https://a.conao3.com/blog/2024/7c7c265/>
 
@@ -229,6 +240,8 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 
 #### メモリ管理 {#メモリ管理}
 
+アイドル状態のときにGCをかけてくれる。
+
 ```emacs-lisp
 (leaf gcmh
   :ensure t
@@ -240,6 +253,8 @@ Emacs29から `package-vc-install` が使えるようになり、標準でソー
 
 
 #### 変数設定 {#変数設定}
+
+全体的に影響する変数を設定している。
 
 ```emacs-lisp
 (leaf general-settings
@@ -440,6 +455,18 @@ AZIKも有効化する。
 ```
 
 
+#### Expand-Region {#expand-region}
+
+選択するリージョンを少しずつ広げられる。
+
+```emacs-lisp
+(leaf expand-region
+  :ensure t
+  :bind (("C-." . er/expand-region))
+  )
+```
+
+
 #### Puni {#puni}
 
 smartparensなどの後継として、Puniがよいとお勧めされたので使ってみる。
@@ -544,7 +571,7 @@ smartparensなどの後継として、Puniがよいとお勧めされたので�
 
 #### avy {#avy}
 
-Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェースで削除位置を指定する。
+Vimの <kbd>f</kbd> に相当する。=Zap-to-Char= <kbd>M-z</kbd> でも、avyインタフェースで削除位置を指定する。
 
 ```emacs-lisp
 (leaf avy
@@ -739,14 +766,37 @@ Vimの `f` に相当する。=Zap-to-Char= `M-z` でも、avyインタフェー�
 ```
 
 
+#### Ellama {#ellama}
+
+```emacs-lisp
+(leaf llm
+  :vc (:url "https://github.com/ahyatt/llm/tree/main")
+  :require llm-gemini
+  :config
+  (load "~/.emacs.d/secrets.el")
+  (setq llm-gemini (make-llm-gemini :key gemini-api-key))
+  )
+```
+
+```emacs-lisp
+(leaf ellama
+  :ensure t
+  :bind
+  ("C-c e" . ellama-transient-main-menu)
+  :custom
+  (ellama-language . "Japanese")
+  (ellama-provider . llm-gemini))
+```
+
+
 ### Org Mode {#org-mode}
 
 
 #### Org {#org}
 
 Org Modeの設定。そこまで特殊な設定はいれていないが、
-ソースコードブロックの編集に入る、編集を完了するキーバインドがデフォルトの `C-c C-'` が日本語キーボードだと入力しづらいので、
-`C-c C-;` を使うように設定している。
+ソースコードブロックの編集に入る、編集を完了するキーバインドがデフォルトの <kbd>C-c C-'</kbd> が日本語キーボードだと入力しづらいので、
+<kbd>C-c C-;</kbd> を使うように設定している。
 
 Orgが9.7でexportがうまくうごかないので、9.6にダウングレードしている。
 
@@ -812,7 +862,9 @@ Orgが9.7でexportがうまくうごかないので、9.6にダウングレー�
 (leaf ox-hugo
   :ensure t
   :after ox
-  :mode ("\\.org$'" . org-hugo-auto-export-mode))
+  :mode ("\\.org$'" . org-hugo-auto-export-mode)
+  :custom
+  (org-hugo-use-code-for-kbd . t))
 ```
 
 
