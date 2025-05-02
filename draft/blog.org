@@ -8881,7 +8881,7 @@ Dockerを導入するだけで簡単にインストール可能です。
   docker compose version
 
   # Difyの起動
-  -@sudo dnf install git -y
+  sudo dnf install git -y
   git clone https://github.com/langgenius/dify.git
   cd dify/docker
   cp .env.example .env
