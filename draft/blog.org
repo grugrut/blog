@@ -8955,8 +8955,316 @@ Dify側でやってくれるので、取得したBody部分だけをLLMに渡し
 今は、MCPが一大ブームとなっており、Difyも連携ができるので、
 いろいろなところで、Agentic AIが騒がれはじめている昨今、
 このような形で簡単にAIを活用するアプリケーションが作れるプラットフォームというのは重宝されると思います。
-** TODO Aidermacsを使ってEmacsでもAIとペアプログラミングする       :Emacs:AI:
+** DONE Aidermacsを使ってEmacsでもAIとペアプログラミングする :Emacs:AI:Aider:
+CLOSED: [2025-05-12 Mon 23:51]
 :PROPERTIES:
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :archives '("2025" "2025-05")
-:EXPORT_FILE_NAME: draft
+:EXPORT_FILE_NAME: 202505122351
 :END:
+
+最近、生成AIの進化にともない、AIとペアプログラミングするツールが複数登場しています。
+しかしながら、たとえばAWSの =Amazon Q Developer= や =Cline= などは =vscode= など一部のエディタ、IDEに対してしかプラグインを提供していなかったり、
+=Cursor= はそもそも =vscode= をベースにした独自のエディタだったりと、コード開発の選択肢が限られてしまいます。
+
+最近ではCLIで動作するようなものが増えつつあるように見えていますが、
+その中でも、初期からCLIで動作するAIエージェント =Aider= があり、これにより
+エディタに縛られることなくAIとペアプロができるということで今回試してみました。
+*** Aiderとは
+
+https://aider.chat/
+
+Aiderは公式ページでも "AI pair programming in your terminal" とうたわれているとおり、
+ターミナル上でAIの力を借りてペアプログラミングできるツールです。
+
+特定のLLMに縛られることなく、 =Claude= や =Gemini= などの各種LLMを活用したり、
+=LM Studio= などローカルLLMとも連携することができます。
+
+AiderもCursorなどと同じく、複数のモードがあり、そのモードを切り替えながらコードリーディングや開発を進めていきます。
+
+- Askモード: 質問・相談ができる
+- Codeモード: コードを変更する
+- Architectモード: Codeモードと同様にコードを変更するが、複数のモデルが協調してコードを編集する。Architectモデルが検討をおこない、その結果にもとづいてEditorモデルが編集する
+
+基本的にはAskモードで方針を相談して決めたあとに、Codeモードでその変更を反映していく動きになります。
+今回さわった範囲では、Architectモードがどう違うのかはあまりよくわからなかったので、もう少し調査したいと思います。
+**** Aiderのインストール
+
+AiderはPythonで動作するので、あらかじめ導入しておきましょう。
+インストールは =pip= を使って簡単にインストールできます。
+
+#+begin_src bash
+python3 -m pip install aider-install
+aider-install 
+#+end_src
+
+*** Aidermacsの導入
+
+EmacsにはAiderを扱う複数のパッケージが存在します。
+=Aidermacs= と =aider.el= です。
+
+https://github.com/MatthewZMD/aidermacs
+
+https://github.com/tninja/aider.el
+
+どちらを使ってみてもよかったのですが、わずかにContributorとStarの数が大きい =aidermacs= を使ってみます。
+
+aidermacsはEmacsのパッケージ管理のリポジトリであるMelpaにも登録されているので、簡単にインストール可能です。
+
+私は設定管理に =leaf.el= を利用しているので、以下のとおり =init.el= に設定をいれています。
+
+#+attr_html: :caption init.elの設定内容
+#+begin_src emacs-lisp
+    (leaf aidermacs
+      :ensure t
+      :bind 
+      (("C-c C-a" . aidermacs-transient-menu))
+      :config
+      (load "~/.emacs.d/secrets.el")
+      (setenv "GEMINI_API_KEY" gemini-api-key)
+      :custom
+      (aidermacs-default-model . "gemini-exp")
+      )
+#+end_src
+
+無料である程度使えるGeminiをLLMに設定したいので、
+aiderで使うデフォルトのモデルをGeminiにしている他、外部ファイルからgeminiのAPIを取得して設定するようにしています。
+
+なお、secrets.elの中身は以下のようにAPIキーを変数にセットしているだけです。
+
+#+attr_html: :caption secrets.el
+#+begin_src emacs-lisp
+  (setq gemini-api-key "AIdummyapisecrets")
+#+end_src
+
+また、aidermacsはコード編集後の前後比較にEmacsビルドインのファイル比較パッケージである =ediff= を利用します。
+ediffはデフォルトでは操作用のウィンドウが別フレームで起動します。
+好みの問題ですが、シングルフレームで動作するように設定しておくのがおすすめです。
+
+#+begin_src emacs-lisp
+  (leaf ediff
+    :custom
+    (ediff-window-setup-function . 'ediff-setup-windows-plain))
+#+end_src
+
+*** Aidermacsを使ってペアプロをおこなう
+
+ここからはAidermacsを経由して、Aiderとペアプロをおこなってみます。
+今回は、Golangでユーザの入力したものを素因数分解するようなシンプルなコマンドを作ってみます。
+
+**** Gitリポジトリを作成する
+
+Aiderは操作するプロジェクトがgit管理をしていることを前提としているようです。
+Aidermacsの起動フェーズでもgit initするか確認してくれますが、基本的には事前にやっておくとよいでしょう。
+
+**** Aidermacsを起動する
+
+先ほどの設定にも記載したとおり、私は ~C-c C-a~ でAidermacsのメニューが起動するように設定しました。
+プロジェクトの中で上記キーバインドを実行すると以下のようにメニューが表示されます。
+
+[[file:images/20250511-aidermacs-menu.png]]
+
+基本的には、この状態で ~a~ を押下することで、当該プロジェクトでaiderのセッションが開始され、
+aiderのチャットが起動します。
+
+aiderのチャットは初期状態では、先ほど紹介したaiderのモードのひとつである =Codeモード= になっています。
+
+**** ファイルを追加し、AIとペアプロする
+
+aiderは登録したファイルしか読み書きすることができません。
+そのため操作対象にしたいファイルを"追加"する必要があります。
+
+追加をするには、aiderのチャットで =/add <ファイル名>= とコマンドを実行してもよいですが、
+aidermacsのメニューからもファイルを追加することができます。
+
+先ほどの ~C-c C-a~ で起動するメニューの中に、 =File actionhs= というものがあるので、
+~f~ を押下することでファイルを追加することが可能です。
+
+ファイルを追加したら、 =Askモード= を使ってコーディングの相談をしていきます。
+
+Askモードを利用する方法は以下の3種類があります。
+- Aiderのチャットで =/ask <相談内容>= とコマンドを入力して、ワンショットの相談をおこなう。
+- Aiderのチャットで =/ask= とコマンドを入力してチャットを =Askモード= に切り替える
+- Aidermacsのメニューから ~2~ を選択し、 =Askモード= に切り替える
+
+今回は、2番目の方法でやってみます。
+
+#+begin_src markdown
+> /ask
+
+Aider v0.83.0
+Main model: gemini/gemini-2.5-pro-exp-03-25 with ask edit format
+Weak model: gemini/gemini-2.5-flash-preview-04-17
+Git repo: .git with 2 files
+Repo-map: using 4096 tokens, auto refresh
+Added main.go to the chat.
+
+main.go
+ask> ユーザが入力した引数を素因数分解するコマンドをGolangで作りたい
+
+はい、承知いたしました。
+ユーザーが入力した引数を素因数分解するGolangのコマンドラインツールを作成します。
+`main.go`ファイルは現在空であるとのことですので、以下に新しい内容を記述します。
+
+この応答はC言語の形式に従い、コードの変更点をCスタイルのコメントで示します。
+
+```c
+/*
+ * ユーザーのリクエストに基づき、コマンドライン引数を素因数分解する
+ * Golangプログラムを main.go に記述します。
+ * main.go は現在空であるため、以下の内容が新しいファイルの内容となります。
+ */
+
+// main.go
+// +package main
+// +
+// +import (
+// +	"fmt"
+// +	"os"
+// +	"strconv"
+// +)
+// +
+// +// primeFactorize は与えられた数値を素因数分解し、素因数のスライスを返します。
+// +func primeFactorize(n int64) []int64 {
+// +	factors := []int64{}
+// +
+// +	// 2で割れるだけ割る
+// +	for n%2 == 0 {
+// +		factors = append(factors, 2)
+// +		n /= 2
+// +	}
+// +
+// +	// 3以上の奇数で割っていく
+// +	// ループの上限は n の平方根までで良い (i*i <= n)
+// +	for i := int64(3); i*i <= n; i += 2 {
+// +		for n%i == 0 {
+// +			factors = append(factors, i)
+// +			n /= i
+// +		}
+// +	}
+// +
+// +	// 上記のループ後、nが1より大きい場合、残ったnは素数
+// +	if n > 1 {
+// +		factors = append(factors, n)
+// +	}
+// +
+// +	return factors
+// +}
+// +
+// +func main() {
+// +	if len(os.Args) < 2 {
+// +		fmt.Fprintln(os.Stderr, "エラー: 数値を1つ以上引数として指定してください。")
+// +		fmt.Fprintln(os.Stderr, "使用法: go run main.go <数値1> [数値2] ...")
+// +		os.Exit(1)
+// +	}
+// +
+// +	for _, arg := range os.Args[1:] {
+// +		num, err := strconv.ParseInt(arg, 10, 64)
+// +		if err != nil {
+// +			fmt.Fprintf(os.Stderr, "エラー: '%s' は有効な整数ではありません。\n", arg)
+// +			continue // 次の引数へ
+// +		}
+// +
+// +		if num < 2 {
+// +			fmt.Fprintf(os.Stderr, "エラー: %d は素因数分解できません。2以上の整数を指定してください。\n", num)
+// +			continue // 次の引数へ
+// +		}
+// +
+// +		fmt.Printf("%s の素因数分解: ", arg)
+// +		factors := primeFactorize(num)
+// +		for i, factor := range factors {
+// +			if i > 0 {
+// +				fmt.Print(" * ")
+// +			}
+// +			fmt.Print(factor)
+// +		}
+// +		fmt.Println()
+// +	}
+// +}
+```
+Tokens: 339 sent, 879 received.
+
+main.go
+#+end_src
+
+Aiderの回答では末尾にあるように使用したトークンを表示してくれます。
+私はまだ有償のモデルは試したことがないのですが、その場合はコスト見積も返してくれるようです。
+
+受けとった回答が問題なければ、今度は =Codeモード= に戻してその修正を反映してもらいます。
+
+=Codeモード= に切り替える方法は、先ほどの =Askモード= 切り替えに似ていますが以下の2種類があります。
+
+- Aiderのチャットで =/code= とコマンドを入力してチャットを =Codeモード= に切り替える
+- Aidermacsのメニューから ~1~ を選択し、 =Codeモード= に切り替える
+
+=Codeモード= に切り替えたら、「先ほどの内容を反映して」などチャットすることで
+対象のファイルが編集されます。
+
+#+begin_src markdown
+  ask> /code
+  Aider v0.83.0
+  Main model: gemini/gemini-2.5-pro-exp-03-25 with diff-fenced edit format
+  Weak model: gemini/gemini-2.5-flash-preview-04-17
+  Git repo: .git with 2 files
+  Repo-map: using 4096 tokens, auto refresh
+  Added main.go to the chat.
+
+  main.go
+  > いいですね。その修正を反映させてください
+
+  はい、承知いたしました。`main.go` に素因数分解のコードを反映させます。
+
+  ```go
+  main.go
+  <<<<<<< SEARCH
+  =======
+  package main
+
+  import (
+	  "fmt"
+	  "os"
+	  "strconv"
+  )
+
+  // primeFactorize は与えられた数値を素因数分解し、素因数のスライスを返します。
+  func primeFactorize(n int64) []int64 {
+(中略)
+  }
+
+  func main() {
+(中略)
+  }
+  >>>>>>> REPLACE
+  ```
+
+  このコードを実行するには、ターミナルで以下のコマンドを実行してください。
+
+  ```bash
+  go run main.go 12 30 97
+  ```
+  Tokens: 3.5k sent, 632 received.
+  Applied edit to main.go
+
+  go run main.go 12 30 97
+  Run shell command? (Y)es/(N)o/(D)on't ask again [Yes]: no
+
+  main.go
+#+end_src
+
+ファイルの編集後には、実際に実行する提案や、ediffによる編集前後の差分が表示されます。
+ediffを終了するには、ediffの操作用のバッファで ~q~ を押下します。
+前述のとおりデフォルトでは新しいフレーム(いわゆるウィンドウ)にEdiffの操作用のバッファが表示され、
+発見しづらいので注意しましょう。
+
+あとは、これを繰り返すことでaiderと対話しながら修正をしていくことができます。
+
+二回目以降の修正のほうが、ediffで見たときにどこが変更されたかわかりやすいと思います。
+
+[[file:images/20250511-aidermacs-ediff.png]]
+
+デフォルトでは、変更後に自動コミットはしないので、codeモードでコミットしてと依頼してコミットメッセージやコミット操作をすることができます。
+設定次第では、自動コミットすることもできます。
+
+*** まとめ
+今回は、EmacsでAIとペアプロできるAidermacsを使ってみました。
+
+VScodeじゃないとAI使えないのかと残念がってた人は、Aiderを使うことでエディタを問わずにAI活用ができるのでオススメです。
