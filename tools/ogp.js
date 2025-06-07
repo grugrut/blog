@@ -5,7 +5,7 @@ const fs = require("fs");
 
 // フォントの登録
 registerFont(
-    'themes/sauvignon/static/fonts/NotoSansCJKjp-Black.woff',
+    'tools/NotoSansJP-Black.ttf',
     { family: 'Noto Sans CJK' }
 );
 

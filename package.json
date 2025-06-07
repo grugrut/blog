@@ -27,7 +27,7 @@
     "lint": "textlint -f pretty-error draft/blog.org",
     "index": "pagefind --site public",
     "ogp": "node tools/ogp.js",
-    "build": "hugo -F --gc --minify && npm run index"
+    "build": "npm run ogp && hugo -F --gc --minify && npm run index"
   },
   "repository": {
     "type": "git",
